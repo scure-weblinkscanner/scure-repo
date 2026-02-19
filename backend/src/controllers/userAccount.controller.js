@@ -54,3 +54,14 @@ export const deleteUserAccount = async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 }
+
+export const loginUserAccount = async (req, res) => {
+  try {
+    const { email, password } = req.body
+    const account = await userAccountService.loginUserAccount(email, password)
+    res.status(200).json(account)
+  } catch (error) {
+    console.error('loginUserAccount error:', error.message)
+    res.status(401).json({ error: error.message })
+  }
+}

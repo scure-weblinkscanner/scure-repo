@@ -60,3 +60,13 @@ export const searchUserAccounts = async (query) => {
   if (error) throw error
   return result
 }
+
+export const getUserAccountByEmail = async (email) => {
+  const { data: result, error } = await supabase
+    .from('userAccount')
+    .select('*')
+    .eq('uaEmail', email)
+    .single()
+  if (error) throw error
+  return result
+}

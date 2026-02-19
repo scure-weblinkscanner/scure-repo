@@ -9,5 +9,6 @@ router.get('/search', userAccountController.searchUserAccounts)
 router.get('/:uaId', userAccountController.getUserAccountById)
 router.put('/:uaId', userAccountController.updateUserAccount)
 router.delete('/:uaId', userAccountController.deleteUserAccount)
+router.post('/login', userAccountController.loginUserAccount)
 
 export default router
