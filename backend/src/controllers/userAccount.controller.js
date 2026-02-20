@@ -57,11 +57,32 @@ export const deleteUserAccount = async (req, res) => {
 
 export const loginUserAccount = async (req, res) => {
   try {
-    const { email, password } = req.body
-    const account = await userAccountService.loginUserAccount(email, password)
-    res.status(200).json(account)
+    const { uaEmail, uaPassword } = req.body;
+
+    if (!uaEmail || !uaPassword) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const result = await userAccountService.loginUserAccount(uaEmail, uaPassword);
+
+    res.status(200).json(result);
   } catch (error) {
-    console.error('loginUserAccount error:', error.message)
-    res.status(401).json({ error: error.message })
+    res.status(401).json({ error: error.message });
   }
-}
+};
+
+export const loginAdminUserAccount = async (req, res) => {
+  try {
+    const { uaEmail, uaPassword } = req.body;
+
+    if (!uaEmail || !uaPassword) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const result = await userAccountService.loginAdminUserAccount(uaEmail, uaPassword);
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+};

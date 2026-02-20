@@ -60,12 +60,18 @@ export const registerUserAccount = async (username, email, password) => {
   return await res.json()
 }
 
-export const loginUserAccount = async (email, password) => {
-  const res = await fetch(`${BASE_URL}/login`, {
+export const loginUserAccount = async (uaEmail, uaPassword) => {
+  const response = await fetch(`${BASE_URL}/login/admin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  })
-  if (!res.ok) throw new Error('Invalid email or password')
-  return await res.json()
-}
+    body: JSON.stringify({ uaEmail, uaPassword }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Login failed');
+  }
+
+  return data;
+};

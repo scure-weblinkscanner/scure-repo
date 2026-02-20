@@ -9,23 +9,16 @@ const LoginPage = () => {
   const [error, setError] = useState(null)
   const navigate = useNavigate()
 
-  const handleLogin = async () => {
-    try {
-      const account = await loginUserAccount(email, password)
-
-      // check if user is admin via their profile
-      if (account.uaUserProfileId !== 1) {
-        setError('Access denied. Admins only.')
-        return
-      }
-
-      // store account in session for later use
-      sessionStorage.setItem('user', JSON.stringify(account))
-      navigate('/dashboard')
-    } catch (err) {
-      setError(err.message)
-    }
+const handleLogin = async () => {
+  try {
+    const { token, account } = await loginUserAccount(email, password)
+    sessionStorage.setItem('user', JSON.stringify(account))
+    sessionStorage.setItem('token', token)
+    navigate('/dashboard')
+  } catch (err) {
+    setError(err.message)
   }
+}
 
   return (
     <div>

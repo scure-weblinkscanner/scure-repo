@@ -1,5 +1,6 @@
 import * as userAccountDb from '../database/userAccount.db.js'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken';
 
 export const createUserAccount = async (data) => {
   const passwordHash = await bcrypt.hash(data.uaPasswordHash, 10)
@@ -32,12 +33,77 @@ export const deleteUserAccount = async (uaId) => {
   return await userAccountDb.deleteUserAccount(uaId)
 }
 
-export const loginUserAccount = async (email, password) => {
-  const account = await userAccountDb.getUserAccountByEmail(email)
-  if (!account) throw new Error('Invalid email or password')
+export const loginUserAccount = async (uaEmail, uaPassword) => {
+  const account = await userAccountDb.getUserAccountByEmail(uaEmail);
 
-  const isMatch = await bcrypt.compare(password, account.uaPasswordHash)
-  if (!isMatch) throw new Error('Invalid email or password')
+  if (!account) {
+    throw new Error('Invalid email or password');
+  }
 
-  return account
-}
+  const isMatch = await bcrypt.compare(uaPassword, account.uaPasswordHash);
+
+  if (!isMatch) {
+    throw new Error('Invalid email or password');
+  }
+
+  const token = jwt.sign(
+    {
+      uaId: account.uaId,
+      uaEmail: account.uaEmail,
+      uaUserProfileId: account.uaUserProfileId,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return {
+    token,
+    account: {
+      uaId: account.uaId,
+      uaEmail: account.uaEmail,
+      uaUsername: account.uaUsername,
+      uaUserProfileId: account.uaUserProfileId,
+    },
+  };
+};
+
+export const loginAdminUserAccount = async (uaEmail, uaPassword) => {
+  const account = await userAccountDb.getUserAccountByEmail(uaEmail);
+
+  if (!account) {
+    throw new Error('Invalid email or password');
+  }
+
+  console.log('uaUserProfileId:', account.uaUserProfileId);
+  console.log('type:', typeof account.uaUserProfileId);
+
+  if (account.uaUserProfileId != 1) {
+    throw new Error('Access denied. Admins only.');
+  }
+
+  const isMatch = await bcrypt.compare(uaPassword, account.uaPasswordHash);
+
+  if (!isMatch) {
+    throw new Error('Invalid email or password');
+  }
+
+  const token = jwt.sign(
+    {
+      uaId: account.uaId,
+      uaEmail: account.uaEmail,
+      uaUserProfileId: account.uaUserProfileId,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return {
+    token,
+    account: {
+      uaId: account.uaId,
+      uaEmail: account.uaEmail,
+      uaUsername: account.uaUsername,
+      uaUserProfileId: account.uaUserProfileId,
+    },
+  };
+};

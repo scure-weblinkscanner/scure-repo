@@ -10,5 +10,6 @@ router.get('/:uaId', userAccountController.getUserAccountById)
 router.put('/:uaId', userAccountController.updateUserAccount)
 router.delete('/:uaId', userAccountController.deleteUserAccount)
 router.post('/login', userAccountController.loginUserAccount)
+router.post('/login/admin', userAccountController.loginAdminUserAccount);
 
 export default router
