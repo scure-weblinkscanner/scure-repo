@@ -19,14 +19,14 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (loading) return;
-    console.log('token:', token);
-    console.log('segments:', segments);
+
     const inTabsGroup = segments[0] === '(tabs)';
-    console.log('inTabsGroup:', inTabsGroup);
+    const inLoginScreen = segments[0] === 'login';
+
     if (!token && inTabsGroup) {
       router.replace('/login' as any);
-    } else if (token && !inTabsGroup) {
-      router.replace('/(tabs)/home' as any);
+    } else if (token && inLoginScreen) {
+      router.replace('/(tabs)/scan' as any);
     }
   }, [token, loading, segments]);
 
@@ -34,6 +34,7 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="scanURL" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
