@@ -66,7 +66,7 @@ export const getUserAccountByEmail = async (email) => {
     .from('userAccount')
     .select('*')
     .eq('uaEmail', email)
-    .single()
+    .maybeSingle()
   if (error) throw error
   return result
 }
