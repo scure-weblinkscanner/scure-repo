@@ -23,11 +23,13 @@ export const searchUserAccounts = async (query) => {
 }
 
 export const updateUserAccount = async (uaId, updates) => {
+  if (updates.uaPasswordHash) {
+    updates.uaPasswordHash = await bcrypt.hash(updates.uaPasswordHash, 10)
+  }
   return await userAccountDb.updateUserAccount(uaId, updates)
 }
 
 export const deleteUserAccount = async (uaId) => {
-  // example of business logic in the control layer
   const account = await userAccountDb.getUserAccountById(uaId)
   if (!account) throw new Error('User account not found')
   return await userAccountDb.deleteUserAccount(uaId)
