@@ -31,6 +31,8 @@ const UserAccountPage = () => {
   const [deletingAccount, setDeletingAccount] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [toast, setToast] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
   const navigate = useNavigate()
 
   // for creating user account
@@ -59,6 +61,19 @@ const UserAccountPage = () => {
   const fetchAccounts = async () => {
     try {
       const data = await userAccountService.getAllUserAccounts()
+      setAccounts(data)
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
+  }
+
+  const handleSearch = async () => {
+    try {
+      if (!searchQuery.trim()) {
+        fetchAccounts()
+        return
+      }
+      const data = await userAccountService.searchUserAccounts(searchQuery)
       setAccounts(data)
     } catch (err) {
       showToast(err.message, 'error')
@@ -197,9 +212,29 @@ const UserAccountPage = () => {
 
       <div style={{ padding: '2rem' }}>
         <h1>User Accounts</h1>
-        <button onClick={() => setShowCreateModal(true)} style={{ marginBottom: '1rem' }}>
-          + Create Account
-        </button>
+
+        {/* Buttons Row */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button onClick={() => setShowCreateModal(true)}>+ Create Account</button>
+          <button onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); fetchAccounts() }}>
+            {showSearch ? 'Hide Search' : 'Search User Account'}
+          </button>
+        </div>
+
+        {/* Search Bar */}
+        {showSearch && (
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input
+              type="text"
+              placeholder="Search by username or email"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #ccc', width: '250px' }}
+            />
+            <button onClick={handleSearch}>Search</button>
+            <button onClick={() => { setSearchQuery(''); fetchAccounts() }}>Clear</button>
+          </div>
+        )}
 
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>

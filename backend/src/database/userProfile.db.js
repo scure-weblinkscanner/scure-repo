@@ -14,16 +14,17 @@ export const getAllUserProfiles = async () => {
   const { data: result, error } = await supabase
     .from('userProfile')
     .select('*')
+    .order('upId', { ascending: true })
 
   if (error) throw error
   return result
 }
 
-export const getUserProfileById = async (userProfileId) => {
+export const getUserProfileById = async (upId) => {
   const { data: result, error } = await supabase
     .from('userProfile')
     .select('*')
-    .eq('userProfileId', userProfileId)
+    .eq('upId', upId)
     .single()
 
   if (error) throw error
@@ -34,28 +35,28 @@ export const searchUserProfiles = async (query) => {
   const { data: result, error } = await supabase
     .from('userProfile')
     .select('*')
-    .ilike('profileName', `%${query}%`)
+    .ilike('upName', `%${query}%`)
 
   if (error) throw error
   return result
 }
 
-export const updateUserProfile = async (userProfileId, updates) => {
+export const updateUserProfile = async (upId, updates) => {
   const { data: result, error } = await supabase
     .from('userProfile')
     .update(updates)
-    .eq('userProfileId', userProfileId)
+    .eq('upId', upId)
     .select()
 
   if (error) throw error
   return result
 }
 
-export const deleteUserProfile = async (userProfileId) => {
+export const deleteUserProfile = async (upId) => {
   const { error } = await supabase
     .from('userProfile')
     .delete()
-    .eq('userProfileId', userProfileId)
+    .eq('upId', upId)
 
   if (error) throw error
 }
