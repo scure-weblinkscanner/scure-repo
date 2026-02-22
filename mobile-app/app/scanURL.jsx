@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Dimensions } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
 import * as ImageManipulator from 'expo-image-manipulator';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
+import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import BASE_URL from '../constants/api';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -12,6 +12,28 @@ const VIEWFINDER_WIDTH = SCREEN_WIDTH * 0.85;
 const VIEWFINDER_HEIGHT = 100;
 const VIEWFINDER_TOP = SCREEN_HEIGHT * 0.4;
 const VIEWFINDER_LEFT = (SCREEN_WIDTH - VIEWFINDER_WIDTH) / 2;
+
+const extractURLsFromText = (text) => {
+  // fix OCR spacing in https://
+  const cleaned = text.replace(/https?\s*:\s*\/\s*\/\s*/gi, 'https://');
+
+  const patterns = [
+    // full URLs with protocol
+    /https?:\/\/[^\s]+/gi,
+    // URLs starting with www.
+    /www\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*/gi,
+    // bare domains like youtube.com, github.io, google.co.uk
+    /\b[a-zA-Z0-9-]+\.(com|org|net|io|co|gov|edu|uk|my|sg|app|dev)[^\s]*/gi,
+  ];
+
+  const found = new Set();
+  for (const pattern of patterns) {
+    const matches = cleaned.match(pattern);
+    if (matches) matches.forEach(url => found.add(url));
+  }
+
+  return [...found];
+};
 
 export default function ScanURLScreen() {
   const router = useRouter();
@@ -56,33 +78,23 @@ export default function ScanURLScreen() {
         { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
       );
 
+      // run ML Kit on cropped image
+      const result = await TextRecognition.recognize(cropped.uri);
+      const extractedText = result.text;
+      const foundURLs = extractURLsFromText(extractedText);
+
       setPhotoTaken(true);
-      await sendToBackend(cropped.uri);
+      setUrls(foundURLs);
+
+      if (foundURLs.length === 0) {
+        setError('No URLs found. Try again with the URL clearly inside the box.');
+      }
     } catch (err) {
-      setError('Failed to take photo: ' + err.message);
+      setError('Failed to scan: ' + err.message);
+      setPhotoTaken(true);
     } finally {
       setLoading(false);
     }
-  };
-
-  const sendToBackend = async (uri) => {
-    const formData = new FormData();
-    formData.append('image', {
-      uri,
-      type: 'image/jpeg',
-      name: 'scan.jpg',
-    });
-
-    const response = await fetch(`${BASE_URL}/scanURL/ocr`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) throw new Error(data.error || 'OCR failed');
-
-    setUrls(data.urls);
   };
 
   const reset = () => {
@@ -106,13 +118,11 @@ export default function ScanURLScreen() {
         <View style={{ flex: 1 }}>
           <CameraView style={StyleSheet.absoluteFill} ref={cameraRef} facing="back" />
 
-          {/* Dark overlay with viewfinder cutout */}
+          {/* Overlays */}
           <View style={styles.overlayTop} />
           <View style={styles.overlayMiddle}>
             <View style={styles.overlaySide} />
-            {/* Viewfinder box */}
             <View style={styles.viewfinder}>
-              {/* Corner markers */}
               <View style={[styles.corner, styles.topLeft]} />
               <View style={[styles.corner, styles.topRight]} />
               <View style={[styles.corner, styles.bottomLeft]} />
@@ -126,7 +136,7 @@ export default function ScanURLScreen() {
               <ActivityIndicator size="large" color="#fff" style={{ marginTop: 24 }} />
             ) : (
               <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
-                <MaterialIcons name="camera" size={32} color="#fff" />
+                <MaterialIcons name="camera" size={32} color="#000" />
               </TouchableOpacity>
             )}
           </View>
@@ -137,7 +147,7 @@ export default function ScanURLScreen() {
             <ActivityIndicator size="large" color="#000" />
           ) : error ? (
             <Text style={styles.error}>{error}</Text>
-          ) : urls.length > 0 ? (
+          ) : (
             <>
               <Text style={styles.resultsTitle}>URLs Found:</Text>
               {urls.map((url, index) => (
@@ -146,8 +156,6 @@ export default function ScanURLScreen() {
                 </View>
               ))}
             </>
-          ) : (
-            <Text style={styles.message}>No URLs found. Try again with the URL clearly inside the box.</Text>
           )}
           <TouchableOpacity style={styles.button} onPress={reset}>
             <Text style={styles.buttonText}>Scan Again</Text>
