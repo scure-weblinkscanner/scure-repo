@@ -1,55 +1,54 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Dimensions } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as ImageManipulator from 'expo-image-manipulator';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 const VIEWFINDER_WIDTH = SCREEN_WIDTH * 0.85;
-const VIEWFINDER_HEIGHT = 100;
+const VIEWFINDER_HEIGHT = 140;
 const VIEWFINDER_TOP = SCREEN_HEIGHT * 0.4;
 const VIEWFINDER_LEFT = (SCREEN_WIDTH - VIEWFINDER_WIDTH) / 2;
 
 const extractURLsFromText = (text) => {
-  // fix OCR spacing in https://
-  const cleaned = text.replace(/https?\s*:\s*\/\s*\/\s*/gi, 'https://');
+  let fixed = text
+    .replace(/https?\s*:\s*\/\s*\/\s*/gi, 'https://')
+    .replace(/ht+p/gi, 'http')
+    .replace(/5(?=[a-zA-Z])/g, 's')
+    .replace(/0(?=[a-zA-Z])/g, 'o');
 
   const patterns = [
-    // full URLs with protocol
     /https?:\/\/[^\s]+/gi,
-    // URLs starting with www.
     /www\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*/gi,
-    // bare domains like youtube.com, github.io, google.co.uk
     /\b[a-zA-Z0-9-]+\.(com|org|net|io|co|gov|edu|uk|my|sg|app|dev)[^\s]*/gi,
   ];
 
   const found = new Set();
   for (const pattern of patterns) {
-    const matches = cleaned.match(pattern);
+    const matches = fixed.match(pattern);
     if (matches) matches.forEach(url => found.add(url));
   }
-
   return [...found];
 };
 
 export default function ScanURLScreen() {
   const router = useRouter();
-  const cameraRef = useRef(null);
-  const [permission, requestPermission] = useCameraPermissions();
+  const device = useCameraDevice('back');
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const camera = useRef(null);
+
+  const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [urls, setUrls] = useState([]);
-  const [error, setError] = useState('');
+  const [detectedText, setDetectedText] = useState('');
   const [photoTaken, setPhotoTaken] = useState(false);
+  const [error, setError] = useState('');
 
-  if (!permission) return <View style={styles.wrapper} />;
-
-  if (!permission.granted) {
+  if (!hasPermission) {
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>Camera permission is required to scan URLs.</Text>
+        <Text style={styles.message}>Camera permission is required.</Text>
         <TouchableOpacity style={styles.button} onPress={requestPermission}>
           <Text style={styles.buttonText}>Grant Permission</Text>
         </TouchableOpacity>
@@ -57,34 +56,31 @@ export default function ScanURLScreen() {
     );
   }
 
-  const takePhoto = async () => {
-    if (!cameraRef.current) return;
+  if (!device) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>No camera device found.</Text>
+      </View>
+    );
+  }
+
+  const captureAndScan = async () => {
+    if (!camera.current || loading) return;
     setLoading(true);
     setError('');
     setUrls([]);
 
     try {
-      const photo = await cameraRef.current.takePictureAsync({ base64: false });
+      const photo = await camera.current.takePhoto({ qualityPrioritization: 'quality' });
+      const filePath = `file://${photo.path}`;
 
-      // crop to viewfinder area
-      const cropOriginX = (VIEWFINDER_LEFT / SCREEN_WIDTH) * photo.width;
-      const cropOriginY = (VIEWFINDER_TOP / SCREEN_HEIGHT) * photo.height;
-      const cropWidth = (VIEWFINDER_WIDTH / SCREEN_WIDTH) * photo.width;
-      const cropHeight = (VIEWFINDER_HEIGHT / SCREEN_HEIGHT) * photo.height;
+      const result = await TextRecognition.recognize(filePath);
+      const text = result.text;
+      setDetectedText(text);
 
-      const cropped = await ImageManipulator.manipulateAsync(
-        photo.uri,
-        [{ crop: { originX: cropOriginX, originY: cropOriginY, width: cropWidth, height: cropHeight } }],
-        { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
-      );
-
-      // run ML Kit on cropped image
-      const result = await TextRecognition.recognize(cropped.uri);
-      const extractedText = result.text;
-      const foundURLs = extractURLsFromText(extractedText);
-
-      setPhotoTaken(true);
+      const foundURLs = extractURLsFromText(text);
       setUrls(foundURLs);
+      setPhotoTaken(true);
 
       if (foundURLs.length === 0) {
         setError('No URLs found. Try again with the URL clearly inside the box.');
@@ -100,6 +96,7 @@ export default function ScanURLScreen() {
   const reset = () => {
     setUrls([]);
     setError('');
+    setDetectedText('');
     setPhotoTaken(false);
   };
 
@@ -116,7 +113,13 @@ export default function ScanURLScreen() {
 
       {!photoTaken ? (
         <View style={{ flex: 1 }}>
-          <CameraView style={StyleSheet.absoluteFill} ref={cameraRef} facing="back" />
+          <Camera
+            ref={camera}
+            style={StyleSheet.absoluteFill}
+            device={device}
+            isActive={true}
+            photo={true}
+          />
 
           {/* Overlays */}
           <View style={styles.overlayTop} />
@@ -135,7 +138,7 @@ export default function ScanURLScreen() {
             {loading ? (
               <ActivityIndicator size="large" color="#fff" style={{ marginTop: 24 }} />
             ) : (
-              <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
+              <TouchableOpacity style={styles.captureButton} onPress={captureAndScan}>
                 <MaterialIcons name="camera" size={32} color="#000" />
               </TouchableOpacity>
             )}
@@ -145,7 +148,7 @@ export default function ScanURLScreen() {
         <ScrollView contentContainerStyle={styles.resultsContainer}>
           {loading ? (
             <ActivityIndicator size="large" color="#000" />
-          ) : error ? (
+          ) : error && urls.length === 0 ? (
             <Text style={styles.error}>{error}</Text>
           ) : (
             <>
@@ -176,25 +179,20 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 12,
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    top: 0, left: 0, right: 0,
     zIndex: 10,
   },
   navTitle: { fontSize: 18, fontWeight: '600', color: '#fff' },
   overlayTop: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    top: 0, left: 0, right: 0,
     height: VIEWFINDER_TOP,
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   overlayMiddle: {
     position: 'absolute',
     top: VIEWFINDER_TOP,
-    left: 0,
-    right: 0,
+    left: 0, right: 0,
     height: VIEWFINDER_HEIGHT,
     flexDirection: 'row',
   },
@@ -210,9 +208,7 @@ const styles = StyleSheet.create({
   overlayBottom: {
     position: 'absolute',
     top: VIEWFINDER_TOP + VIEWFINDER_HEIGHT,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.6)',
     alignItems: 'center',
     paddingTop: 24,
@@ -220,8 +216,7 @@ const styles = StyleSheet.create({
   hint: { color: '#fff', fontSize: 14, opacity: 0.8 },
   corner: {
     position: 'absolute',
-    width: 20,
-    height: 20,
+    width: 20, height: 20,
     borderColor: '#fff',
   },
   topLeft: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3 },
@@ -234,7 +229,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginTop: 32,
   },
-  resultsContainer: { padding: 24, paddingTop: 370, backgroundColor: '#fff', flexGrow: 1 },
+  resultsContainer: { padding: 24, paddingTop: 80, backgroundColor: '#fff', flexGrow: 1 },
   resultsTitle: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
   urlCard: { backgroundColor: '#f5f5f5', borderRadius: 12, padding: 16, marginBottom: 12 },
   urlText: { fontSize: 14, color: '#333' },

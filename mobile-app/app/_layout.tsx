@@ -23,18 +23,14 @@ function RootLayoutNav() {
 
     const inTabsGroup = segments[0] === '(tabs)';
     const inLoginScreen = segments[0] === 'login';
-    const isRoot = segments.length < 1;
+    const inLanding = (segments[0] as string) === 'index';
 
-    if (!token && (inTabsGroup || isRoot)) {
-      router.replace('/login' as any);
-    } else if (token && (inLoginScreen || isRoot)) {
+    if (!token && inTabsGroup) {
+      router.replace('/' as any);
+    } else if (token && (inLoginScreen || inLanding)) {
       router.replace('/(tabs)/scan' as any);
     }
   }, [token, loading, segments]);
-
-  if (loading) {
-    return <View style={{ flex: 1, backgroundColor: '#fff' }} />;
-  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

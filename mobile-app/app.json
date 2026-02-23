@@ -39,7 +39,15 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Scure needs camera access to scan URLs"
+        }
+      ],
+      "expo-font",
+      "react-native-vision-camera"
     ],
     "experiments": {
       "typedRoutes": true,
