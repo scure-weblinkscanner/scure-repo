@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
+import { ScanProvider } from '../context/ScanContext';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
@@ -38,6 +39,7 @@ function RootLayoutNav() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="scanURL" options={{ headerShown: false }} />
+        <Stack.Screen name="scanURLResult" options={{ title: 'Scan Result', headerStyle: { backgroundColor: '#0a0a0a' }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '600' } }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
@@ -49,7 +51,9 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <ScanProvider>
+        <RootLayoutNav />
+      </ScanProvider>
     </AuthProvider>
   );
 }

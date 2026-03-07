@@ -11,7 +11,7 @@ app.use(express.json())
 
 app.use('/api/userAccount', userAccountRoutes)
 app.use('/api/userProfile', userProfileRoutes)
-app.use('/api/scan', scanRoutes);
+app.use('/api/scanURL', scanRoutes);
 
 // temporary route to list available models
 app.get('/api/models', async (req, res) => {

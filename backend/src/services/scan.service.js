@@ -5,13 +5,17 @@ import { scanWithVirusTotal } from '../utils/virusTotal.js';
 import { scanWithSafeBrowsing } from '../utils/safeBrowsing.js';
 
 export const analyzeURL = async (url) => {
-  const [scripts, urlscan, virustotal, safebrowsing] = await Promise.all([
+  const [scripts, urlscanResult, virustotal, safebrowsing] = await Promise.all([
     extractScriptsFromURL(url),
-    scanWithURLScan(url),
+    scanWithURLScan(url).catch((err) => {
+      console.warn('URLScan skipped:', err.message);
+      return { verdict: 'unknown', score: 0, categories: [], screenshot: null, uuid: null };
+    }),
     scanWithVirusTotal(url),
     scanWithSafeBrowsing(url),
   ]);
 
+  const urlscan = urlscanResult;
   const scriptAnalysis = await analyzeScripts(scripts, url);
 
   // collect who flagged it as malicious
