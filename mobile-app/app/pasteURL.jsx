@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   Animated,
   Easing,
   Clipboard,
@@ -44,6 +43,7 @@ export default function PasteURLScreen() {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState('');
 
+  const scanAnim = useRef(new Animated.Value(0.2)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
 
@@ -53,6 +53,20 @@ export default function PasteURLScreen() {
       Animated.timing(slideAnim, { toValue: 0, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
   }, []);
+
+  useEffect(() => {
+    if (scanning) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(scanAnim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(scanAnim, { toValue: 0.2, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      ).start();
+    } else {
+      scanAnim.stopAnimation();
+      scanAnim.setValue(0.2);
+    }
+  }, [scanning]);
 
   const handlePaste = async () => {
     try {
@@ -98,13 +112,14 @@ export default function PasteURLScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
       <KeyboardAvoidingView
         style={styles.wrapper}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.topNav}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
-            <MaterialIcons name="arrow-back" size={24} color="#111" />
+            <MaterialIcons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.navTitle}>Paste URL</Text>
           <View style={{ width: 40 }} />
@@ -118,7 +133,7 @@ export default function PasteURLScreen() {
           <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
             <View style={styles.heroRow}>
               <View style={styles.iconCircle}>
-                <MaterialIcons name="content-paste" size={28} color="#111" />
+                <MaterialIcons name="content-paste" size={28} color="#fff" />
               </View>
               <Text style={styles.headline}>Check a link</Text>
               <Text style={styles.subheadline}>
@@ -132,7 +147,7 @@ export default function PasteURLScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="https://example.com"
-                  placeholderTextColor="#AAA"
+                  placeholderTextColor="#555"
                   value={url}
                   onChangeText={(t) => { setUrl(t); setError(''); }}
                   autoCapitalize="none"
@@ -144,7 +159,7 @@ export default function PasteURLScreen() {
                 />
                 {url.length > 0 ? (
                   <TouchableOpacity style={styles.clearBtn} onPress={handleClear} hitSlop={8}>
-                    <MaterialIcons name="close" size={18} color="#999" />
+                    <MaterialIcons name="close" size={18} color="#666" />
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -152,14 +167,14 @@ export default function PasteURLScreen() {
               <View style={styles.divider} />
 
               <TouchableOpacity style={styles.pasteRow} onPress={handlePaste} disabled={scanning}>
-                <MaterialIcons name="content-paste" size={18} color="#555" />
+                <MaterialIcons name="content-paste" size={18} color="#FFD60A" />
                 <Text style={styles.pasteText}>Paste from clipboard</Text>
               </TouchableOpacity>
             </View>
 
             {error ? (
               <View style={styles.errorRow}>
-                <MaterialIcons name="error-outline" size={15} color="#E53935" />
+                <MaterialIcons name="error-outline" size={15} color="#ff6b6b" />
                 <Text style={styles.errorText}>{error}</Text>
               </View>
             ) : null}
@@ -174,7 +189,7 @@ export default function PasteURLScreen() {
                   { icon: 'smart-toy', label: 'AI Analysis' },
                 ].map(({ icon, label }) => (
                   <View key={label} style={styles.engineChip}>
-                    <MaterialIcons name={icon} size={14} color="#555" />
+                    <MaterialIcons name={icon} size={14} color="#888" />
                     <Text style={styles.engineLabel}>{label}</Text>
                   </View>
                 ))}
@@ -185,10 +200,10 @@ export default function PasteURLScreen() {
 
         <View style={styles.bottomBar}>
           {scanning ? (
-            <View style={styles.scanningContainer}>
-              <View style={styles.analyzingPill}>
-                <ActivityIndicator size="small" color="#fff" />
-                <Text style={styles.analyzingPillText}>Analyzing...</Text>
+            <View style={styles.loadingBarContainer}>
+              <Text style={styles.loadingBarLabel}>Analyzing…</Text>
+              <View style={styles.loadingBarTrack}>
+                <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
               </View>
             </View>
           ) : (
@@ -201,7 +216,7 @@ export default function PasteURLScreen() {
               <MaterialIcons
                 name="shield"
                 size={20}
-                color={canScan ? '#fff' : 'rgba(255,255,255,0.3)'}
+                color={canScan ? '#000' : 'rgba(255,255,255,0.2)'}
               />
               <Text style={[styles.scanBtnText, !canScan && styles.scanBtnTextDisabled]}>
                 {url.trim() ? 'Scan this URL' : 'Enter a URL above'}
@@ -210,92 +225,97 @@ export default function PasteURLScreen() {
           )}
         </View>
       </KeyboardAvoidingView>
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#F5F5F5' },
+  wrapper: { flex: 1, backgroundColor: '#0A0A0A' },
   topNav: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#0A0A0A',
   },
   backBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#EBEBEB', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center',
   },
-  navTitle: { fontSize: 17, fontWeight: '700', color: '#111' },
+  navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
   content: { paddingHorizontal: 20, paddingBottom: 120 },
   heroRow: { alignItems: 'center', paddingVertical: 28, gap: 8 },
   iconCircle: {
     width: 64, height: 64, borderRadius: 32,
-    backgroundColor: '#E8E8E8', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center',
     marginBottom: 4,
   },
-  headline: { fontSize: 24, fontWeight: '800', color: '#111', letterSpacing: -0.5 },
-  subheadline: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
+  headline: { fontSize: 24, fontWeight: '800', color: '#fff', letterSpacing: -0.5 },
+  subheadline: { fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
   inputCard: {
-    backgroundColor: '#fff', borderRadius: 18,
+    backgroundColor: '#141414', borderRadius: 18,
     paddingHorizontal: 18, paddingTop: 16, paddingBottom: 4,
-    borderWidth: 1.5, borderColor: '#E8E8E8',
+    borderWidth: 1.5, borderColor: '#222',
     marginBottom: 10,
   },
-  inputCardError: { borderColor: '#E53935' },
-  inputLabel: { fontSize: 10, color: '#AAA', fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
+  inputCardError: { borderColor: '#ff6b6b' },
+  inputLabel: { fontSize: 10, color: '#555', fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
   inputRow: { flexDirection: 'row', alignItems: 'center' },
   input: {
-    flex: 1, fontSize: 15, color: '#111',
+    flex: 1, fontSize: 15, color: '#fff',
     paddingVertical: 4, paddingRight: 8,
     minHeight: 40,
   },
   clearBtn: {
-    padding: 4, backgroundColor: '#F0F0F0',
+    padding: 4, backgroundColor: '#2A2A2A',
     borderRadius: 50, marginLeft: 4,
   },
-  divider: { height: 1, backgroundColor: '#F0F0F0', marginVertical: 12 },
+  divider: { height: 1, backgroundColor: '#222', marginVertical: 12 },
   pasteRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingVertical: 10,
   },
-  pasteText: { color: '#555', fontSize: 14, fontWeight: '500' },
+  pasteText: { color: '#888', fontSize: 14, fontWeight: '500' },
   errorRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     marginBottom: 12, paddingHorizontal: 4,
   },
-  errorText: { color: '#E53935', fontSize: 13 },
+  errorText: { color: '#ff6b6b', fontSize: 13 },
   enginesCard: {
-    backgroundColor: '#fff', borderRadius: 18,
-    padding: 18, borderWidth: 1.5, borderColor: '#E8E8E8',
+    backgroundColor: '#141414', borderRadius: 18,
+    padding: 18, borderWidth: 1.5, borderColor: '#222',
     gap: 12,
   },
-  enginesTitle: { fontSize: 13, fontWeight: '700', color: '#111' },
+  enginesTitle: { fontSize: 13, fontWeight: '700', color: '#fff' },
   enginesList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   engineChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#F5F5F5', borderRadius: 50,
+    backgroundColor: '#1E1E1E', borderRadius: 50,
     paddingVertical: 7, paddingHorizontal: 12,
-    borderWidth: 1, borderColor: '#E8E8E8',
+    borderWidth: 1, borderColor: '#2A2A2A',
   },
-  engineLabel: { fontSize: 12, color: '#555', fontWeight: '500' },
+  engineLabel: { fontSize: 12, color: '#888', fontWeight: '500' },
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#F5F5F5', paddingHorizontal: 20,
+    backgroundColor: '#0A0A0A', paddingHorizontal: 20,
     paddingTop: 12, paddingBottom: 36,
-    borderTopWidth: 1, borderTopColor: '#E8E8E8',
+    borderTopWidth: 1, borderTopColor: '#1E1E1E',
   },
   scanBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#111', borderRadius: 50, paddingVertical: 17,
+    backgroundColor: '#FFD60A', borderRadius: 50, paddingVertical: 17,
   },
-  scanBtnDisabled: { backgroundColor: '#CBCBCB' },
-  scanBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  scanBtnTextDisabled: { color: 'rgba(255,255,255,0.5)' },
-  scanningContainer: { alignItems: 'center', paddingVertical: 6 },
-  analyzingPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#222', borderRadius: 50,
-    paddingVertical: 14, paddingHorizontal: 28,
+  scanBtnDisabled: { backgroundColor: '#1E1E1E' },
+  scanBtnText: { color: '#000', fontSize: 16, fontWeight: '700' },
+  scanBtnTextDisabled: { color: 'rgba(255,255,255,0.2)' },
+  loadingBarContainer: {
+    width: '100%', alignItems: 'center', gap: 10, paddingVertical: 15,
   },
-  analyzingPillText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  loadingBarLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '500' },
+  loadingBarTrack: {
+    width: '100%', height: 4, borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden',
+  },
+  loadingBarFill: {
+    width: '100%', height: '100%', borderRadius: 50, backgroundColor: '#FFD60A',
+  },
 });
