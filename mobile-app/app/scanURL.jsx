@@ -24,6 +24,7 @@ const { height: screenHeight } = Dimensions.get('window');
 
 const OCR_MAX_WIDTH = 1500;
 
+// common url patterns to be found in any image
 const urlPatterns = [
   /https?:\/\/[^\s]+/gi,
   /www\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*/gi,
