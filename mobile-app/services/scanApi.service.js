@@ -6,20 +6,18 @@ const BASE_URL = 'http://192.168.0.119:5000/api';
  * @param {string} token - JWT from useAuth()
  * @returns {Promise<ScanResult>}
  */
-export const analyzeUrl = async (url, token) => {
+export const analyzeUrl = async (url, token, scanMethod = 'cameraUrl') => {
   const response = await fetch(`${BASE_URL}/scanURL/analyze`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ url }),
+    body: JSON.stringify({ url, scanMethod }),
   });
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || `Server error: ${response.status}`);
   }
-
   return response.json();
 };

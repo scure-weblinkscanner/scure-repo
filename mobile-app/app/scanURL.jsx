@@ -190,7 +190,7 @@ export default function ScanURLScreen() {
     setScanning(true);
     try {
       const url = normalizeUrl(selectedUrl);
-      const result = await analyzeUrl(url, token);
+      const result = await analyzeUrl(url, token, 'cameraUrl');
       setScanResult(result);
       router.push({ pathname: '/scanURLResult' });
     } catch (err) {
