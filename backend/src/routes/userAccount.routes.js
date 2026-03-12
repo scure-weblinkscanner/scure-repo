@@ -6,10 +6,14 @@ const router = express.Router()
 router.post('/', userAccountController.createUserAccount)
 router.get('/', userAccountController.getAllUserAccounts)
 router.get('/search', userAccountController.searchUserAccounts)
+
+// static routes BEFORE dynamic ones
+router.post('/login', userAccountController.loginUserAccount)
+router.post('/login/admin', userAccountController.loginAdminUserAccount)
+
+// dynamic route LAST
 router.get('/:uaId', userAccountController.getUserAccountById)
 router.put('/:uaId', userAccountController.updateUserAccount)
 router.delete('/:uaId', userAccountController.deleteUserAccount)
-router.post('/login', userAccountController.loginUserAccount)
-router.post('/login/admin', userAccountController.loginAdminUserAccount);
 
 export default router

@@ -17,7 +17,7 @@ export default function LoginScreen() {
   setError('');
   setLoading(true);
   try {
-    const { token, account } = await loginUserAccount(uaEmail, uaPassword);
+    const { token, account } = await loginUserAccount(uaEmail, uaPassword);   // calls service API (controller)
     await login(token, account);
     // removed router.replace, let _layout.tsx handle the redirect
   } catch (err) {
