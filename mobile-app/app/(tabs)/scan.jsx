@@ -58,6 +58,7 @@ export default function ScanScreen() {
             style={styles.button}
             onPress={() => {
             if (option.title === 'Scan URL') router.push('/scanURL');
+            if (option.title === 'Paste URL') router.push('/pasteURL');
             }}
         >
             <MaterialIcons name={option.icon} size={28} color="#000" style={styles.icon} />
