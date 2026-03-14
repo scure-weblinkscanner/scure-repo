@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList,
   TouchableOpacity, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useAuth } from '../../context/AuthContext';
-import { fetchScanHistory } from '../../services/scanApi.service';
+import { useAuth } from '../context/AuthContext';
+import { fetchPublicScans } from '../services/scanApi.service';
 
 const verdictConfig = {
   clean:      { color: '#4AFF91', icon: 'check-circle' },
@@ -16,10 +16,10 @@ const verdictConfig = {
 };
 
 const scanMethodConfig = {
-  cameraUrl:  { icon: 'crop-free',        label: 'Scan URL'   },
-  pasteUrl:   { icon: 'content-paste',    label: 'Paste URL'  },
-  cameraQr:   { icon: 'qr-code-scanner',  label: 'Scan QR'    },
-  uploadQr:   { icon: 'photo-library',    label: 'Upload QR'  },
+  cameraUrl:  { icon: 'crop-free',       label: 'Scan URL'  },
+  pasteUrl:   { icon: 'content-paste',   label: 'Paste URL' },
+  cameraQr:   { icon: 'qr-code-scanner', label: 'Scan QR'   },
+  uploadQr:   { icon: 'photo-library',   label: 'Upload QR' },
 };
 
 const getVc = (verdict) => verdictConfig[verdict?.toLowerCase()] ?? verdictConfig.unknown;
@@ -30,9 +30,11 @@ const formatDate = (isoString) => {
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
-const HistoryItem = ({ item, onPress }) => {
+const PublicScanItem = ({ item, onPress }) => {
   const vc = getVc(item.shVerdict);
   const mc = getMethodConfig(item.shScanMethod);
+  const username = item.userAccount?.uaUsername ?? 'Unknown';
+
   return (
     <TouchableOpacity style={styles.item} onPress={() => onPress(item)} activeOpacity={0.7}>
       {/* Left — verdict icon */}
@@ -47,6 +49,10 @@ const HistoryItem = ({ item, onPress }) => {
         <Text style={styles.itemDetail}>
           Safety Score: <Text style={styles.itemDetailValue}>{item.shRiskScore}</Text>
         </Text>
+        <View style={styles.usernameRow}>
+          <MaterialIcons name="person" size={11} color="rgba(255,255,255,0.3)" />
+          <Text style={styles.itemUsername}>{username}</Text>
+        </View>
       </View>
 
       {/* Right — scan method icon + date */}
@@ -58,20 +64,20 @@ const HistoryItem = ({ item, onPress }) => {
   );
 };
 
-export default function HistoryScreen() {
+export default function PublicScansScreen() {
   const router = useRouter();
   const { token } = useAuth();
-  const [history, setHistory] = useState([]);
+  const [scans, setScans] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadHistory = async () => {
+  const loadPublicScans = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchScanHistory(token);
-      setHistory(data.history);
+      const data = await fetchPublicScans(token);
+      setScans(data.scans);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -81,28 +87,26 @@ export default function HistoryScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
+      loadPublicScans();
     }, [token])
   );
 
-  const filteredHistory = history.filter((item) =>
+  const filteredScans = scans.filter((item) =>
     item.shUrl.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalScanned = history.length;
-  const totalSuspicious = history.filter(
-    (item) => item.shVerdict?.toLowerCase() === 'suspicious' || item.shVerdict?.toLowerCase() === 'malicious'
-  ).length;
-
   const handleItemPress = (item) => {
-    router.push({ pathname: '/scanHistoryResult', params: { item: JSON.stringify(item) } });
+    router.push({ pathname: '/publicScanResult', params: { item: JSON.stringify(item) } });
   };
 
   return (
     <View style={styles.wrapper}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Scan History</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={22} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Public Scans</Text>
         <View style={styles.searchBar}>
           <MaterialIcons name="search" size={18} color="rgba(255,255,255,0.35)" />
           <TextInput
@@ -131,37 +135,34 @@ export default function HistoryScreen() {
         <View style={styles.centered}>
           <MaterialIcons name="error-outline" size={36} color="#FF6B6B" />
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={loadHistory}>
+          <TouchableOpacity style={styles.retryBtn} onPress={loadPublicScans}>
             <Text style={styles.retryBtnText}>Retry</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <FlatList
-          data={filteredHistory}
+          data={filteredScans}
           keyExtractor={(item) => String(item.shId)}
-          renderItem={({ item }) => <HistoryItem item={item} onPress={handleItemPress} />}
+          renderItem={({ item }) => <PublicScanItem item={item} onPress={handleItemPress} />}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.centered}>
-              <MaterialIcons name="history" size={36} color="rgba(255,255,255,0.2)" />
+              <MaterialIcons name="public" size={36} color="rgba(255,255,255,0.2)" />
               <Text style={styles.emptyText}>
-                {searchQuery ? 'No results for that URL.' : 'No scans yet.'}
+                {searchQuery ? 'No results for that URL.' : 'No public scans yet.'}
               </Text>
             </View>
           }
         />
       )}
 
-      {/* Stats footer — excluded from scroll */}
+      {/* Stats footer */}
       {!loading && !error && (
         <View style={styles.statsBar}>
           <Text style={styles.statsText}>
-            You have scanned{' '}
-            <Text style={styles.statsHighlight}>{totalScanned}</Text>
-            {' '}links.{' '}
-            <Text style={styles.statsHighlight}>{totalSuspicious}</Text>
-            {' '}suspicious links were identified.
+            <Text style={styles.statsHighlight}>{filteredScans.length}</Text>
+            {searchQuery ? ' results found.' : ' public scans available.'}
           </Text>
         </View>
       )}
@@ -173,6 +174,11 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#0a0a0a' },
 
   header: { paddingHorizontal: 20, paddingTop: 56, paddingBottom: 12, gap: 12 },
+  backBtn: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 50,
+    padding: 8, marginBottom: 4,
+  },
   headerTitle: { color: '#fff', fontSize: 24, fontWeight: '800' },
 
   searchBar: {
@@ -195,6 +201,8 @@ const styles = StyleSheet.create({
   itemUrl: { color: '#fff', fontSize: 13, fontWeight: '600', fontFamily: 'monospace' },
   itemDetail: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
   itemDetailValue: { color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
+  usernameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  itemUsername: { color: 'rgba(255,255,255,0.3)', fontSize: 11 },
   itemRight: { alignItems: 'flex-end', gap: 6, flexShrink: 0 },
   itemDate: { color: 'rgba(255,255,255,0.3)', fontSize: 11 },
 

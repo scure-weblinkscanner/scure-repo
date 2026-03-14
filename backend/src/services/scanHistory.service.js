@@ -16,3 +16,15 @@ export const createScanHistory = async (userId, scanMethod, scanData) => {
     shScriptAnalysis: scanData.scriptAnalysis,
   })
 }
+
+export const getScanHistoryByUserId = async (userId) => {
+  return await scanHistoryDb.getScanHistoryByUserId(userId)
+}
+
+export const publishScanHistory = async (shId, userId) => {
+  return await scanHistoryDb.publishScanHistory(shId, userId)
+}
+
+export const getPublicScans = async () => {
+  return await scanHistoryDb.getPublicScans()
+}
