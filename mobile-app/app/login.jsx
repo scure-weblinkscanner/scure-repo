@@ -67,7 +67,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Enter your email"
-            placeholderTextColor="#888"
+            placeholderTextColor="rgba(255,255,255,0.6)"
             value={uaEmail}
             onChangeText={setUaEmail}
             keyboardType="email-address"
@@ -90,7 +90,7 @@ export default function LoginScreen() {
           <TextInput
             style={[styles.input, { marginBottom: 24 }]}
             placeholder="Enter your password"
-            placeholderTextColor="#888"
+            placeholderTextColor="rgba(255,255,255,0.6)"
             value={uaPassword}
             onChangeText={setUaPassword}
             secureTextEntry
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     color: '#fff',
-    backgroundColor: '#282687',
+    backgroundColor: '#0E0E95',
   },
   inputText: {
     fontSize: 16,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginLeft: -10,
   },
   button: {
-    backgroundColor: '#282687',
+    backgroundColor: '#0E0E95',
     padding: 16,
     borderRadius: 8,
     borderColor: '#fff',
