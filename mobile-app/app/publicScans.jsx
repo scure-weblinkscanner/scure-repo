@@ -49,17 +49,17 @@ const PublicScanItem = ({ item, onPress }) => {
         <Text style={styles.itemDetail}>
           Safety Score: <Text style={styles.itemDetailValue}>{item.shRiskScore}</Text>
         </Text>
-        <View style={styles.usernameRow}>
-          <MaterialIcons name="person" size={11} color="rgba(255,255,255,0.3)" />
-          <Text style={styles.itemUsername}>{username}</Text>
-        </View>
       </View>
 
       {/* Right — scan method icon + date */}
-      <View style={styles.itemRight}>
-        <MaterialIcons name={mc.icon} size={20} color="rgba(255,255,255,0.35)" />
+        <View style={styles.itemRight}>
+        <MaterialIcons name={mc.icon} size={30} color="rgba(255,255,255,0.35)" />
         <Text style={styles.itemDate}>{formatDate(item.shCreatedAt)}</Text>
-      </View>
+        <View style={styles.usernameRow}>
+            <MaterialIcons name="person" size={11} color="rgba(255,255,255,0.3)" />
+            <Text style={styles.itemUsername}>{username}</Text>
+        </View>
+        </View>
     </TouchableOpacity>
   );
 };
