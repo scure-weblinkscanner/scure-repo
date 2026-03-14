@@ -1,17 +1,22 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ImageBackground, Image, KeyboardAvoidingView, Linking, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { loginUserAccount } from '../services/userAccount.service';
+import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
+import { ABeeZee_400Regular } from '@expo-google-fonts/abeezee';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login } = useAuth();
+  const [fontsLoaded] = useFonts({ BodoniModa_400Regular, ABeeZee_400Regular });
 
   const [uaEmail, setUaEmail] = useState('');
   const [uaPassword, setUaPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (!fontsLoaded) return <View style={styles.wrapper} />;
 
   const handleLogin = async () => {
   setError('');
@@ -28,15 +33,31 @@ export default function LoginScreen() {
 };
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require('../assets/background.png')}
+      style={styles.wrapper}
+      resizeMode="cover"
+    >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+
+      <Image source={require('../assets/logo.png')} style={{ width: 210, height: 210, alignSelf: 'center' }} />
       <Text style={styles.title}>Scure</Text>
-      <Text style={styles.subtitle}>Sign in to your account</Text>
+
+      <Text style={[styles.subtitle, {marginBottom: 15}]}>Log In</Text>
+      <Text style={[styles.subtitle, {fontSize: 20}]}>Welcome back to Scure</Text>
+
+      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <Image source={require('../assets/email.png')} style={{ width: 50, height: 50}} />
+        <Text style={styles.inputText}> Email </Text>
+      </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Enter your email"
         placeholderTextColor="#888"
         value={uaEmail}
         onChangeText={setUaEmail}
@@ -44,9 +65,25 @@ export default function LoginScreen() {
         autoCapitalize="none"
       />
 
+      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between'}}>
+
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Image source={require('../assets/psw.png')} style={{ width: 50, height: 50 }} />
+          <Text style={styles.inputText}> Password </Text>
+        </View>
+
+        <Text 
+          style={[styles.inputText, {fontSize: 12, marginRight: 10, textDecorationLine: 'underline'}]}
+          onPress={() => Linking.openURL('http://192.168.0.119:5173/register')}
+        > 
+          Forget Password? 
+        </Text>
+
+      </View>
+
       <TextInput
-        style={styles.input}
-        placeholder="Password"
+        style={[styles.input, {marginBottom: 50}]}
+        placeholder="Enter your password"
         placeholderTextColor="#888"
         value={uaPassword}
         onChangeText={setUaPassword}
@@ -57,31 +94,38 @@ export default function LoginScreen() {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Log In</Text>
         )}
       </TouchableOpacity>
-    </View>
+
+    </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
+    </ImageBackground>
   );
 }
 
 
 const styles = StyleSheet.create({
+  wrapper: { flex: 1 },
   container: {
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 32,
-    backgroundColor: '#fff',
   },
   title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontFamily: 'BodoniModa_400Regular',
+    fontSize: 52,
+    color: '#fff',
+    marginTop: -50,      
+    marginBottom: 50,    
+    letterSpacing: 4,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 32,
+    fontFamily: 'ABeeZee_400Regular',
+    fontSize: 30,
+    color: '#fff',
+    marginBottom: 60,
     textAlign: 'center',
   },
   input: {
@@ -89,21 +133,34 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     padding: 14,
-    marginBottom: 16,
+    marginTop: -10,
+    marginBottom: 30,
     fontSize: 16,
-    color: '#000',
+    color: '#fff',
+    backgroundColor: '#282687'
+  },
+  inputText: {
+    fontFamily: 'ABeeZee_400Regular',
+    fontSize: 16,
+    color: '#fff',
+    marginLeft: -10
   },
   button: {
-    backgroundColor: '#000',
+    backgroundColor: '#282687',
     padding: 16,
     borderRadius: 8,
+    borderColor: '#fff',
+    borderWidth: 1,
     alignItems: 'center',
     marginTop: 8,
+    width: 200,
+    alignSelf: 'center'
   },
   buttonText: {
+    fontFamily: 'ABeeZee_400Regular',
+    fontWeight: 'bold',
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 16
   },
   error: {
     color: 'red',
