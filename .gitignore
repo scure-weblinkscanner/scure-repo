@@ -151,4 +151,3 @@ build/
 .DS_Store
 Thumbs.db
 
-constants/api.js
