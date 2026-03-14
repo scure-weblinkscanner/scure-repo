@@ -1,6 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
 
 const scanOptions = [
   {
@@ -32,16 +34,21 @@ const scanOptions = [
 
 export default function ScanScreen() {
   const router = useRouter();
-
+  const [fontsLoaded] = useFonts({ BodoniModa_400Regular });
+  
+  if (!fontsLoaded) return <View style={styles.wrapper} />;
 
   return (
-    <View style={styles.wrapper}>
+    <SafeAreaView style={styles.wrapper}>
+      <ImageBackground
+          source={require('../../assets/background.png')}
+          style={styles.wrapper}
+          resizeMode="cover"
+      >
       {/* Top Navigation */}
       <View style={styles.topNav}>
-        <View />
-        <TouchableOpacity onPress={() => {}}>
-          <MaterialIcons name="account-circle" size={32} color="#000" />
-        </TouchableOpacity>
+        <Image source={require('../../assets/logo.png')} style={{width: 50, height: 50, marginLeft: -10}}/>
+        <Text style={styles.topNavText}> Scure </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
@@ -70,7 +77,8 @@ export default function ScanScreen() {
         </TouchableOpacity>
         ))}
       </ScrollView>
-    </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
@@ -84,8 +92,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 56,
+    paddingTop: 12,
     paddingBottom: 12,
+    backgroundColor: '#0E0E95',
+    height: 70
+  },
+  topNavText: {
+    color: '#fff',
+    fontFamily: 'BodoniModa_400Regular',
+    fontSize: 30,
+    marginRight: -10
   },
   container: {
     padding: 24,
@@ -99,22 +115,27 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: 'bold',
     letterSpacing: 2,
+    color: '#fff'
   },
   logoSub: {
-    fontSize: 14,
+    fontSize: 24,
     color: '#888',
     marginTop: 6,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0E0E95',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 22,
+    height: 100,
+    borderColor: '#fff',
+    borderWidth: 1
   },
   icon: {
     marginRight: 16,
+    color: '#fff'
   },
   textContainer: {
     flex: 1,
@@ -123,6 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 2,
+    color: '#fff'
   },
   description: {
     fontSize: 13,
