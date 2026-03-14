@@ -12,12 +12,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ImageBackground
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const normalizeUrl = (url) => {
   const u = url.trim().toLowerCase();
@@ -112,11 +114,16 @@ export default function PasteURLScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={{ flex: 1, backgroundColor: '#0A0A0A' }}>
+      <SafeAreaView style={{ flex: 1}} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.wrapper}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <ImageBackground
+              source={require('../assets/background.png')}
+              style={styles.wrapper}
+              resizeMode="cover"
+        >
         <View style={styles.topNav}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
             <MaterialIcons name="arrow-back" size={24} color="#fff" />
@@ -167,7 +174,7 @@ export default function PasteURLScreen() {
               <View style={styles.divider} />
 
               <TouchableOpacity style={styles.pasteRow} onPress={handlePaste} disabled={scanning}>
-                <MaterialIcons name="content-paste" size={18} color="#FFD60A" />
+                <MaterialIcons name="content-paste" size={18} color="#ffffff" />
                 <Text style={styles.pasteText}>Paste from clipboard</Text>
               </TouchableOpacity>
             </View>
@@ -216,7 +223,7 @@ export default function PasteURLScreen() {
               <MaterialIcons
                 name="shield"
                 size={20}
-                color={canScan ? '#000' : 'rgba(255,255,255,0.2)'}
+                color={canScan ? '#ffffff' : 'rgba(255,255,255,0.2)'}
               />
               <Text style={[styles.scanBtnText, !canScan && styles.scanBtnTextDisabled]}>
                 {url.trim() ? 'Scan this URL' : 'Enter a URL above'}
@@ -224,8 +231,9 @@ export default function PasteURLScreen() {
             </TouchableOpacity>
           )}
         </View>
+        </ImageBackground>
       </KeyboardAvoidingView>
-      </View>
+      </SafeAreaView>
     </>
   );
 }
@@ -233,89 +241,218 @@ export default function PasteURLScreen() {
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#0A0A0A' },
   topNav: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16,
-    backgroundColor: '#0A0A0A',
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    paddingHorizontal: 20, 
+    paddingTop: 16, 
+    paddingBottom: 16,
+    backgroundColor: '#0E0E95',
   },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center',
+    width: 40, 
+    height: 40, 
+    borderRadius: 20,
+    backgroundColor: '#0E0E95', 
+    alignItems: 'center', 
+    justifyContent: 'center',
   },
-  navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
-  content: { paddingHorizontal: 20, paddingBottom: 120 },
-  heroRow: { alignItems: 'center', paddingVertical: 28, gap: 8 },
+  navTitle: { 
+    fontSize: 17, 
+    fontWeight: '700', 
+    color: '#fff' 
+  },
+  content: { 
+    paddingHorizontal: 20, 
+    paddingBottom: 120 
+  },
+  heroRow: { 
+    alignItems: 'center', 
+    paddingVertical: 28, 
+    gap: 8 
+  },
   iconCircle: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center',
+    width: 64, 
+    height: 64, 
+    borderRadius: 32,
+    backgroundColor: '#1E1E1E',
+    borderWidth: 1, 
+    borderColor: '#fff',
+    alignItems: 'center', 
+    justifyContent: 'center',
     marginBottom: 4,
   },
-  headline: { fontSize: 24, fontWeight: '800', color: '#fff', letterSpacing: -0.5 },
-  subheadline: { fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
+  headline: { 
+    fontSize: 24, 
+    fontWeight: '800', 
+    color: '#fff', 
+    letterSpacing: -0.5 
+  },
+  subheadline: { 
+    fontSize: 14, 
+    color: '#fff', 
+    textAlign: 'center', 
+    lineHeight: 20, 
+    paddingHorizontal: 16 
+  },
   inputCard: {
-    backgroundColor: '#141414', borderRadius: 18,
-    paddingHorizontal: 18, paddingTop: 16, paddingBottom: 4,
-    borderWidth: 1.5, borderColor: '#222',
+    backgroundColor: '#141414', 
+    borderRadius: 18,
+    paddingHorizontal: 18, 
+    paddingTop: 16, 
+    paddingBottom: 4,
+    borderWidth: 1.5, 
+    borderColor: '#222',
     marginBottom: 10,
   },
-  inputCardError: { borderColor: '#ff6b6b' },
-  inputLabel: { fontSize: 10, color: '#555', fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
-  inputRow: { flexDirection: 'row', alignItems: 'center' },
+  inputCardError: { 
+    borderColor: '#ff6b6b' 
+  },
+  inputLabel: { 
+    fontSize: 10, 
+    color: '#555', 
+    fontWeight: '700', 
+    letterSpacing: 1.5,
+    marginBottom: 8 
+  },
+  inputRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center' ,
+    borderColor: '#fff',
+    borderWidth: 0.1,
+    borderRadius: 8,
+    paddingLeft: 5
+  },
   input: {
-    flex: 1, fontSize: 15, color: '#fff',
-    paddingVertical: 4, paddingRight: 8,
+    flex: 1, 
+    fontSize: 15, 
+    color: '#fff',
+    paddingVertical: 4, 
+    paddingRight: 8,
     minHeight: 40,
   },
   clearBtn: {
-    padding: 4, backgroundColor: '#2A2A2A',
-    borderRadius: 50, marginLeft: 4,
+    padding: 4, 
+    backgroundColor: '#2A2A2A',
+    borderRadius: 50, 
+    marginRight: 10,
   },
-  divider: { height: 1, backgroundColor: '#222', marginVertical: 12 },
+  divider: { height: 1, 
+    backgroundColor: '#222', 
+    marginVertical: 12 },
   pasteRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8,
     paddingVertical: 10,
   },
-  pasteText: { color: '#888', fontSize: 14, fontWeight: '500' },
+  pasteText: { 
+    color: '#888', 
+    fontSize: 14, 
+    fontWeight: '500' 
+  },
   errorRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    marginBottom: 12, paddingHorizontal: 4,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 6,
+    marginBottom: 12, 
+    paddingHorizontal: 4,
   },
-  errorText: { color: '#ff6b6b', fontSize: 13 },
+  errorText: { 
+    color: '#ff6b6b', 
+    fontSize: 13 
+  },
   enginesCard: {
-    backgroundColor: '#141414', borderRadius: 18,
-    padding: 18, borderWidth: 1.5, borderColor: '#222',
+    backgroundColor: '#141414', 
+    borderRadius: 18,
+    padding: 18, 
+    borderWidth: 1.5, 
+    borderColor: '#222',
     gap: 12,
+    marginTop: 10
   },
-  enginesTitle: { fontSize: 13, fontWeight: '700', color: '#fff' },
-  enginesList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  enginesTitle: { 
+    fontSize: 13, 
+    fontWeight: '700', 
+    color: '#fff' 
+  },
+  enginesList: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 8 
+  },
   engineChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#1E1E1E', borderRadius: 50,
-    paddingVertical: 7, paddingHorizontal: 12,
-    borderWidth: 1, borderColor: '#2A2A2A',
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 6,
+    backgroundColor: '#1E1E1E', 
+    borderRadius: 50,
+    paddingVertical: 7, 
+    paddingHorizontal: 12,
+    borderWidth: 1, 
+    borderColor: '#2A2A2A',
   },
-  engineLabel: { fontSize: 12, color: '#888', fontWeight: '500' },
+  engineLabel: { 
+    fontSize: 12, 
+    color: '#888', 
+    fontWeight: '500' 
+  },
   bottomBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#0A0A0A', paddingHorizontal: 20,
-    paddingTop: 12, paddingBottom: 36,
-    borderTopWidth: 1, borderTopColor: '#1E1E1E',
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0,
+    backgroundColor: '#0E0E95', 
+    paddingHorizontal: 20,
+    paddingTop: 12, 
+    paddingBottom: 36,
+    borderTopWidth: 1, 
+    borderTopColor: '#1E1E1E',
   },
   scanBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#FFD60A', borderRadius: 50, paddingVertical: 17,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1.5, 
+    borderColor: '#222',
+    justifyContent: 'center', 
+    gap: 8,
+    backgroundColor: '#141414', 
+    borderRadius: 50, 
+    paddingVertical: 17,
   },
-  scanBtnDisabled: { backgroundColor: '#1E1E1E' },
-  scanBtnText: { color: '#000', fontSize: 16, fontWeight: '700' },
-  scanBtnTextDisabled: { color: 'rgba(255,255,255,0.2)' },
+  scanBtnDisabled: { 
+    backgroundColor: '#1E1E1E' 
+  },
+  scanBtnText: { 
+    color: '#ffffff', 
+    fontSize: 16, 
+    fontWeight: '700' 
+  },
+  scanBtnTextDisabled: { 
+    color: 'rgba(255,255,255,0.2)' 
+  },
   loadingBarContainer: {
-    width: '100%', alignItems: 'center', gap: 10, paddingVertical: 15,
+    width: '100%', 
+    alignItems: 'center', 
+    gap: 10, 
+    paddingVertical: 15,
   },
-  loadingBarLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '500' },
+  loadingBarLabel: { 
+    color: 'rgba(255,255,255,0.6)', 
+    fontSize: 13, 
+    fontWeight: '500' 
+  },
   loadingBarTrack: {
-    width: '100%', height: 4, borderRadius: 50,
-    backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden',
+    width: '100%', 
+    height: 4, 
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.1)', 
+    overflow: 'hidden',
   },
   loadingBarFill: {
-    width: '100%', height: '100%', borderRadius: 50, backgroundColor: '#FFD60A',
+    width: '100%', 
+    height: '100%', 
+    borderRadius: 50, 
+    backgroundColor: '#1313c2',
   },
 });
