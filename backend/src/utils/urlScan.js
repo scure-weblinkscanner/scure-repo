@@ -4,7 +4,7 @@ export const scanWithURLScan = async (url) => {
   try {
     const submitRes = await axios.post(
       'https://urlscan.io/api/v1/scan/',
-      { url, visibility: 'public' },
+      { url, visibility: 'public', country: 'us' },
       {
         headers: {
           'Content-Type': 'application/json',

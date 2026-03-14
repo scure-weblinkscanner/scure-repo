@@ -113,7 +113,7 @@ export default function UploadQRScreen() {
     setScanning(true);
     try {
       const normalized = normalizeUrl(detectedUrl);
-      const result = await analyzeUrl(normalized, token);
+      const result = await analyzeUrl(normalized, token, 'uploadQr');
       setScanResult(result);
       router.push({ pathname: '/scanURLResult' });
     } catch (err) {

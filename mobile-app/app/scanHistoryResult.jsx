@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Image, Linking, Alert,
+  TouchableOpacity, Image, Linking, Modal,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -128,34 +128,30 @@ export default function ScanHistoryResultScreen() {
 
   const [isPublished, setIsPublished] = useState(item.shScanVisibility === 'public');
   const [publishing, setPublishing] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishError, setPublishError] = useState('');
 
   const vc = getVc(item.shVerdict);
   const u = item.shUrlscan;
 
-  const handlePublish = async () => {
+    const handlePublish = () => {
     if (isPublished) return;
-    Alert.alert(
-      'Publish Scan?',
-      'This scan will be visible to all public users.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Publish',
-          onPress: async () => {
-            try {
-              setPublishing(true);
-              await publishScanHistory(item.shId, token);
-              setIsPublished(true);
-            } catch (err) {
-              Alert.alert('Error', err.message);
-            } finally {
-              setPublishing(false);
-            }
-          },
-        },
-      ]
-    );
-  };
+    setPublishError('');
+    setShowPublishModal(true);
+    };
+
+    const confirmPublish = async () => {
+    try {
+        setPublishing(true);
+        await publishScanHistory(item.shId, token);
+        setIsPublished(true);
+        setShowPublishModal(false);
+    } catch (err) {
+        setPublishError(err.message);
+    } finally {
+        setPublishing(false);
+    }
+    };
 
   return (
     <View style={styles.wrapper}>
@@ -372,6 +368,54 @@ export default function ScanHistoryResultScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+    {/* Publish Confirm Modal */}
+    <Modal
+    transparent
+    animationType="fade"
+    visible={showPublishModal}
+    onRequestClose={() => setShowPublishModal(false)}
+    >
+    <View style={styles.modalOverlay}>
+        <View style={styles.modalBox}>
+        <View style={styles.modalIconCircle}>
+            <MaterialIcons name="public" size={28} color="#fff" />
+        </View>
+        <Text style={styles.modalTitle}>Publish this scan?</Text>
+        <Text style={styles.modalMessage}>
+            This scan result will be visible to all premium users in the Public Scans feed.
+        </Text>
+        <View style={styles.modalUrlBox}>
+            <MaterialIcons name="link" size={14} color="rgba(255,255,255,0.4)" />
+            <Text style={styles.modalUrl} numberOfLines={2}>{item.shUrl}</Text>
+        </View>
+        {publishError ? (
+            <View style={styles.modalError}>
+            <MaterialIcons name="error-outline" size={14} color="#FF6B6B" />
+            <Text style={styles.modalErrorText}>{publishError}</Text>
+            </View>
+        ) : null}
+        <TouchableOpacity
+            style={styles.modalBtnPrimary}
+            onPress={confirmPublish}
+            disabled={publishing}
+            activeOpacity={0.85}
+        >
+            <MaterialIcons name="public" size={18} color="#000" />
+            <Text style={styles.modalBtnPrimaryText}>
+            {publishing ? 'Publishing...' : 'Yes, publish it'}
+            </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+            style={styles.modalBtnSecondary}
+            onPress={() => setShowPublishModal(false)}
+            disabled={publishing}
+        >
+            <Text style={styles.modalBtnSecondaryText}>Cancel</Text>
+        </TouchableOpacity>
+        </View>
+    </View>
+    </Modal>
     </View>
   );
 }
@@ -458,4 +502,61 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(74,255,145,0.3)',
   },
   publishBtnText: { color: '#000', fontSize: 15, fontWeight: '700' },
+
+    modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    },
+    modalBox: {
+    backgroundColor: '#141414',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    gap: 12,
+    },
+    modalIconCircle: {
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
+    },
+    modalTitle: {
+    color: '#fff', fontSize: 18, fontWeight: '800', textAlign: 'center',
+    },
+    modalMessage: {
+    color: 'rgba(255,255,255,0.5)', fontSize: 13,
+    textAlign: 'center', lineHeight: 20,
+    },
+    modalUrlBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 10, padding: 12, width: '100%',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    },
+    modalUrl: {
+    color: 'rgba(255,255,255,0.4)', fontSize: 11,
+    fontFamily: 'monospace', flex: 1,
+    },
+    modalError: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(255,107,107,0.1)',
+    borderRadius: 8, padding: 10, width: '100%',
+    },
+    modalErrorText: { color: '#FF6B6B', fontSize: 12, flex: 1 },
+    modalBtnPrimary: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#fff', borderRadius: 50,
+    paddingVertical: 14, width: '100%', marginTop: 4,
+    },
+    modalBtnPrimaryText: { color: '#000', fontWeight: '700', fontSize: 15 },
+    modalBtnSecondary: {
+    paddingVertical: 10,
+    },
+    modalBtnSecondaryText: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
 });

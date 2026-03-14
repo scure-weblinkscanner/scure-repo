@@ -99,7 +99,7 @@ export default function PasteURLScreen() {
     setScanning(true);
     try {
       const normalized = normalizeUrl(url.trim());
-      const result = await analyzeUrl(normalized, token);
+      const result = await analyzeUrl(normalized, token, 'pasteUrl');
       setScanResult(result);
       router.push({ pathname: '/scanURLResult' });
     } catch (err) {
@@ -453,6 +453,6 @@ const styles = StyleSheet.create({
     width: '100%', 
     height: '100%', 
     borderRadius: 50, 
-    backgroundColor: '#1313c2',
+    backgroundColor: '#ffffff',
   },
 });
