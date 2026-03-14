@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ImageBackground, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ImageBackground, Image, KeyboardAvoidingView, Linking, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { loginUserAccount } from '../services/userAccount.service';
 import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
@@ -38,10 +38,13 @@ export default function LoginScreen() {
       style={styles.wrapper}
       resizeMode="cover"
     >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+
       <Image source={require('../assets/logo.png')} style={{ width: 210, height: 210, alignSelf: 'center' }} />
       <Text style={styles.title}>Scure</Text>
+
       <Text style={[styles.subtitle, {marginBottom: 15}]}>Log In</Text>
       <Text style={[styles.subtitle, {fontSize: 20}]}>Welcome back to Scure</Text>
 
@@ -61,16 +64,23 @@ export default function LoginScreen() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <View style={{flexDirection: 'row', alignItems: 'center'}}>
-      <Image source={require('../assets/psw.png')} style={{ width: 50, height: 50 }} />
-      <Text style={styles.inputText}> Password </Text>
-      <Text 
-        style={[styles.inputText, {fontSize: 12, marginLeft: 110, textDecorationLine: 'underline'}]}
-        onPress={() => Linking.openURL('http://192.168.0.119:5173/register')}
-      > 
-        Forget Password? 
-      </Text>
+
+      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between'}}>
+
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Image source={require('../assets/psw.png')} style={{ width: 50, height: 50 }} />
+          <Text style={styles.inputText}> Password </Text>
+        </View>
+
+        <Text 
+          style={[styles.inputText, {fontSize: 12, marginRight: 10, textDecorationLine: 'underline'}]}
+          onPress={() => Linking.openURL('http://192.168.0.119:5173/register')}
+        > 
+          Forget Password? 
+        </Text>
+
       </View>
+
       <TextInput
         style={[styles.input, {marginBottom: 50}]}
         placeholder="Enter your password"
@@ -87,7 +97,9 @@ export default function LoginScreen() {
           <Text style={styles.buttonText}>Log In</Text>
         )}
       </TouchableOpacity>
-    </View>
+
+    </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
     </ImageBackground>
   );
 }
