@@ -5,7 +5,7 @@ export const createUserAccount = async (req, res) => {
     const result = await userAccountService.createUserAccount(req.body)
     res.status(201).json(result)
   } catch (error) {
-    console.error('createUserAccount error:', error.message) // add this
+    console.error('createUserAccount error:', error.message)
     res.status(500).json({ error: error.message })
   }
 }
