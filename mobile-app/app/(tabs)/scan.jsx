@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Modal, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Image, Modal, Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
 
 const PREMIUM_PROFILE_ID = 3;
+import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
 
 const scanOptions = [
   {
@@ -64,16 +66,21 @@ export default function ScanScreen() {
   const handleUpgradeRedirect = () => {
     setShowUpgradeModal(false);
     Linking.openURL('https://yourwebsite.com/upgrade'); // replace with your actual URL
-  };
+  };  const [fontsLoaded] = useFonts({ BodoniModa_400Regular });
+  
+  if (!fontsLoaded) return <View style={styles.wrapper} />;
 
   return (
-    <View style={styles.wrapper}>
+    <SafeAreaView style={styles.wrapper}>
+      <ImageBackground
+          source={require('../../assets/background.png')}
+          style={{flex: 1}}
+          resizeMode="cover"
+      >
       {/* Top Navigation */}
       <View style={styles.topNav}>
-        <View />
-        <TouchableOpacity onPress={() => {}}>
-          <MaterialIcons name="account-circle" size={32} color="#000" />
-        </TouchableOpacity>
+        <Image source={require('../../assets/logo.png')} style={{width: 50, height: 50, marginLeft: -10}}/>
+        <Text style={styles.topNavText}> Scure </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
@@ -117,6 +124,7 @@ export default function ScanScreen() {
           );
         })}
       </ScrollView>
+      </ImageBackground>
 
       {/* Upgrade Modal */}
       <Modal
@@ -141,24 +149,33 @@ export default function ScanScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    paddingBottom: -25
   },
   topNav: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 56,
+    paddingTop: 12,
     paddingBottom: 12,
+    backgroundColor: '#0E0E95',
+    height: 70
+  },
+  topNavText: {
+    color: '#fff',
+    fontFamily: 'BodoniModa_400Regular',
+    fontSize: 30,
+    marginRight: -10
   },
   container: {
+    flexGrow: 1,
     padding: 24,
     paddingTop: 0,
   },
@@ -170,19 +187,23 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: 'bold',
     letterSpacing: 2,
+    color: '#fff'
   },
   logoSub: {
-    fontSize: 14,
+    fontSize: 24,
     color: '#888',
     marginTop: 6,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0E0E95',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 22,
+    height: 100,
+    borderColor: '#fff',
+    borderWidth: 1
   },
   buttonLocked: {
     backgroundColor: '#fafafa',
@@ -191,6 +212,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 16,
+    color: '#fff'
   },
   textContainer: {
     flex: 1,
@@ -221,6 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#fff',
     fontWeight: '700',
+    color: '#fff'
   },
   description: {
     fontSize: 13,
