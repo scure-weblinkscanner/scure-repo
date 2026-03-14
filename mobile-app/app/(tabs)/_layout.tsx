@@ -12,8 +12,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarInactiveTintColor: '#fff',
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBarStyle: {backgroundColor: '#0E0E95', borderTopWidth: 0}
       }}>
       <Tabs.Screen
         name="scan"

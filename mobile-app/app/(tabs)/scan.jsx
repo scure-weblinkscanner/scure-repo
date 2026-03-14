@@ -42,7 +42,7 @@ export default function ScanScreen() {
     <SafeAreaView style={styles.wrapper}>
       <ImageBackground
           source={require('../../assets/background.png')}
-          style={styles.wrapper}
+          style={{flex: 1}}
           resizeMode="cover"
       >
       {/* Top Navigation */}
@@ -85,7 +85,7 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    paddingBottom: -25
   },
   topNav: {
     flexDirection: 'row',
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     marginRight: -10
   },
   container: {
+    flexGrow: 1,
     padding: 24,
     paddingTop: 0,
   },
