@@ -151,4 +151,5 @@ build/
 .DS_Store
 Thumbs.db
 
-constants/api.js
+mobile-app/constants/api.js
+mobile-app/.env
