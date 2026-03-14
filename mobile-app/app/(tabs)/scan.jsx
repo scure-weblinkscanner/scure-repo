@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
+import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
 
 const PREMIUM_PROFILE_ID = 3;
-import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
 
 const scanOptions = [
   {
@@ -48,12 +48,11 @@ const scanOptions = [
 
 export default function ScanScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-
   const { account } = useAuth();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [fontsLoaded] = useFonts({ BodoniModa_400Regular });
+
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
-  
 
   const handleOptionPress = (option) => {
     if (option.premiumOnly && !isPremium) {
@@ -65,65 +64,63 @@ export default function ScanScreen() {
 
   const handleUpgradeRedirect = () => {
     setShowUpgradeModal(false);
-    Linking.openURL('https://yourwebsite.com/upgrade'); // replace with your actual URL
-  };  const [fontsLoaded] = useFonts({ BodoniModa_400Regular });
-  
+    Linking.openURL('https://yourwebsite.com/upgrade');
+  };
+
   if (!fontsLoaded) return <View style={styles.wrapper} />;
 
   return (
     <SafeAreaView style={styles.wrapper}>
       <ImageBackground
-          source={require('../../assets/background.png')}
-          style={{flex: 1}}
-          resizeMode="cover"
+        source={require('../../assets/background.png')}
+        style={{ flex: 1 }}
+        resizeMode="cover"
       >
-      {/* Top Navigation */}
-      <View style={styles.topNav}>
-        <Image source={require('../../assets/logo.png')} style={{width: 50, height: 50, marginLeft: -10}}/>
-        <Text style={styles.topNavText}> Scure </Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Logo Area */}
-        <View style={styles.logoArea}>
-          <Text style={styles.logoText}>Scure</Text>
-          <Text style={styles.logoSub}>Scan Your Link Securely</Text>
+        {/* Top Navigation */}
+        <View style={styles.topNav}>
+          <Image source={require('../../assets/logo.png')} style={{ width: 50, height: 50, marginLeft: -10 }} />
+          <Text style={styles.topNavText}>Scure</Text>
         </View>
 
-        {/* Scan Buttons */}
-        {scanOptions.map((option, index) => {
-          const isLocked = option.premiumOnly && !isPremium;
-          return (
-            <TouchableOpacity
-              key={index}
-              style={[styles.button, isLocked && styles.buttonLocked]}
-              onPress={() => handleOptionPress(option)}
-            >
-              <MaterialIcons
-                name={option.icon}
-                size={28}
-                color={isLocked ? '#bbb' : '#000'}
-                style={styles.icon}
-              />
-              <View style={styles.textContainer}>
-                <View style={styles.titleRow}>
-                  <Text style={[styles.title, isLocked && styles.textLocked]}>{option.title}</Text>
-                  {isLocked && (
-                    <View style={styles.premiumBadge}>
-                      <MaterialIcons name="lock" size={11} color="#fff" />
-                      <Text style={styles.premiumBadgeText}>Premium</Text>
-                    </View>
-                  )}
+        <ScrollView contentContainerStyle={styles.container}>
+          {/* Logo Area */}
+          <View style={styles.logoArea}>
+            <Text style={styles.logoText}>Scure</Text>
+            <Text style={styles.logoSub}>Scan Your Link Securely</Text>
+          </View>
+
+          {/* Scan Buttons */}
+          {scanOptions.map((option, index) => {
+            const isLocked = option.premiumOnly && !isPremium;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[styles.button, isLocked && styles.buttonLocked]}
+                onPress={() => handleOptionPress(option)}
+              >
+                <MaterialIcons
+                  name={option.icon}
+                  size={28}
+                  color='#fff'
+                  style={styles.icon}
+                />
+                <View style={styles.textContainer}>
+                  <View style={styles.titleRow}>
+                    <Text style={styles.title}>{option.title}</Text>
+                    {isLocked && (
+                      <View style={styles.premiumBadge}>
+                        <MaterialIcons name="lock" size={11} color="#fff" />
+                        <Text style={styles.premiumBadgeText}>Premium</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.description}>{option.description}</Text>
                 </View>
-                <Text style={[styles.description, isLocked && styles.textLocked]}>
-                  {option.description}
-                </Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={24} color={isLocked ? '#ddd' : '#ccc'} />
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+                <MaterialIcons name="chevron-right" size={24} color='rgba(255,255,255,0.5)' />
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </ImageBackground>
 
       {/* Upgrade Modal */}
@@ -156,7 +153,6 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    paddingBottom: -25
   },
   topNav: {
     flexDirection: 'row',
@@ -166,13 +162,13 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 12,
     backgroundColor: '#0E0E95',
-    height: 70
+    height: 70,
   },
   topNavText: {
     color: '#fff',
     fontFamily: 'BodoniModa_400Regular',
     fontSize: 30,
-    marginRight: -10
+    marginRight: -10,
   },
   container: {
     flexGrow: 1,
@@ -187,11 +183,11 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: 'bold',
     letterSpacing: 2,
-    color: '#fff'
+    color: '#fff',
   },
   logoSub: {
     fontSize: 24,
-    color: '#888',
+    color: 'rgba(255,255,255,0.6)',
     marginTop: 6,
   },
   button: {
@@ -203,16 +199,16 @@ const styles = StyleSheet.create({
     marginBottom: 22,
     height: 100,
     borderColor: '#fff',
-    borderWidth: 1
+    borderWidth: 1,
   },
   buttonLocked: {
-    backgroundColor: '#fafafa',
+    backgroundColor: '#0E0E95',
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: 'rgba(255,255,255,0.3)',
+    opacity: 0.6,
   },
   icon: {
     marginRight: 16,
-    color: '#fff'
   },
   textContainer: {
     flex: 1,
@@ -226,9 +222,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  textLocked: {
-    color: '#bbb',
+    color: '#fff',
   },
   premiumBadge: {
     flexDirection: 'row',
@@ -241,13 +235,12 @@ const styles = StyleSheet.create({
   },
   premiumBadgeText: {
     fontSize: 10,
-    color: '#fff',
     fontWeight: '700',
-    color: '#fff'
+    color: '#fff',
   },
   description: {
     fontSize: 13,
-    color: '#888',
+    color: 'rgba(255,255,255,0.6)',
   },
   modalOverlay: {
     flex: 1,
