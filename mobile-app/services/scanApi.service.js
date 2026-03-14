@@ -1,4 +1,4 @@
-const BASE_URL = 'http://192.168.0.119:5000/api';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 /**
  * Sends a URL to the backend for analysis.
