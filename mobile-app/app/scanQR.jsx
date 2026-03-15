@@ -137,6 +137,14 @@ export default function ScanQRScreen() {
   return (
     <View style={styles.wrapper}>
       {/* Camera */}
+      <View style={styles.topNav}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+          <MaterialIcons name="arrow-back" size={28} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.navTitle}>Scan URL</Text>
+        <View style={{ width: 28 }} />
+      </View>
+
       <Camera
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
@@ -243,6 +251,12 @@ const styles = StyleSheet.create({
   },
   permissionBtnText: { color: '#000', fontWeight: '700', fontSize: 15 },
 
+  topNav: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 24, paddingTop: 56, paddingBottom: 12,
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20,
+  },
+  navTitle: { fontSize: 18, fontWeight: '600', color: '#fff' },
   overlayFrame: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',

@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     bottom: 0, 
     left: 0, 
     right: 0,
-    backgroundColor: '#0E0E95', 
+    backgroundColor: '#0A0A0A', 
     paddingHorizontal: 20,
     paddingTop: 12, 
     paddingBottom: 36,
