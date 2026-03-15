@@ -83,7 +83,7 @@ export default function ScanScreen() {
             <Text style={styles.topNavText}>Scure</Text>
           </View>
 
-          <ScrollView contentContainerStyle={styles.container}
+          <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 80 }]}
                       style={{ backgroundColor: 'transparent' }}>
             {/* Logo Area */}
             <View style={styles.logoArea}>
