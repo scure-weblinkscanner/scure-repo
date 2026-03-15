@@ -70,57 +70,60 @@ export default function ScanScreen() {
   if (!fontsLoaded) return <View style={styles.wrapper} />;
 
   return (
-    <SafeAreaView style={styles.wrapper}>
+    <View style={styles.wrapper}>
       <ImageBackground
         source={require('../../assets/background.png')}
         style={{ flex: 1 }}
         resizeMode="cover"
       >
-        {/* Top Navigation */}
-        <View style={styles.topNav}>
-          <Image source={require('../../assets/logo.png')} style={{ width: 50, height: 50, marginLeft: -10 }} />
-          <Text style={styles.topNavText}>Scure</Text>
-        </View>
-
-        <ScrollView contentContainerStyle={styles.container}>
-          {/* Logo Area */}
-          <View style={styles.logoArea}>
-            <Text style={styles.logoText}>Scure</Text>
-            <Text style={styles.logoSub}>Scan Your Link Securely</Text>
+        <SafeAreaView style={{ flex: 1 }}>
+          {/* Top Navigation */}
+          <View style={styles.topNav}>
+            <Image source={require('../../assets/logo.png')} style={{ width: 50, height: 50, marginLeft: -10 }} />
+            <Text style={styles.topNavText}>Scure</Text>
           </View>
 
-          {/* Scan Buttons */}
-          {scanOptions.map((option, index) => {
-            const isLocked = option.premiumOnly && !isPremium;
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[styles.button, isLocked && styles.buttonLocked]}
-                onPress={() => handleOptionPress(option)}
-              >
-                <MaterialIcons
-                  name={option.icon}
-                  size={28}
-                  color='#fff'
-                  style={styles.icon}
-                />
-                <View style={styles.textContainer}>
-                  <View style={styles.titleRow}>
-                    <Text style={styles.title}>{option.title}</Text>
-                    {isLocked && (
-                      <View style={styles.premiumBadge}>
-                        <MaterialIcons name="lock" size={11} color="#fff" />
-                        <Text style={styles.premiumBadgeText}>Premium</Text>
-                      </View>
-                    )}
+          <ScrollView contentContainerStyle={styles.container}
+                      style={{ backgroundColor: 'transparent' }}>
+            {/* Logo Area */}
+            <View style={styles.logoArea}>
+              <Text style={styles.logoText}>Scure</Text>
+              <Text style={styles.logoSub}>Scan Your Link Securely</Text>
+            </View>
+
+            {/* Scan Buttons */}
+            {scanOptions.map((option, index) => {
+              const isLocked = option.premiumOnly && !isPremium;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.button, isLocked && styles.buttonLocked]}
+                  onPress={() => handleOptionPress(option)}
+                >
+                  <MaterialIcons
+                    name={option.icon}
+                    size={28}
+                    color='#fff'
+                    style={styles.icon}
+                  />
+                  <View style={styles.textContainer}>
+                    <View style={styles.titleRow}>
+                      <Text style={styles.title}>{option.title}</Text>
+                      {isLocked && (
+                        <View style={styles.premiumBadge}>
+                          <MaterialIcons name="lock" size={11} color="#fff" />
+                          <Text style={styles.premiumBadgeText}>Premium</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.description}>{option.description}</Text>
                   </View>
-                  <Text style={styles.description}>{option.description}</Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={24} color='rgba(255,255,255,0.5)' />
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+                  <MaterialIcons name="chevron-right" size={24} color='rgba(255,255,255,0.5)' />
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </SafeAreaView>
       </ImageBackground>
 
       {/* Upgrade Modal */}
@@ -146,13 +149,14 @@ export default function ScanScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    backgroundColor: '#0E0E95',
   },
   topNav: {
     flexDirection: 'row',
