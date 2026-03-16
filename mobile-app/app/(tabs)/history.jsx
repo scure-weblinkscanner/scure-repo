@@ -100,15 +100,17 @@ export default function HistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.wrapper} edges={['top']}>
+    <SafeAreaView style={[styles.wrapper, { backgroundColor: '#0E0E95' }]} edges={['top']}>
       {/* Header */}
       <ImageBackground
         source={require('../../assets/background.png')}
         style={styles.wrapper}
         resizeMode="cover"
       >
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Scan History</Text>
+      <View style={styles.topbar}>
+        <Text style={styles.barText}>Scan History</Text>
+      </View>
+      <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <MaterialIcons name="search" size={18} color="rgba(255,255,255,0.50)" />
           <TextInput
@@ -125,7 +127,6 @@ export default function HistoryScreen() {
               <MaterialIcons name="close" size={16} color="rgba(255,255,255,0.50)" />
             </TouchableOpacity>
           )}
-          
         </View>
       </View>
 
@@ -181,6 +182,25 @@ const styles = StyleSheet.create({
   wrapper: { 
     flex: 1, 
     backgroundColor: '#fff' 
+  },
+
+  topbar: {
+    backgroundColor: '#0E0E95',
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    height: 70,
+    justifyContent: 'center',
+  },
+  barText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
   },
 
   header: { 

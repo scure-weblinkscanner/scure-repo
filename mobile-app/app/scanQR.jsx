@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
 
   errorBanner: {
     position: 'absolute',
-    top: 60,
+    top: 150,
     left: 24,
     right: 24,
     flexDirection: 'row',

@@ -174,7 +174,7 @@ export default function PasteURLScreen() {
               <View style={styles.divider} />
 
               <TouchableOpacity style={styles.pasteRow} onPress={handlePaste} disabled={scanning}>
-                <MaterialIcons name="content-paste" size={18} color="#ffffff" />
+                <MaterialIcons name="content-paste" size={18} color="#FFD60A" />
                 <Text style={styles.pasteText}>Paste from clipboard</Text>
               </TouchableOpacity>
             </View>
@@ -223,7 +223,7 @@ export default function PasteURLScreen() {
               <MaterialIcons
                 name="shield"
                 size={20}
-                color={canScan ? '#ffffff' : 'rgba(255,255,255,0.2)'}
+                color={canScan ? '#000000' : 'rgba(255,255,255,0.2)'}
               />
               <Text style={[styles.scanBtnText, !canScan && styles.scanBtnTextDisabled]}>
                 {url.trim() ? 'Scan this URL' : 'Enter a URL above'}
@@ -239,7 +239,7 @@ export default function PasteURLScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#0A0A0A' },
+  wrapper: { flex: 1, backgroundColor: '#0E0E95' },
   topNav: {
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     borderColor: '#222',
     justifyContent: 'center', 
     gap: 8,
-    backgroundColor: '#141414', 
+    backgroundColor: '#FFD60A', 
     borderRadius: 50, 
     paddingVertical: 17,
   },
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E1E1E' 
   },
   scanBtnText: { 
-    color: '#ffffff', 
+    color: '#000000', 
     fontSize: 16, 
     fontWeight: '700' 
   },
@@ -453,6 +453,6 @@ const styles = StyleSheet.create({
     width: '100%', 
     height: '100%', 
     borderRadius: 50, 
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFD60A',
   },
 });

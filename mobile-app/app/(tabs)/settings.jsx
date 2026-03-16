@@ -31,7 +31,7 @@ return (
 
       <ScrollView
         style={{ width: '100%'}}
-        contentContainerStyle={{ alignItems: 'center', paddingBottom: 40, paddingTop: 180 }}
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: 5, paddingTop: 180 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.rectangle}>

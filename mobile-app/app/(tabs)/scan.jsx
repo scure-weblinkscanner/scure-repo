@@ -69,88 +69,87 @@ export default function ScanScreen() {
 
   if (!fontsLoaded) return <View style={styles.wrapper} />;
 
-  return (
-    <View style={styles.wrapper}>
-      <ImageBackground
-        source={require('../../assets/background.png')}
-        style={{ flex: 1 }}
-        resizeMode="cover"
-      >
-        <SafeAreaView style={{ flex: 1 }}>
-          {/* Top Navigation */}
-          <View style={styles.topNav}>
-            <Image source={require('../../assets/logo.png')} style={{ width: 50, height: 50, marginLeft: -10 }} />
-            <Text style={styles.topNavText}>Scure</Text>
-          </View>
+return (
+  <View style={styles.wrapper}>
+    <SafeAreaView style={{ backgroundColor: '#0E0E95' }} edges={['top']}>
+      <View style={styles.topNav}>
+        <Image source={require('../../assets/logo.png')} style={{ width: 50, height: 50, marginLeft: -10 }} />
+        <Text style={styles.topNavText}>Scure</Text>
+      </View>
+    </SafeAreaView>
 
-          <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 80 }]}
-                      style={{ backgroundColor: 'transparent' }}>
-            {/* Logo Area */}
-            <View style={styles.logoArea}>
-              <Text style={styles.logoText}>Scure</Text>
-              <Text style={styles.logoSub}>Scan Your Link Securely</Text>
-            </View>
-
-            {/* Scan Buttons */}
-            {scanOptions.map((option, index) => {
-              const isLocked = option.premiumOnly && !isPremium;
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[styles.button, isLocked && styles.buttonLocked]}
-                  onPress={() => handleOptionPress(option)}
-                >
-                  <MaterialIcons
-                    name={option.icon}
-                    size={28}
-                    color='#fff'
-                    style={styles.icon}
-                  />
-                  <View style={styles.textContainer}>
-                    <View style={styles.titleRow}>
-                      <Text style={styles.title}>{option.title}</Text>
-                      {isLocked && (
-                        <View style={styles.premiumBadge}>
-                          <MaterialIcons name="lock" size={11} color="#fff" />
-                          <Text style={styles.premiumBadgeText}>Premium</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={styles.description}>{option.description}</Text>
-                  </View>
-                  <MaterialIcons name="chevron-right" size={24} color='rgba(255,255,255,0.5)' />
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </SafeAreaView>
-      </ImageBackground>
-
-      {/* Upgrade Modal */}
-      <Modal
-        transparent
-        animationType="fade"
-        visible={showUpgradeModal}
-        onRequestClose={() => setShowUpgradeModal(false)}
-      >
-        <View style={[styles.modalOverlay, { zIndex: 999 }]}>
-          <View style={styles.modalBox}>
-            <MaterialIcons name="workspace-premium" size={36} color="#f0a500" style={styles.modalIcon} />
-            <Text style={styles.modalTitle}>Upgrade to Premium?</Text>
-            <Text style={styles.modalMessage}>
-              You will be redirected to our website.
-            </Text>
-            <TouchableOpacity style={styles.modalButtonPrimary} onPress={handleUpgradeRedirect}>
-              <Text style={styles.modalButtonPrimaryText}>Yes, redirect me.</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalButtonSecondary} onPress={() => setShowUpgradeModal(false)}>
-              <Text style={styles.modalButtonSecondaryText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+    <ImageBackground
+      source={require('../../assets/background.png')}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 80 }]}
+                  style={{ backgroundColor: 'transparent' }}>
+        {/* Logo Area */}
+        <View style={styles.logoArea}>
+          <Text style={styles.logoText}>Scure</Text>
+          <Text style={styles.logoSub}>Scan Your Link Securely</Text>
         </View>
-      </Modal>
-    </View>
-  );
+
+        {/* Scan Buttons */}
+        {scanOptions.map((option, index) => {
+          const isLocked = option.premiumOnly && !isPremium;
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[styles.button, isLocked && styles.buttonLocked]}
+              onPress={() => handleOptionPress(option)}
+            >
+              <MaterialIcons
+                name={option.icon}
+                size={28}
+                color='#fff'
+                style={styles.icon}
+              />
+              <View style={styles.textContainer}>
+                <View style={styles.titleRow}>
+                  <Text style={styles.title}>{option.title}</Text>
+                  {isLocked && (
+                    <View style={styles.premiumBadge}>
+                      <MaterialIcons name="lock" size={11} color="#fff" />
+                      <Text style={styles.premiumBadgeText}>Premium</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.description}>{option.description}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color='rgba(255,255,255,0.5)' />
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </ImageBackground>
+
+    {/* Upgrade Modal */}
+    <Modal
+      transparent
+      animationType="fade"
+      visible={showUpgradeModal}
+      onRequestClose={() => setShowUpgradeModal(false)}
+    >
+      <View style={[styles.modalOverlay, { zIndex: 999 }]}>
+        <View style={styles.modalBox}>
+          <MaterialIcons name="workspace-premium" size={36} color="#f0a500" style={styles.modalIcon} />
+          <Text style={styles.modalTitle}>Upgrade to Premium?</Text>
+          <Text style={styles.modalMessage}>
+            You will be redirected to our website.
+          </Text>
+          <TouchableOpacity style={styles.modalButtonPrimary} onPress={handleUpgradeRedirect}>
+            <Text style={styles.modalButtonPrimaryText}>Yes, redirect me.</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.modalButtonSecondary} onPress={() => setShowUpgradeModal(false)}>
+            <Text style={styles.modalButtonSecondaryText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
