@@ -23,7 +23,7 @@ const AdminNavbar = () => {
       zIndex: 100,
       fontFamily: "'DM Sans', sans-serif",
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
       {/* Logo */}
       <div
@@ -33,7 +33,7 @@ const AdminNavbar = () => {
         <img src={logo} alt="Scure" style={{ width: 36, height: 36 }} />
         <span style={{
           fontFamily: "'Bodoni Moda', serif",
-          fontWeight: 700,
+          fontWeight: 500,
           fontSize: 22,
           color: '#fff',
           letterSpacing: 1,
@@ -48,6 +48,7 @@ const AdminNavbar = () => {
           { label: 'Dashboard', to: '/admin/dashboard' },
           { label: 'User Accounts', to: '/user-accounts' },
           { label: 'User Profiles', to: '/user-profiles' },
+          { label: 'Tickets', to: '/admin/tickets' },
         ].map(link => (
           <Link
             key={link.to}
