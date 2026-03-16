@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Image} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -12,8 +12,8 @@ export default function SettingsScreen() {
     await logout();
   };
 
-  return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+return (
+    <SafeAreaView style={{flex: 1, backgroundColor: '#0E0E95'}}>
     <ImageBackground
       source={require('../../assets/background.png')}
       style={styles.wrapper}
@@ -25,9 +25,16 @@ export default function SettingsScreen() {
         <Text style={styles.barText}> Settings </Text>
         <View></View>
       </View>
-      <View style={styles.container}>
+
+      {/* White bottom section */}
+      <View style={styles.whiteBottom} />
+
+      <ScrollView
+        style={{ width: '100%'}}
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: 40, paddingTop: 180 }}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.rectangle}>
-          
           <Text style={styles.username}>{account?.uaUsername || 'User'}</Text>
           <Text style={styles.email}>{account?.uaEmail}</Text>
           <View style={styles.freememlogo}>
@@ -35,79 +42,72 @@ export default function SettingsScreen() {
           </View>
           <Image source={require('../../assets/profile.png')} style={styles.circle} />
           <TouchableOpacity style={[styles.button, { marginTop: 20}]} onPress={handleLogout}>
-            <View style ={styles.containerButton}>
-            <Image source={require('../../assets/2.png')} style={styles.icon}/>
-            <Text style={styles.buttonText}>Account Details</Text>
+            <View style={styles.containerButton}>
+              <Image source={require('../../assets/2.png')} style={styles.icon}/>
+              <Text style={styles.buttonText}>Account Details</Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style ={styles.containerButton}>
-            <Image source={require('../../assets/3.png')} style={{ width: 50, height: 50 }} />
-            <Text style={styles.buttonText}>My Subscription</Text>
+            <View style={styles.containerButton}>
+              <Image source={require('../../assets/3.png')} style={{ width: 50, height: 50 }} />
+              <Text style={styles.buttonText}>My Subscription</Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style ={styles.containerButton}>
-            <Image source={require('../../assets/noti.png')} style={{ width: 50, height: 50 }} />
-            <Text style={styles.buttonText}>Notifications</Text>
+            <View style={styles.containerButton}>
+              <Image source={require('../../assets/noti.png')} style={{ width: 50, height: 50 }} />
+              <Text style={styles.buttonText}>Notifications</Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style ={styles.containerButton}>
-            <Image source={require('../../assets/1.png')} style={{ width: 50, height: 50 }} />
-            <Text style={styles.buttonText}>Security Settings</Text>
+            <View style={styles.containerButton}>
+              <Image source={require('../../assets/1.png')} style={{ width: 50, height: 50 }} />
+              <Text style={styles.buttonText}>Security Settings</Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style ={styles.containerButton}>
-            <Image source={require('../../assets/5.png')} style={{ width: 50, height: 50 }} />
-            <Text style={styles.buttonText}>Report an Issue</Text>
+            <View style={styles.containerButton}>
+              <Image source={require('../../assets/5.png')} style={{ width: 50, height: 50 }} />
+              <Text style={styles.buttonText}>Report an Issue</Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style ={styles.containerButton}>
-            <Image source={require('../../assets/6.png')} style={{ width: 50, height: 50 }} />
-            <Text style={styles.buttonText}>Logout</Text>
+            <View style={styles.containerButton}>
+              <Image source={require('../../assets/6.png')} style={{ width: 50, height: 50 }} />
+              <Text style={styles.buttonText}>Logout</Text>
             </View>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
+
     </ImageBackground>
     </SafeAreaView>
-    
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: { flex: 1 },
-  container: {
-    width: '100%' ,
-    height: '85%',
-    backgroundColor: "#D9D9D9",
-    marginTop: 180,
-    alignItems: 'center'   
-  },
   containerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    width: 200
+    width: 200,
   },
   rectangle: {
-    position: 'relative' ,
+    position: 'relative',
     width: '80%',
-    height: '120%',
     borderColor: '#0E0E95',
     borderWidth: 2,
-    backgroundColor: "#D9D9D9",
-    alignItems: 'center' ,
-    top: -70, 
-    borderRadius: 20  
+    backgroundColor: '#D9D9D9',
+    alignItems: 'center',
+    top: -70,
+    borderRadius: 20,
+    paddingBottom: 20,
   },
   topbar: {
     backgroundColor: '#0E0E95',
@@ -115,50 +115,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 70,
-    justifyContent:'space-between'
+    justifyContent: 'space-between',
   },
   barText: {
     color: '#fff',
     fontSize: 17,
-    fontWeight: 700,
-    marginLeft: -60
+    fontWeight: '700',
+    marginLeft: -60,
   },
   backbtn: {
-    justifyContent: 'center', 
+    justifyContent: 'center',
     marginLeft: 10,
     width: 40,
     height: 40,
     borderRadius: 20,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   circle: {
-    width: '100' ,
-    height: '100',
+    width: 100,
+    height: 100,
     borderRadius: 50,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     position: 'absolute',
-    top: -50,               
-    alignSelf: 'center'
+    top: -50,
+    alignSelf: 'center',
   },
-  username: { 
-    fontSize: 24, 
-    fontWeight: 'bold', 
-    textAlign: 'center', 
+  username: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginTop: 45,
-    color: '#0E0E95', 
+    color: '#0E0E95',
   },
-  email: { 
-    fontSize: 16, 
-    color: '#0E0E95', 
-    textAlign: 'center', 
+  email: {
+    fontSize: 16,
+    color: '#0E0E95',
+    textAlign: 'center',
     marginTop: -5,
   },
-  button: { 
-    backgroundColor: '#D9D9D9', 
-    borderRadius: 8, 
+  button: {
+    backgroundColor: '#D9D9D9',
+    borderRadius: 8,
     borderWidth: 1.5,
     borderColor: '#0E0E95',
-    alignItems: 'center', 
+    alignItems: 'center',
     marginBottom: 30,
     width: 280,
     height: 50,
@@ -171,18 +171,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#0E0E95',
     paddingHorizontal: 10,
     paddingVertical: 3,
-    borderRadius:10,
+    borderRadius: 10,
     marginTop: 2,
-  }, 
+  },
   freeText: {
     fontSize: 12,
-    color: "#fff"
-
+    color: '#fff',
   },
-  buttonText: { 
-    color: '#0E0E95', 
-    fontSize: 16, 
+  buttonText: {
+    color: '#0E0E95',
+    fontSize: 16,
     fontWeight: '600',
-
   },
+  whiteBottom: {
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  height: '70%',
+  backgroundColor: '#fff',
+},
 });
