@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ImageBackground
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -18,6 +19,7 @@ import BarcodeScanning from '@react-native-ml-kit/barcode-scanning';
 import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const normalizeUrl = (url) => {
   const u = url.trim().toLowerCase();
@@ -132,10 +134,16 @@ export default function UploadQRScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView style={{ flex: 1}} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.wrapper}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        <ImageBackground
+            source={require('../assets/background.png')}
+            style={styles.wrapper}
+            resizeMode="cover"
+        >
         <View style={styles.topNav}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
             <MaterialIcons name="arrow-back" size={24} color="#fff" />
@@ -250,7 +258,9 @@ export default function UploadQRScreen() {
             </TouchableOpacity>
           )}
         </View>
+        </ImageBackground>
       </KeyboardAvoidingView>
+      </SafeAreaView>
     </>
   );
 }
@@ -258,102 +268,243 @@ export default function UploadQRScreen() {
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#0A0A0A' },
   topNav: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16,
-    backgroundColor: '#0A0A0A',
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    paddingHorizontal: 20, 
+    paddingTop: 16, 
+    paddingBottom: 16,
+    backgroundColor: '#0E0E95',
   },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center',
+    width: 40, 
+    height: 40, 
+    borderRadius: 20,
+    backgroundColor: '#0E0E95', 
+    alignItems: 'center', 
+    justifyContent: 'center',
   },
-  navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
-  content: { paddingHorizontal: 20, paddingBottom: 120 },
-  heroRow: { alignItems: 'center', paddingVertical: 28, gap: 8 },
+  navTitle: { 
+    fontSize: 17, 
+    fontWeight: '700', 
+    color: '#fff' 
+  },
+  content: { 
+    paddingHorizontal: 20, 
+    paddingBottom: 120 
+  },
+  heroRow: { 
+    alignItems: 'center', 
+    paddingVertical: 28, 
+    gap: 8 },
   iconCircle: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center',
-    marginBottom: 4,
+    width: 64, 
+    height: 64, 
+    borderRadius: 32,
+    backgroundColor: '#1E1E1E', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    marginBottom: 4, 
+    borderWidth: 1, 
+    borderColor: '#fff'
   },
-  headline: { fontSize: 24, fontWeight: '800', color: '#fff', letterSpacing: -0.5 },
-  subheadline: { fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 20, paddingHorizontal: 16 },
+  headline: { 
+    fontSize: 24, 
+    fontWeight: '800', 
+    color: '#fff', 
+    letterSpacing: -0.5 
+  },
+  subheadline: { 
+    fontSize: 14, 
+    color: '#fff', 
+    textAlign: 'center', 
+    lineHeight: 20, 
+    paddingHorizontal: 16 
+  },
 
   uploadArea: {
-    backgroundColor: '#141414', borderRadius: 18,
-    borderWidth: 1.5, borderColor: '#2A2A2A', borderStyle: 'dashed',
-    paddingVertical: 48, alignItems: 'center', gap: 10, marginBottom: 16,
-  },
-  uploadTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  uploadSub: { color: '#555', fontSize: 13 },
-
-  imageCard: {
-    backgroundColor: '#141414', borderRadius: 18,
-    borderWidth: 1.5, borderColor: '#222',
-    overflow: 'hidden', marginBottom: 16,
-  },
-  previewImage: { width: '100%', height: 220 },
-  changeBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#222',
-  },
-  changeBtnText: { color: '#FFD60A', fontSize: 14, fontWeight: '600' },
-
-  processingRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#141414', 
+    borderRadius: 18,
+    borderWidth: 1.5, 
+    borderColor: '#2A2A2A', 
+    borderStyle: 'dashed',
+    paddingVertical: 48, 
+    alignItems: 'center', 
+    gap: 10, 
     marginBottom: 16,
   },
-  processingText: { color: '#888', fontSize: 14 },
+  uploadTitle: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: '700' },
+  uploadSub: { 
+    color: '#555', 
+    fontSize: 13 
+  },
+  imageCard: {
+    backgroundColor: '#141414', 
+    borderRadius: 18,
+    borderWidth: 1.5, 
+    borderColor: '#222',
+    overflow: 'hidden', 
+    marginBottom: 16,
+  },
+  previewImage: { 
+    width: '100%', 
+    height: 220 
+  },
+  changeBtn: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 8,
+    paddingVertical: 14, 
+    borderTopWidth: 1, 
+    borderTopColor: '#222',
+  },
+  changeBtnText: { 
+    color: '#FFD60A', 
+    fontSize: 14, 
+    fontWeight: '600' 
+  },
+
+  processingRow: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 8,
+    marginBottom: 16,
+  },
+  processingText: { 
+    color: '#888', 
+    fontSize: 14 
+  },
 
   resultCard: {
-    backgroundColor: '#141414', borderRadius: 18,
-    padding: 16, borderWidth: 1.5, borderColor: '#FFD60A33',
-    marginBottom: 10, gap: 10,
+    backgroundColor: '#141414', 
+    borderRadius: 18,
+    padding: 16, 
+    borderWidth: 1.5, 
+    borderColor: '#FFD60A33',
+    marginBottom: 10, 
+    gap: 10,
   },
-  resultLabel: { fontSize: 10, color: '#FFD60A', fontWeight: '700', letterSpacing: 1.5 },
-  resultRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  resultUrl: { flex: 1, color: '#fff', fontSize: 14, lineHeight: 20 },
-
+  resultLabel: { fontSize: 10, 
+    color: '#FFD60A', 
+    fontWeight: '700', 
+    letterSpacing: 1.5 
+  },
+  resultRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 10 
+  },
+  resultUrl: { 
+    flex: 1, 
+    color: '#fff', 
+    fontSize: 14, 
+    lineHeight: 20 
+  },
   errorRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    marginBottom: 12, paddingHorizontal: 4,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 6,
+    marginBottom: 12, 
+    paddingHorizontal: 4,
   },
-  errorText: { color: '#ff6b6b', fontSize: 13, flex: 1 },
-
+  errorText: { 
+    color: '#ff6b6b', 
+    fontSize: 13, 
+    flex: 1 
+  },
   enginesCard: {
-    backgroundColor: '#141414', borderRadius: 18,
-    padding: 18, borderWidth: 1.5, borderColor: '#222', gap: 12,
+    backgroundColor: '#141414', 
+    borderRadius: 18,
+    padding: 18, 
+    borderWidth: 1.5, 
+    borderColor: '#222', 
+    gap: 12,
   },
-  enginesTitle: { fontSize: 13, fontWeight: '700', color: '#fff' },
-  enginesList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  enginesTitle: { 
+    fontSize: 13, 
+    fontWeight: '700', 
+    color: '#fff' 
+  },
+  enginesList: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 8 
+  },
   engineChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#1E1E1E', borderRadius: 50,
-    paddingVertical: 7, paddingHorizontal: 12,
-    borderWidth: 1, borderColor: '#2A2A2A',
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 6,
+    backgroundColor: '#1E1E1E', 
+    borderRadius: 50,
+    paddingVertical: 7, 
+    paddingHorizontal: 12,
+    borderWidth: 1, 
+    borderColor: '#2A2A2A',
   },
-  engineLabel: { fontSize: 12, color: '#888', fontWeight: '500' },
-
+  engineLabel: { 
+    fontSize: 12, 
+    color: '#888', 
+    fontWeight: '500' 
+  },
   bottomBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#0A0A0A', paddingHorizontal: 20,
-    paddingTop: 12, paddingBottom: 36,
-    borderTopWidth: 1, borderTopColor: '#1E1E1E',
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0,
+    backgroundColor: '#0A0A0A', 
+    paddingHorizontal: 20,
+    paddingTop: 12, 
+    paddingBottom: 36,
+    borderTopWidth: 1, 
+    borderTopColor: '#1E1E1E',
   },
   scanBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#FFD60A', borderRadius: 50, paddingVertical: 17,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 8,
+    backgroundColor: '#FFD60A', 
+    borderRadius: 50, 
+    paddingVertical: 17,
   },
-  scanBtnDisabled: { backgroundColor: '#1E1E1E' },
-  scanBtnText: { color: '#000', fontSize: 16, fontWeight: '700' },
-  scanBtnTextDisabled: { color: 'rgba(255,255,255,0.2)' },
+  scanBtnDisabled: { 
+    backgroundColor: '#1E1E1E' 
+  },
+  scanBtnText: { 
+    color: '#000', 
+    fontSize: 16, 
+    fontWeight: '700' 
+  },
+  scanBtnTextDisabled: { 
+    color: 'rgba(255,255,255,0.2)' 
+  },
   loadingBarContainer: {
-    width: '100%', alignItems: 'center', gap: 10, paddingVertical: 15,
+    width: '100%', 
+    alignItems: 'center', 
+    gap: 10, 
+    paddingVertical: 15,
   },
-  loadingBarLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '500' },
+  loadingBarLabel: { 
+    color: 'rgba(255,255,255,0.6)', 
+    fontSize: 13, 
+    fontWeight: '500' 
+  },
   loadingBarTrack: {
-    width: '100%', height: 4, borderRadius: 50,
-    backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden',
+    width: '100%', 
+    height: 4, 
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.1)', 
+    overflow: 'hidden',
   },
   loadingBarFill: {
-    width: '100%', height: '100%', borderRadius: 50, backgroundColor: '#FFD60A',
+    width: '100%', 
+    height: '100%', 
+    borderRadius: 50, 
+    backgroundColor: '#FFD60A',
   },
 });
