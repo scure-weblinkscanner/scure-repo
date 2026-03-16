@@ -134,7 +134,7 @@ export default function UploadQRScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <SafeAreaView style={{ flex: 1}} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor:"#0E0E95"}} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.wrapper}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
