@@ -1,166 +1,188 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Image} from 'react-native';
 import { useRouter } from 'expo-router';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
-
-const PROFILE_LABELS = {
-  1: { label: 'Admin',   color: '#FF6B6B', bg: 'rgba(255,107,107,0.12)' },
-  2: { label: 'Free',    color: '#aaa',    bg: 'rgba(255,255,255,0.08)' },
-  3: { label: 'Premium', color: '#f0a500', bg: 'rgba(240,165,0,0.12)'   },
-};
-
-const settingsOptions = [
-  { icon: 'manage-accounts', label: 'Account Details'      },
-  { icon: 'card-membership',  label: 'My Subscription'      },
-  { icon: 'notifications',    label: 'Notifications'         },
-  { icon: 'security',         label: 'Security Settings'     },
-  { icon: 'flag',             label: 'Report an Issue'       },
-];
+import { SafeAreaView } from 'react-native-safe-area-context'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { account, logout } = useAuth();
-
-  const profileId = account?.uaUserProfileId;
-  const profileBadge = PROFILE_LABELS[profileId] ?? PROFILE_LABELS[2];
 
   const handleLogout = async () => {
     await logout();
   };
 
   return (
-    <View style={styles.wrapper}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarCircle}>
-            <MaterialIcons name="person" size={56} color="rgba(255,255,255,0.6)" />
-          </View>
+    <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+    <ImageBackground
+      source={require('../../assets/background.png')}
+      style={styles.wrapper}
+      resizeMode="cover">
+      <View style={styles.topbar}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backbtn}>
+          <MaterialIcons name="arrow-back" size={24} color='#fff'></MaterialIcons>
+        </TouchableOpacity>
+        <Text style={styles.barText}> Settings </Text>
+        <View></View>
+      </View>
+      <View style={styles.container}>
+        <View style={styles.rectangle}>
+          
           <Text style={styles.username}>{account?.uaUsername || 'User'}</Text>
           <Text style={styles.email}>{account?.uaEmail}</Text>
-          <View style={[styles.badge, { backgroundColor: profileBadge.bg, borderColor: profileBadge.color }]}>
-            <Text style={[styles.badgeText, { color: profileBadge.color }]}>{profileBadge.label}</Text>
+          <View style={styles.freememlogo}>
+            <Text style={styles.freeText}> Free Member </Text>
           </View>
+          <Image source={require('../../assets/profile.png')} style={styles.circle} />
+          <TouchableOpacity style={[styles.button, { marginTop: 20}]} onPress={handleLogout}>
+            <View style ={styles.containerButton}>
+            <Image source={require('../../assets/2.png')} style={styles.icon}/>
+            <Text style={styles.buttonText}>Account Details</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogout}>
+            <View style ={styles.containerButton}>
+            <Image source={require('../../assets/3.png')} style={{ width: 50, height: 50 }} />
+            <Text style={styles.buttonText}>My Subscription</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogout}>
+            <View style ={styles.containerButton}>
+            <Image source={require('../../assets/noti.png')} style={{ width: 50, height: 50 }} />
+            <Text style={styles.buttonText}>Notifications</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogout}>
+            <View style ={styles.containerButton}>
+            <Image source={require('../../assets/1.png')} style={{ width: 50, height: 50 }} />
+            <Text style={styles.buttonText}>Security Settings</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogout}>
+            <View style ={styles.containerButton}>
+            <Image source={require('../../assets/5.png')} style={{ width: 50, height: 50 }} />
+            <Text style={styles.buttonText}>Report an Issue</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogout}>
+            <View style ={styles.containerButton}>
+            <Image source={require('../../assets/6.png')} style={{ width: 50, height: 50 }} />
+            <Text style={styles.buttonText}>Logout</Text>
+            </View>
+          </TouchableOpacity>
         </View>
-
-        {/* Settings Options */}
-        <View style={styles.optionsSection}>
-          {settingsOptions.map((option, index) => (
-            <TouchableOpacity key={index} style={styles.optionRow} activeOpacity={0.7}>
-              <View style={styles.optionLeft}>
-                <MaterialIcons name={option.icon} size={22} color="rgba(255,255,255,0.7)" />
-                <Text style={styles.optionLabel}>{option.label}</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={22} color="rgba(255,255,255,0.25)" />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
-          <MaterialIcons name="logout" size={20} color="#FF6B6B" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-
-      </ScrollView>
-    </View>
+      </View>
+    </ImageBackground>
+    </SafeAreaView>
+    
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
+  wrapper: { flex: 1 },
   container: {
-    paddingHorizontal: 24,
-    paddingTop: 72,
-    paddingBottom: 40,
+    width: '100%' ,
+    height: '85%',
+    backgroundColor: "#D9D9D9",
+    marginTop: 180,
+    alignItems: 'center'   
   },
-
-  // Profile
-  profileSection: {
+  containerButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 36,
+    justifyContent: 'flex-start',
+    width: 200
   },
-  avatarCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+  rectangle: {
+    position: 'relative' ,
+    width: '80%',
+    height: '120%',
+    borderColor: '#0E0E95',
+    borderWidth: 2,
+    backgroundColor: "#D9D9D9",
+    alignItems: 'center' ,
+    top: -70, 
+    borderRadius: 20  
+  },
+  topbar: {
+    backgroundColor: '#0E0E95',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
+    width: '100%',
+    height: 70,
+    justifyContent:'space-between'
   },
-  username: {
+  barText: {
     color: '#fff',
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontSize: 17,
+    fontWeight: 700,
+    marginLeft: -60
   },
-  email: {
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: 14,
-    marginBottom: 12,
+  backbtn: {
+    justifyContent: 'center', 
+    marginLeft: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center'
   },
-  badge: {
-    paddingHorizontal: 14,
-    paddingVertical: 4,
+  circle: {
+    width: '100' ,
+    height: '100',
     borderRadius: 50,
-    borderWidth: 1,
+    backgroundColor: "#fff",
+    position: 'absolute',
+    top: -50,               
+    alignSelf: 'center'
   },
-  badgeText: {
+  username: { 
+    fontSize: 24, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    marginTop: 45,
+    color: '#0E0E95', 
+  },
+  email: { 
+    fontSize: 16, 
+    color: '#0E0E95', 
+    textAlign: 'center', 
+    marginTop: -5,
+  },
+  button: { 
+    backgroundColor: '#D9D9D9', 
+    borderRadius: 8, 
+    borderWidth: 1.5,
+    borderColor: '#0E0E95',
+    alignItems: 'center', 
+    marginBottom: 30,
+    width: 280,
+    height: 50,
+  },
+  icon: {
+    width: 50,
+    height: 50,
+  },
+  freememlogo: {
+    backgroundColor: '#0E0E95',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius:10,
+    marginTop: 2,
+  }, 
+  freeText: {
     fontSize: 12,
-    fontWeight: '700',
-  },
+    color: "#fff"
 
-  // Options
-  optionsSection: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    marginBottom: 16,
-    overflow: 'hidden',
   },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
-  },
-  optionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  optionLabel: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '500',
-  },
-
-  // Logout
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: 'rgba(255,107,107,0.08)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,107,107,0.2)',
-    paddingVertical: 16,
-    marginTop: 8,
-  },
-  logoutText: {
-    color: '#FF6B6B',
-    fontSize: 15,
+  buttonText: { 
+    color: '#0E0E95', 
+    fontSize: 16, 
     fontWeight: '600',
+
   },
 });
