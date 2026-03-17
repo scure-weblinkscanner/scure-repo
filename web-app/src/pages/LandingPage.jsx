@@ -108,7 +108,7 @@ const reviews = [
   },
 ]
 
-const tabs = ['App Features', 'Feature Comparison', 'Reviews']
+const tabs = ['App Features', 'Feature Comparison', 'Reviews', 'App Download']
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState('App Features')
@@ -436,6 +436,151 @@ export default function LandingPage() {
             </div>
           </div>
         )}
+
+        {/* App Download */}
+        {activeTab === 'App Download' && (
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: 48 }}>
+              <h2 style={{ fontFamily: "'Bodoni Moda', serif", fontSize: 36, fontWeight: 700, margin: '0 0 12px' }}>
+                Get the App
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15 }}>
+                Scan links on the go — available on Android now.
+              </p>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 20,
+              maxWidth: 640,
+              margin: '0 auto',
+            }}>
+              {/* Android */}
+              <div
+              onClick={() => window.location.href = '/downloads/scure.apk'}
+              style={{
+                background: 'rgba(74,255,145,0.06)',
+                border: '1px solid rgba(74,255,145,0.25)',
+                borderRadius: 24,
+                padding: '32px 28px',
+                textDecoration: 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 16,
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(74,255,145,0.1)'
+                e.currentTarget.style.borderColor = 'rgba(74,255,145,0.5)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(74,255,145,0.06)'
+                e.currentTarget.style.borderColor = 'rgba(74,255,145,0.25)'
+              }}
+            >
+                <div style={{
+                  width: 64, height: 64, borderRadius: 20,
+                  background: 'rgba(74,255,145,0.12)',
+                  border: '1px solid rgba(74,255,145,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4AFF91" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                    <path d="M8 12l4 4 4-4M12 8v8"/>
+                  </svg>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: '#4AFF91', marginBottom: 6 }}>
+                    Available Now
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 4, fontFamily: "'Bodoni Moda', serif" }}>
+                    Android
+                  </div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
+                    Download APK · Free
+                  </div>
+                </div>
+                <div style={{
+                  background: '#4AFF91',
+                  color: '#000',
+                  borderRadius: 10,
+                  padding: '10px 28px',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  fontFamily: "'DM Sans', sans-serif",
+                  width: '100%',
+                  textAlign: 'center',
+                }}>
+                  Download APK
+                </div>
+              </div>
+
+              {/* iOS — coming soon */}
+              <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 24,
+                padding: '32px 28px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 16,
+                opacity: 0.5,
+                cursor: 'not-allowed',
+              }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: 20,
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
+                    Coming Soon
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: "'Bodoni Moda', serif" }}>
+                    iOS
+                  </div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>
+                    App Store · In Development
+                  </div>
+                </div>
+                <div style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'rgba(255,255,255,0.25)',
+                  borderRadius: 10,
+                  padding: '10px 28px',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  fontFamily: "'DM Sans', sans-serif",
+                  width: '100%',
+                  textAlign: 'center',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}>
+                  Not Available Yet
+                </div>
+              </div>
+            </div>
+
+            {/* Install note */}
+            <p style={{
+              textAlign: 'center', marginTop: 32,
+              fontSize: 13, color: 'rgba(255,255,255,0.25)',
+              maxWidth: 480, margin: '32px auto 0',
+            }}>
+              For Android: download the APK, enable "Install from unknown sources" in your device settings, then open the file to install.
+            </p>
+          </div>
+        )}
+        
+        
       </div>
     </div>
   )
