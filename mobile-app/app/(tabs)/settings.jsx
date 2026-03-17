@@ -4,88 +4,103 @@ import { useAuth } from '../../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
+const PROFILE_LABELS = {
+  1: { label: 'Admin', color: '#FF6B6B' },
+  2: { label: 'Free Member', color: '#fff' },
+  3: { label: 'Premium', color: '#f0a500' },
+};
+
 export default function SettingsScreen() {
   const router = useRouter();
   const { account, logout } = useAuth();
+
+  const profileId = account?.uaUserProfileId;
+  const profileBadge = PROFILE_LABELS[profileId] ?? PROFILE_LABELS[2];
 
   const handleLogout = async () => {
     await logout();
   };
 
-return (
+  return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#0E0E95'}}>
-    <ImageBackground
-      source={require('../../assets/background.png')}
-      style={styles.wrapper}
-      resizeMode="cover">
-      <View style={styles.topbar}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backbtn}>
-          <MaterialIcons name="arrow-back" size={24} color='#fff'></MaterialIcons>
-        </TouchableOpacity>
-        <Text style={styles.barText}> Settings </Text>
-        <View></View>
-      </View>
-
-      {/* White bottom section */}
-      <View style={styles.whiteBottom} />
-
-      <ScrollView
-        style={{ width: '100%'}}
-        contentContainerStyle={{ alignItems: 'center', paddingBottom: 5, paddingTop: 180 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.rectangle}>
-          <Text style={styles.username}>{account?.uaUsername || 'User'}</Text>
-          <Text style={styles.email}>{account?.uaEmail}</Text>
-          <View style={styles.freememlogo}>
-            <Text style={styles.freeText}> Free Member </Text>
-          </View>
-          <Image source={require('../../assets/profile.png')} style={styles.circle} />
-          <TouchableOpacity style={[styles.button, { marginTop: 20}]} onPress={handleLogout}>
-            <View style={styles.containerButton}>
-              <Image source={require('../../assets/2.png')} style={styles.icon}/>
-              <Text style={styles.buttonText}>Account Details</Text>
-            </View>
+      <ImageBackground
+        source={require('../../assets/background.png')}
+        style={styles.wrapper}
+        resizeMode="cover">
+        <View style={styles.topbar}>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backbtn}>
+            <MaterialIcons name="arrow-back" size={24} color='#fff' />
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style={styles.containerButton}>
-              <Image source={require('../../assets/3.png')} style={{ width: 50, height: 50 }} />
-              <Text style={styles.buttonText}>My Subscription</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style={styles.containerButton}>
-              <Image source={require('../../assets/noti.png')} style={{ width: 50, height: 50 }} />
-              <Text style={styles.buttonText}>Notifications</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style={styles.containerButton}>
-              <Image source={require('../../assets/1.png')} style={{ width: 50, height: 50 }} />
-              <Text style={styles.buttonText}>Security Settings</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style={styles.containerButton}>
-              <Image source={require('../../assets/5.png')} style={{ width: 50, height: 50 }} />
-              <Text style={styles.buttonText}>Report an Issue</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <View style={styles.containerButton}>
-              <Image source={require('../../assets/6.png')} style={{ width: 50, height: 50 }} />
-              <Text style={styles.buttonText}>Logout</Text>
-            </View>
-          </TouchableOpacity>
+          <Text style={styles.barText}> Settings </Text>
+          <View />
         </View>
-      </ScrollView>
 
-    </ImageBackground>
+        {/* White bottom section */}
+        <View style={styles.whiteBottom} />
+
+        <ScrollView
+          style={{ width: '100%' }}
+          contentContainerStyle={{ alignItems: 'center', paddingBottom: 40, paddingTop: 180 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.rectangle}>
+            <Text style={styles.username}>{account?.uaUsername || 'User'}</Text>
+            <Text style={styles.email}>{account?.uaEmail}</Text>
+
+            {/* Dynamic badge */}
+            <View style={styles.freememlogo}>
+              <Text style={[styles.freeText, { color: profileBadge.color }]}>
+                {profileBadge.label}
+              </Text>
+            </View>
+
+            <Image source={require('../../assets/profile.png')} style={styles.circle} />
+
+            <TouchableOpacity style={[styles.button, { marginTop: 20 }]} onPress={() => router.push('/accountDetails')}>
+              <View style={styles.containerButton}>
+                <Image source={require('../../assets/2.png')} style={styles.icon} />
+                <Text style={styles.buttonText}>Account Details</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={() => router.push('/subscription')}>
+              <View style={styles.containerButton}>
+                <Image source={require('../../assets/3.png')} style={{ width: 50, height: 50 }} />
+                <Text style={styles.buttonText}>My Subscription</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={() => router.push('/notifications')}>
+              <View style={styles.containerButton}>
+                <Image source={require('../../assets/noti.png')} style={{ width: 50, height: 50 }} />
+                <Text style={styles.buttonText}>Notifications</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={() => router.push('/securitySettings')}>
+              <View style={styles.containerButton}>
+                <Image source={require('../../assets/1.png')} style={{ width: 50, height: 50 }} />
+                <Text style={styles.buttonText}>Security Settings</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={() => router.push('/submitTicket')}>
+              <View style={styles.containerButton}>
+                <Image source={require('../../assets/5.png')} style={{ width: 50, height: 50 }} />
+                <Text style={styles.buttonText}>Report an Issue</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={handleLogout}>
+              <View style={styles.containerButton}>
+                <Image source={require('../../assets/6.png')} style={{ width: 50, height: 50 }} />
+                <Text style={styles.buttonText}>Logout</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+      </ImageBackground>
     </SafeAreaView>
   );
 }
@@ -176,7 +191,7 @@ const styles = StyleSheet.create({
   },
   freeText: {
     fontSize: 12,
-    color: '#fff',
+    fontWeight: '600',
   },
   buttonText: {
     color: '#0E0E95',
@@ -184,11 +199,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   whiteBottom: {
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  height: '70%',
-  backgroundColor: '#fff',
-},
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '70%',
+    backgroundColor: '#fff',
+  },
 });
