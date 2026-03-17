@@ -1,5 +1,5 @@
 import { analyzeURL } from '../services/scan.service.js';
-import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans } from '../services/scanHistory.service.js';
+import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans, getScanActivity, getAllScansAdmin } from '../services/scanHistory.service.js'
 import jwt from 'jsonwebtoken';
 
 export const analyzeScan = async (req, res) => {
@@ -53,6 +53,29 @@ export const publishScan = async (req, res) => {
 export const getPublicScansList = async (req, res) => {
   try {
     const scans = await getPublicScans()
+    res.status(200).json({ scans })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+export const getScanActivityController = async (req, res) => {
+  try {
+    const { period } = req.query
+    const validPeriods = ['daily', 'weekly', 'monthly']
+    if (!validPeriods.includes(period)) {
+      return res.status(400).json({ message: 'Invalid period. Use daily, weekly, or monthly' })
+    }
+    const data = await getScanActivity(period)
+    res.status(200).json({ data })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+export const getAllScansAdminController = async (req, res) => {
+  try {
+    const scans = await getAllScansAdmin()
     res.status(200).json({ scans })
   } catch (error) {
     res.status(500).json({ message: error.message })

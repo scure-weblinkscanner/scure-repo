@@ -28,3 +28,11 @@ export const publishScanHistory = async (shId, userId) => {
 export const getPublicScans = async () => {
   return await scanHistoryDb.getPublicScans()
 }
+
+export const getScanActivity = async (period) => {
+  return await scanHistoryDb.getScanActivity(period)
+}
+
+export const getAllScansAdmin = async () => {
+  return await scanHistoryDb.getAllScansAdmin()
+}

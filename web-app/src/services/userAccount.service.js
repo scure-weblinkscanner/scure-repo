@@ -1,15 +1,5 @@
 const BASE_URL = 'http://localhost:5000/api/userAccount'
 
-export const createUserAccount = async (req, res) => {
-  try {
-    const result = await userAccountService.createUserAccount(req.body)
-    res.status(201).json(result)
-  } catch (error) {
-    console.error('createUserAccount error:', error.message)
-    res.status(500).json({ error: error.message })
-  }
-}
-
 export const getAllUserAccounts = async () => {
   const res = await fetch(`${BASE_URL}`)
   if (!res.ok) throw new Error('Failed to fetch user accounts')
@@ -60,8 +50,10 @@ export const registerUserAccount = async (username, email, password) => {
   return await res.json()
 }
 
-export const loginUserAccount = async (uaEmail, uaPassword) => {
-  const response = await fetch(`${BASE_URL}/login/admin`, {
+export const loginUserAccount = async (uaEmail, uaPassword, loginAs = 'user') => {
+  const endpoint = loginAs === 'admin' ? '/login/admin' : '/login'
+  
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ uaEmail, uaPassword }),
