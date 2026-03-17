@@ -100,16 +100,18 @@ export default function HistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.wrapper, { backgroundColor: '#0E0E95' }]} edges={['top']}>
-      {/* Header */}
+    <View style={{flex: 1}}>
+      <SafeAreaView style={styles.wrapper} edges={['top']}>
+        <View style={styles.topbar}>
+          <Text style={styles.barText}>Scan History</Text>
+        </View>
+      </SafeAreaView>
+
       <ImageBackground
         source={require('../../assets/background.png')}
-        style={styles.wrapper}
+        style={{flex: 1}}
         resizeMode="cover"
       >
-      <View style={styles.topbar}>
-        <Text style={styles.barText}>Scan History</Text>
-      </View>
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <MaterialIcons name="search" size={18} color="rgba(255,255,255,0.50)" />
@@ -129,7 +131,7 @@ export default function HistoryScreen() {
           )}
         </View>
       </View>
-
+      
       {/* List */}
       {loading ? (
         <View style={styles.centered}>
@@ -160,7 +162,8 @@ export default function HistoryScreen() {
           }
         />
       )}
-
+      </ImageBackground>
+      
       {/* Stats footer — excluded from scroll */}
       {!loading && !error && (
         <View style={styles.statsBar}>
@@ -173,15 +176,13 @@ export default function HistoryScreen() {
           </Text>
         </View>
       )}
-      </ImageBackground>
-    </SafeAreaView>
+     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { 
-    flex: 1, 
-    backgroundColor: '#fff' 
+  wrapper: {  
+    backgroundColor: '#0E0E95' 
   },
 
   topbar: {
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   listContent: { 
     paddingHorizontal: 16, 
     paddingTop: 8, 
-    paddingBottom: 16, 
+    paddingBottom: 50, 
     gap: 10 
   },
   item: {
