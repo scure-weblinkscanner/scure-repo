@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Image, Linking,
+  TouchableOpacity, Image, Linking, ImageBackground
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -128,7 +128,11 @@ export default function PublicScanResultScreen() {
   const username = item.userAccount?.uaUsername ?? 'Unknown';
 
   return (
-    <View style={styles.wrapper}>
+    <ImageBackground
+    source={require('../assets/background.png')}
+    style={styles.wrapper}
+    resizeMode="cover"
+    >
       {/* Back button */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
         <MaterialIcons name="arrow-back" size={22} color="#fff" />
@@ -327,7 +331,7 @@ export default function PublicScanResultScreen() {
 
         <View style={{ height: 32 }} />
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
 

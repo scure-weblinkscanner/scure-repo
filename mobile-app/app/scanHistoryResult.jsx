@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Image, Linking, Modal,
+  TouchableOpacity, Image, Linking, ImageBackground
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useAuth } from '../context/AuthContext';
-import { publishScanHistory } from '../services/scanApi.service';
 
 const verdictConfig = {
   clean:      { color: '#4AFF91', bg: 'rgba(74,255,145,0.12)',  icon: 'check-circle', label: 'Safe'       },
@@ -120,41 +118,21 @@ const ScannerRow = ({ name, verdict, detail }) => (
   </View>
 );
 
-export default function ScanHistoryResultScreen() {
+export default function PublicScanResultScreen() {
   const router = useRouter();
-  const { token } = useAuth();
   const { item: itemParam } = useLocalSearchParams();
   const item = JSON.parse(itemParam);
 
-  const [isPublished, setIsPublished] = useState(item.shScanVisibility === 'public');
-  const [publishing, setPublishing] = useState(false);
-  const [showPublishModal, setShowPublishModal] = useState(false);
-  const [publishError, setPublishError] = useState('');
-
   const vc = getVc(item.shVerdict);
   const u = item.shUrlscan;
-
-    const handlePublish = () => {
-    if (isPublished) return;
-    setPublishError('');
-    setShowPublishModal(true);
-    };
-
-    const confirmPublish = async () => {
-    try {
-        setPublishing(true);
-        await publishScanHistory(item.shId, token);
-        setIsPublished(true);
-        setShowPublishModal(false);
-    } catch (err) {
-        setPublishError(err.message);
-    } finally {
-        setPublishing(false);
-    }
-    };
+  const username = item.userAccount?.uaUsername ?? 'Unknown';
 
   return (
-    <View style={styles.wrapper}>
+    <ImageBackground
+    source={require('../assets/background.png')}
+    style={styles.wrapper}
+    resizeMode="cover"
+    >
       {/* Back button */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
         <MaterialIcons name="arrow-back" size={22} color="#fff" />
@@ -176,6 +154,10 @@ export default function ScanHistoryResultScreen() {
           </Text>
           <Text style={styles.heroUrl} numberOfLines={3}>{item.shUrl}</Text>
           <Text style={styles.heroSuggestion}>{item.shSuggestion}</Text>
+          <View style={styles.scannedByRow}>
+            <MaterialIcons name="person" size={13} color="rgba(255,255,255,0.35)" />
+            <Text style={styles.scannedByText}>Scanned by {username}</Text>
+          </View>
           {u?.categories?.length > 0 && (
             <View style={styles.tagsRow}>
               {u.categories.map((c, i) => <Tag key={i} label={c} color="#FFD60A" />)}
@@ -347,76 +329,9 @@ export default function ScanHistoryResultScreen() {
           </CollapsibleCard>
         )}
 
-        <View style={{ height: 16 }} />
+        <View style={{ height: 32 }} />
       </ScrollView>
-
-      {/* Publish button — fixed at bottom, excluded from scroll */}
-      <View style={styles.publishBar}>
-        <TouchableOpacity
-          style={[styles.publishBtn, isPublished && styles.publishBtnDone]}
-          onPress={handlePublish}
-          disabled={isPublished || publishing}
-          activeOpacity={0.8}
-        >
-          <MaterialIcons
-            name={isPublished ? 'public' : 'upload'}
-            size={18}
-            color={isPublished ? '#4AFF91' : '#000'}
-          />
-          <Text style={[styles.publishBtnText, isPublished && { color: '#4AFF91' }]}>
-            {publishing ? 'Publishing...' : isPublished ? 'Published' : 'Publish'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-    {/* Publish Confirm Modal */}
-    <Modal
-    transparent
-    animationType="fade"
-    visible={showPublishModal}
-    onRequestClose={() => setShowPublishModal(false)}
-    >
-    <View style={styles.modalOverlay}>
-        <View style={styles.modalBox}>
-        <View style={styles.modalIconCircle}>
-            <MaterialIcons name="public" size={28} color="#fff" />
-        </View>
-        <Text style={styles.modalTitle}>Publish this scan?</Text>
-        <Text style={styles.modalMessage}>
-            This scan result will be visible to all premium users in the Public Scans feed.
-        </Text>
-        <View style={styles.modalUrlBox}>
-            <MaterialIcons name="link" size={14} color="rgba(255,255,255,0.4)" />
-            <Text style={styles.modalUrl} numberOfLines={2}>{item.shUrl}</Text>
-        </View>
-        {publishError ? (
-            <View style={styles.modalError}>
-            <MaterialIcons name="error-outline" size={14} color="#FF6B6B" />
-            <Text style={styles.modalErrorText}>{publishError}</Text>
-            </View>
-        ) : null}
-        <TouchableOpacity
-            style={styles.modalBtnPrimary}
-            onPress={confirmPublish}
-            disabled={publishing}
-            activeOpacity={0.85}
-        >
-            <MaterialIcons name="public" size={18} color="#000" />
-            <Text style={styles.modalBtnPrimaryText}>
-            {publishing ? 'Publishing...' : 'Yes, publish it'}
-            </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-            style={styles.modalBtnSecondary}
-            onPress={() => setShowPublishModal(false)}
-            disabled={publishing}
-        >
-            <Text style={styles.modalBtnSecondaryText}>Cancel</Text>
-        </TouchableOpacity>
-        </View>
-    </View>
-    </Modal>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -436,6 +351,8 @@ const styles = StyleSheet.create({
   heroMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
   heroUrl: { color: 'rgba(255,255,255,0.45)', fontSize: 12, textAlign: 'center', marginTop: 4, fontFamily: 'monospace' },
   heroSuggestion: { color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center', marginTop: 4, lineHeight: 20 },
+  scannedByRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+  scannedByText: { color: 'rgba(255,255,255,0.35)', fontSize: 12 },
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, justifyContent: 'center' },
 
   card: {
@@ -486,77 +403,4 @@ const styles = StyleSheet.create({
   cookieName: { color: '#fff', fontSize: 12, fontFamily: 'monospace', flex: 1 },
   cookieBadges: { flexDirection: 'row', gap: 4 },
   linkText: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontFamily: 'monospace' },
-
-  publishBar: {
-    paddingHorizontal: 20, paddingVertical: 14,
-    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: '#0a0a0a',
-  },
-  publishBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#fff', borderRadius: 50,
-    paddingVertical: 14,
-  },
-  publishBtnDone: {
-    backgroundColor: 'rgba(74,255,145,0.1)',
-    borderWidth: 1, borderColor: 'rgba(74,255,145,0.3)',
-  },
-  publishBtnText: { color: '#000', fontSize: 15, fontWeight: '700' },
-
-    modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    },
-    modalBox: {
-    backgroundColor: '#141414',
-    borderRadius: 24,
-    padding: 24,
-    width: '100%',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    gap: 12,
-    },
-    modalIconCircle: {
-    width: 56, height: 56, borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 4,
-    },
-    modalTitle: {
-    color: '#fff', fontSize: 18, fontWeight: '800', textAlign: 'center',
-    },
-    modalMessage: {
-    color: 'rgba(255,255,255,0.5)', fontSize: 13,
-    textAlign: 'center', lineHeight: 20,
-    },
-    modalUrlBox: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 10, padding: 12, width: '100%',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    },
-    modalUrl: {
-    color: 'rgba(255,255,255,0.4)', fontSize: 11,
-    fontFamily: 'monospace', flex: 1,
-    },
-    modalError: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(255,107,107,0.1)',
-    borderRadius: 8, padding: 10, width: '100%',
-    },
-    modalErrorText: { color: '#FF6B6B', fontSize: 12, flex: 1 },
-    modalBtnPrimary: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#fff', borderRadius: 50,
-    paddingVertical: 14, width: '100%', marginTop: 4,
-    },
-    modalBtnPrimaryText: { color: '#000', fontWeight: '700', fontSize: 15 },
-    modalBtnSecondary: {
-    paddingVertical: 10,
-    },
-    modalBtnSecondaryText: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
 });
