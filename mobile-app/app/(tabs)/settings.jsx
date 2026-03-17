@@ -1,20 +1,29 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  ImageBackground,
+  Image,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PROFILE_LABELS = {
-  1: { label: 'Admin',   color: '#FF6B6B', bg: 'rgba(255,107,107,0.12)' },
-  2: { label: 'Free',    color: '#aaa',    bg: 'rgba(255,255,255,0.08)' },
-  3: { label: 'Premium', color: '#f0a500', bg: 'rgba(240,165,0,0.12)'   },
+  1: { label: 'Admin', color: '#FF6B6B' },
+  2: { label: 'Free Member', color: '#0E0E95' },
+  3: { label: 'Premium', color: '#f0a500' },
 };
 
 const settingsOptions = [
-  { icon: 'manage-accounts', label: 'Account Details',  route: '/accountDetails'      },
-  { icon: 'card-membership',  label: 'My Subscription'      },
-  { icon: 'notifications',    label: 'Notifications'         },
-  { icon: 'security',         label: 'Security Settings'     },
-  { icon: 'flag',             label: 'Report an Issue'       },
+  { icon: 'manage-accounts', label: 'Account Details', route: '/accountDetails' },
+  { icon: 'card-membership', label: 'My Subscription' },
+  { icon: 'notifications', label: 'Notifications' },
+  { icon: 'security', label: 'Security Settings' },
+  { icon: 'flag', label: 'Report an Issue' },
 ];
 
 export default function SettingsScreen() {
@@ -29,140 +38,198 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarCircle}>
-            <MaterialIcons name="person" size={56} color="rgba(255,255,255,0.6)" />
-          </View>
-          <Text style={styles.username}>{account?.uaUsername || 'User'}</Text>
-          <Text style={styles.email}>{account?.uaEmail}</Text>
-          <View style={[styles.badge, { backgroundColor: profileBadge.bg, borderColor: profileBadge.color }]}>
-            <Text style={[styles.badgeText, { color: profileBadge.color }]}>{profileBadge.label}</Text>
-          </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0E95' }}>
+      <ImageBackground
+        source={require('../../assets/background.png')}
+        style={styles.wrapper}
+        resizeMode="cover"
+      >
+        {/* Top Bar */}
+        <View style={styles.topbar}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backbtn}>
+            <MaterialIcons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.barText}>Settings</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-        {/* Settings Options */}
-        <View style={styles.optionsSection}>
-          {settingsOptions.map((option, index) => (
-            <TouchableOpacity key={index} style={styles.optionRow} activeOpacity={0.7} 
-              onPress={() => { if (option.route) router.push(option.route); }}>
-              <View style={styles.optionLeft}>
-                <MaterialIcons name={option.icon} size={22} color="rgba(255,255,255,0.7)" />
-                <Text style={styles.optionLabel}>{option.label}</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={22} color="rgba(255,255,255,0.25)" />
+        {/* White bottom */}
+        <View style={styles.whiteBottom} />
+
+        <ScrollView
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Profile Card */}
+          <View style={styles.card}>
+            <Image
+              source={require('../../assets/profile.png')}
+              style={styles.avatar}
+            />
+
+            <Text style={styles.username}>
+              {account?.uaUsername || 'User'}
+            </Text>
+            <Text style={styles.email}>{account?.uaEmail}</Text>
+
+            <View style={styles.badge}>
+              <Text style={[styles.badgeText, { color: profileBadge.color }]}>
+                {profileBadge.label}
+              </Text>
+            </View>
+
+            {/* Options */}
+            {settingsOptions.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.option}
+                onPress={() => {
+                  if (option.route) router.push(option.route);
+                }}
+              >
+                <View style={styles.optionLeft}>
+                  <MaterialIcons
+                    name={option.icon}
+                    size={22}
+                    color="#0E0E95"
+                  />
+                  <Text style={styles.optionText}>{option.label}</Text>
+                </View>
+                <MaterialIcons
+                  name="chevron-right"
+                  size={22}
+                  color="rgba(0,0,0,0.3)"
+                />
+              </TouchableOpacity>
+            ))}
+
+            {/* Logout */}
+            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+              <MaterialIcons name="logout" size={20} color="#FF6B6B" />
+              <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
-          <MaterialIcons name="logout" size={20} color="#FF6B6B" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-
-      </ScrollView>
-    </View>
+          </View>
+        </ScrollView>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
+  wrapper: { flex: 1 },
+
   container: {
-    paddingHorizontal: 24,
-    paddingTop: 72,
+    alignItems: 'center',
+    paddingTop: 180,
     paddingBottom: 40,
   },
 
-  // Profile
-  profileSection: {
+  // Top bar
+  topbar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 36,
+    height: 70,
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
   },
-  avatarCircle: {
+  barText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  backbtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Card
+  card: {
+    width: '85%',
+    backgroundColor: '#D9D9D9',
+    borderRadius: 20,
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 20,
+    borderWidth: 2,
+    borderColor: '#0E0E95',
+  },
+
+  avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
+    position: 'absolute',
+    top: -50,
   },
+
   username: {
-    color: '#fff',
     fontSize: 22,
     fontWeight: '700',
-    marginBottom: 4,
+    color: '#0E0E95',
   },
   email: {
-    color: 'rgba(255,255,255,0.45)',
     fontSize: 14,
-    marginBottom: 12,
+    color: '#0E0E95',
+    marginBottom: 8,
   },
+
   badge: {
-    paddingHorizontal: 14,
+    backgroundColor: '#0E0E95',
+    paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 50,
-    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 20,
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
+    color: '#fff',
   },
 
   // Options
-  optionsSection: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  optionRow: {
+  option: {
+    width: '90%',
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#0E0E95',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: 14,
+    marginBottom: 15,
   },
   optionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 10,
   },
-  optionLabel: {
-    color: '#fff',
+  optionText: {
     fontSize: 15,
+    color: '#0E0E95',
     fontWeight: '500',
   },
 
   // Logout
   logoutBtn: {
+    marginTop: 10,
     flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: 'rgba(255,107,107,0.08)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,107,107,0.2)',
-    paddingVertical: 16,
-    marginTop: 8,
   },
   logoutText: {
     color: '#FF6B6B',
-    fontSize: 15,
     fontWeight: '600',
+  },
+
+  // Background split
+  whiteBottom: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: '70%',
+    backgroundColor: '#fff',
   },
 });
