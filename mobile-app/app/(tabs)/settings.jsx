@@ -32,7 +32,7 @@ export default function SettingsScreen() {
 return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#0E0E95'}}>
     <ImageBackground
-      source={require('../../assets/logo.png')}
+      source={require('../../assets/background.png')}
       style={styles.wrapper}
       resizeMode="cover">
       <View style={styles.topbar}>
@@ -62,7 +62,7 @@ return (
             </Text>
           </View>
 
-          <Image source={require('../../assets/logo.png')} style={styles.circle} />
+          <Image source={require('../../assets/profile.png')} style={styles.circle} />
 
           {/* Settings options */}
           {settingsOptions.map((option, index) => (
