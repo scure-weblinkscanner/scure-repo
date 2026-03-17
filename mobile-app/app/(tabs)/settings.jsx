@@ -40,7 +40,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0E95' }}>
       <ImageBackground
-        source={require('../../assets/background.png')}
+        source={require('../../assets/logo.png')}
         style={styles.wrapper}
         resizeMode="cover"
       >
@@ -63,7 +63,7 @@ export default function SettingsScreen() {
           {/* Profile Card */}
           <View style={styles.card}>
             <Image
-              source={require('../../assets/profile.png')}
+              source={require('../../assets/logo.png')}
               style={styles.avatar}
             />
 
