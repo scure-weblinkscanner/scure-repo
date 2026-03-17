@@ -10,7 +10,7 @@ const PROFILE_LABELS = {
 };
 
 const settingsOptions = [
-  { icon: 'manage-accounts', label: 'Account Details'      },
+  { icon: 'manage-accounts', label: 'Account Details',  route: '/accountDetails'      },
   { icon: 'card-membership',  label: 'My Subscription'      },
   { icon: 'notifications',    label: 'Notifications'         },
   { icon: 'security',         label: 'Security Settings'     },
@@ -18,6 +18,7 @@ const settingsOptions = [
 ];
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { account, logout } = useAuth();
 
   const profileId = account?.uaUserProfileId;
@@ -46,7 +47,8 @@ export default function SettingsScreen() {
         {/* Settings Options */}
         <View style={styles.optionsSection}>
           {settingsOptions.map((option, index) => (
-            <TouchableOpacity key={index} style={styles.optionRow} activeOpacity={0.7}>
+            <TouchableOpacity key={index} style={styles.optionRow} activeOpacity={0.7} 
+              onPress={() => { if (option.route) router.push(option.route); }}>
               <View style={styles.optionLeft}>
                 <MaterialIcons name={option.icon} size={22} color="rgba(255,255,255,0.7)" />
                 <Text style={styles.optionLabel}>{option.label}</Text>
