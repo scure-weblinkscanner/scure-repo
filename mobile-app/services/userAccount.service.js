@@ -15,3 +15,22 @@ export const loginUserAccount = async (uaEmail, uaPassword) => {
 
   return data; // { token, account }
 };
+
+export const updateUserAccount = async (uaId, data, token) => {
+  const response = await fetch(`${BASE_URL}/userAccount/${uaId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(result.message || `Server error: ${response.status}`);
+  }
+
+  return result;
+};

@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const PROFILE_LABELS = {
@@ -22,7 +22,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#0E0E95'}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0E95' }}>
       <ImageBackground
         source={require('../../assets/background.png')}
         style={styles.wrapper}
@@ -47,7 +47,6 @@ export default function SettingsScreen() {
             <Text style={styles.username}>{account?.uaUsername || 'User'}</Text>
             <Text style={styles.email}>{account?.uaEmail}</Text>
 
-            {/* Dynamic badge */}
             <View style={styles.freememlogo}>
               <Text style={[styles.freeText, { color: profileBadge.color }]}>
                 {profileBadge.label}
