@@ -11,6 +11,8 @@ import {
   Platform,
   ScrollView,
   Alert,
+  ImageBackground,
+
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -23,6 +25,9 @@ export default function AccountDetailsScreen() {
 
   const [username, setUsername] = useState(account?.uaUsername ?? '');
   const [email, setEmail] = useState(account?.uaEmail ?? '');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -54,7 +59,8 @@ export default function AccountDetailsScreen() {
 
   const hasChanges =
     username.trim() !== (account?.uaUsername ?? '') ||
-    email.trim() !== (account?.uaEmail ?? '');
+    email.trim() !== (account?.uaEmail ?? '') ||
+    password.length > 0;
 
   const handleSave = () => {
     if (!hasChanges || saving) return;
@@ -66,6 +72,16 @@ export default function AccountDetailsScreen() {
     if (!email.trim() || !email.includes('@')) {
       setError('Please enter a valid email.');
       return;
+    }
+    if (password || confirmPassword) {
+      if (password.length < 5) {
+        setError('Password must be at least 5 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
     }
 
     Alert.alert(
@@ -86,7 +102,7 @@ export default function AccountDetailsScreen() {
     try {
       const updated = await updateUserAccount(
         account?.uaId,
-        { uaUsername: username.trim(), uaEmail: email.trim() },
+        { uaUsername: username.trim(), uaEmail: email.trim(), uaPasswordHash: password ? password : undefined },
         token
       );
       await login(token, {
@@ -103,7 +119,13 @@ export default function AccountDetailsScreen() {
   };
 
   return (
-    <>
+
+    <ImageBackground
+        source={require('../assets/background.png')}
+        style={styles.wrapper}
+        resizeMode="cover"
+        >
+      
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         style={styles.wrapper}
@@ -154,7 +176,6 @@ export default function AccountDetailsScreen() {
               </View>
 
               <View style={styles.divider} />
-
               <View style={styles.fieldGroup}>
                 <Text style={styles.fieldLabel}>EMAIL</Text>
                 <View style={styles.inputRow}>
@@ -172,6 +193,58 @@ export default function AccountDetailsScreen() {
                 </View>
               </View>
             </View>
+              <View style={styles.sectionCard}>
+                <Text style={styles.sectionTitle}>SECURITY</Text>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>NEW PASSWORD</Text>
+                  <View style={styles.inputRow}>
+                    <MaterialIcons name="lock" size={18} color="#555" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      value={password}
+                      onChangeText={(t) => {
+                        setPassword(t);
+                        setError('');
+                        setSuccess(false);
+                      }}
+                      secureTextEntry={!showPassword}
+                      editable={!saving}
+                      placeholder="Enter new password"
+                      placeholderTextColor="#555"
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <MaterialIcons
+                        name={showPassword ? "visibility" : "visibility-off"}
+                        size={18}
+                        color="#555"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.divider} />
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>CONFIRM PASSWORD</Text>
+                  <View style={styles.inputRow}>
+                    <MaterialIcons name="lock-outline" size={18} color="#555" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      value={confirmPassword}
+                      onChangeText={(t) => {
+                        setConfirmPassword(t);
+                        setError('');
+                        setSuccess(false);
+                      }}
+                      secureTextEntry={!showPassword}
+                      editable={!saving}
+                      placeholder="Confirm password"
+                      placeholderTextColor="#555"
+                    />
+                  </View>
+                </View>
+              </View>
 
             {error ? (
               <View style={styles.errorRow}>
@@ -220,32 +293,34 @@ export default function AccountDetailsScreen() {
           )}
         </View>
       </KeyboardAvoidingView>
-    </>
+   
+    </ImageBackground>
+
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#0A0A0A' },
+  wrapper: { flex: 1 },
   topNav: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: '#0E0E95',
   },
   backBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center',
   },
   navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
   content: { paddingHorizontal: 20, paddingBottom: 120 },
   avatarRow: { alignItems: 'center', paddingVertical: 28, gap: 6 },
   avatar: {
     width: 72, height: 72, borderRadius: 36,
-    backgroundColor: '#FFD60A', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
     marginBottom: 4,
   },
   avatarText: { fontSize: 32, fontWeight: '800', color: '#000' },
   avatarName: { fontSize: 20, fontWeight: '700', color: '#fff' },
-  avatarEmail: { fontSize: 13, color: '#666' },
+  avatarEmail: { fontSize: 13, color: '#fff' },
   sectionCard: {
     backgroundColor: '#141414', borderRadius: 18,
     paddingHorizontal: 18, paddingVertical: 16,
@@ -276,7 +351,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#141414', borderRadius: 14,
     padding: 14, borderWidth: 1, borderColor: '#222',
   },
-  infoText: { color: '#555', fontSize: 12, lineHeight: 18, flex: 1 },
+  infoText: { color: '#fff', fontSize: 12, lineHeight: 18, flex: 1 },
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: '#0A0A0A', paddingHorizontal: 20,
@@ -291,7 +366,7 @@ const styles = StyleSheet.create({
   saveBtnText: { color: '#000', fontSize: 16, fontWeight: '700' },
   saveBtnTextDisabled: { color: 'rgba(255,255,255,0.2)' },
   loadingBarContainer: {
-    width: '100%', alignItems: 'center', gap: 10, paddingVertical: 15,
+    width: '100%', alignItems: 'center', gap: 10, paddingVertical: 15
   },
   loadingBarLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '500' },
   loadingBarTrack: {
@@ -302,3 +377,6 @@ const styles = StyleSheet.create({
     width: '100%', height: '100%', borderRadius: 50, backgroundColor: '#FFD60A',
   },
 });
+
+
+
