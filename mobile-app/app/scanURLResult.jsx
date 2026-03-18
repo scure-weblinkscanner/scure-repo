@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Linking,
+  ImageBackground,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -152,7 +153,11 @@ export default function ScanResultScreen() {
   const u = result.urlscan;
 
   return (
-    <View style={styles.wrapper}>
+      <ImageBackground
+        source={require('../assets/background.png')}
+        style={styles.wrapper}
+        resizeMode="cover"
+      >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -366,7 +371,7 @@ export default function ScanResultScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+      </ImageBackground>
   );
 }
 

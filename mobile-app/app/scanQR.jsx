@@ -64,13 +64,17 @@ export default function ScanQRScreen() {
       const photo = await cameraRef.current.takePhoto({ flash: 'off' });
       const fileUri = `file://${photo.path}`;
 
-      const manipulated = await ImageManipulator.manipulateAsync(
-        fileUri,
-        [{ resize: { width: OCR_MAX_WIDTH } }],
-        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
-      );
+      const manipulated = await ImageManipulator.ImageManipulator
+        .manipulate(fileUri)
+        .resize({ width: OCR_MAX_WIDTH })
+        .renderAsync();
 
-      const barcodes = await BarcodeScanning.scan(manipulated.uri);
+      const result = await manipulated.saveAsync({
+        compress: 0.8,
+        format: ImageManipulator.SaveFormat.JPEG,
+      });
+
+      const barcodes = await BarcodeScanning.scan(result.uri);
 
       if (!barcodes || barcodes.length === 0) {
         setError('No QR code detected. Try again.');
