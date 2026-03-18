@@ -74,8 +74,8 @@ export default function AccountDetailsScreen() {
       return;
     }
     if (password || confirmPassword) {
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters.');
+      if (password.length < 5) {
+        setError('Password must be at least 5 characters.');
         return;
       }
       if (password !== confirmPassword) {
@@ -102,7 +102,7 @@ export default function AccountDetailsScreen() {
     try {
       const updated = await updateUserAccount(
         account?.uaId,
-        { uaUsername: username.trim(), uaEmail: email.trim(), uaPassword: password ? password : undefined },
+        { uaUsername: username.trim(), uaEmail: email.trim(), uaPasswordHash: password ? password : undefined },
         token
       );
       await login(token, {
