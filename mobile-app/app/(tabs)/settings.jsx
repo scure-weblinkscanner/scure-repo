@@ -5,9 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const PROFILE_LABELS = {
-  1: { label: 'Admin', color: '#FF6B6B' },
-  2: { label: 'Free Member', color: '#fff' },
-  3: { label: 'Premium', color: '#f0a500' },
+  1: { label: 'Admin',          bg: '#FF6B6B' },
+  2: { label: 'Free Member',    bg: '#aaa'    },
+  3: { label: 'Premium Member', bg: '#f0a500' },
 };
 
 export default function SettingsScreen() {
@@ -47,11 +47,11 @@ export default function SettingsScreen() {
             <Text style={styles.username}>{account?.uaUsername || 'User'}</Text>
             <Text style={styles.email}>{account?.uaEmail}</Text>
 
-            <View style={styles.freememlogo}>
-              <Text style={[styles.freeText, { color: profileBadge.color }]}>
-                {profileBadge.label}
-              </Text>
-            </View>
+          <View style={[styles.freememlogo, { backgroundColor: profileBadge.bg }]}>
+            <Text style={styles.freeText}>
+              {profileBadge.label}
+            </Text>
+          </View>
 
             <Image source={require('../../assets/profile.png')} style={styles.circle} />
 
@@ -182,7 +182,6 @@ const styles = StyleSheet.create({
     height: 50,
   },
   freememlogo: {
-    backgroundColor: '#0E0E95',
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 10,
@@ -191,6 +190,7 @@ const styles = StyleSheet.create({
   freeText: {
     fontSize: 12,
     fontWeight: '600',
+    color: '#fff',
   },
   buttonText: {
     color: '#0E0E95',
