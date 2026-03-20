@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminNavbar from '../components/AdminNavbar'
 import backgroundWebsite from '../assets/background-website.jpg'
+import { getAllTickets, respondToTicket } from '../services/tickets.service'
 
 const STATUS_CONFIG = {
   open:        { label: 'Open',        color: '#FFD60A', bg: 'rgba(255,214,10,0.12)',   border: 'rgba(255,214,10,0.3)'   },
@@ -30,22 +31,18 @@ export default function TicketsPage() {
 
  const token = sessionStorage.getItem('token')
 
-  const loadTickets = async () => {
+    const loadTickets = async () => {
     try {
-      setLoading(true)
-      setError(null)
-      const res = await fetch('http://localhost:5000/api/tickets', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
-      setTickets(data.tickets)
+        setLoading(true)
+        setError(null)
+        const data = await getAllTickets(token)
+        setTickets(data)
     } catch (err) {
-      setError(err.message)
+        setError(err.message)
     } finally {
-      setLoading(false)
+        setLoading(false)
     }
-  }
+    }
 
   useEffect(() => {
     loadTickets()
@@ -72,19 +69,10 @@ export default function TicketsPage() {
     setSubmitting(true)
     setSubmitError('')
     try {
-      const res = await fetch(`http://localhost:5000/api/tickets/${selectedTicket.tkId}/respond`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ tkAdminResponse: response, tkStatus: responseStatus }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
-      setSubmitSuccess(true)
-      setSelectedTicket({ ...selectedTicket, tkAdminResponse: response, tkStatus: responseStatus })
-      loadTickets()
+        await respondToTicket(token, selectedTicket.tkId, response, responseStatus)
+        setSubmitSuccess(true)
+        setSelectedTicket({ ...selectedTicket, tkAdminResponse: response, tkStatus: responseStatus })
+        loadTickets()
     } catch (err) {
       setSubmitError(err.message)
     } finally {
