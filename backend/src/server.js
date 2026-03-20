@@ -15,12 +15,6 @@ app.use('/api/userProfile', userProfileRoutes)
 app.use('/api/scanURL', scanRoutes);
 app.use('/api/tickets', ticketsRoutes)
 
-// temporary route to list available models
-app.get('/api/models', async (req, res) => {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
-  const data = await response.json();
-  res.json(data);
-});
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'test works' })

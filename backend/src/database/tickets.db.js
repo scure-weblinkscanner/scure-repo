@@ -19,10 +19,10 @@ export const getTicketById = async (tkId) => {
   return data
 }
 
-export const createTicket = async (data) => {
+export const createTicket = async ({ tkUserId, tkSubject, tkDescription }) => {
   const { data: result, error } = await supabase
     .from('tickets')
-    .insert(data)
+    .insert([{ tkUserId, tkSubject, tkDescription, tkStatus: 'open' }])
     .select()
   if (error) throw error
   return result

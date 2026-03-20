@@ -145,7 +145,7 @@ export default function ScanQRScreen() {
         <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
           <MaterialIcons name="arrow-back" size={28} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.navTitle}>Scan URL</Text>
+        <Text style={styles.navTitle}>Scan QR</Text>
         <View style={{ width: 28 }} />
       </View>
 

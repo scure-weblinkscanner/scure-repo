@@ -44,6 +44,7 @@ function RootLayoutNav() {
         <Stack.Screen name="publicScans" options={{ headerShown: false }} />
         <Stack.Screen name="publicScanResult" options={{ headerShown: false }} />
         <Stack.Screen name="scanQR" options={{ headerShown: false }} />
+        <Stack.Screen name="submitTicket" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
