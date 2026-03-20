@@ -222,7 +222,13 @@ export default function LandingPage() {
       </div>
 
       {/* Pill Tab Navbar */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 24px 48px', overflowX: 'auto' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        padding: '0 24px 48px',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+      }}>
         <div style={{
           display: 'inline-flex',
           background: 'rgba(255,255,255,0.04)',
@@ -231,6 +237,7 @@ export default function LandingPage() {
           padding: 5,
           gap: 4,
           flexShrink: 0,
+          margin: '0 24px', 
         }}>
           {tabs.map(tab => (
             <button
