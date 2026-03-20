@@ -221,48 +221,49 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Pill Tab Navbar */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        padding: '0 24px 48px',
-        overflowX: 'auto',
-        WebkitOverflowScrolling: 'touch',
+    {/* Pill Tab Navbar */}
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center',
+      padding: '0 0 48px',
+      overflowX: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      scrollbarWidth: 'none',
+    }}>
+      <div style={{
+        display: 'inline-flex',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 999,
+        padding: 5,
+        gap: 4,
+        flexShrink: 0,
+        margin: '0 24px',
       }}>
-        <div style={{
-          display: 'inline-flex',
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 999,
-          padding: 5,
-          gap: 4,
-          flexShrink: 0,
-          margin: '0 24px', 
-        }}>
-          {tabs.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                background: activeTab === tab ? '#0E0E95' : 'transparent',
-                color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.45)',
-                border: activeTab === tab ? '1px solid rgba(255,255,255,0.15)' : '1px solid transparent',
-                borderRadius: 999,
-                padding: '10px 18px',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {tabs.map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              background: activeTab === tab ? '#0E0E95' : 'transparent',
+              color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.45)',
+              border: activeTab === tab ? '1px solid rgba(255,255,255,0.15)' : '1px solid transparent',
+              borderRadius: 999,
+              padding: '10px 18px',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
+    </div>
 
       {/* Tab Content */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 100px' }}>
