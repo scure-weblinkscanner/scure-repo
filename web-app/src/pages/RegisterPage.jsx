@@ -185,9 +185,9 @@ const RegisterPage = () => {
             fontSize: 14, color: 'rgba(255,255,255,0.35)',
           }}>
             Already have an account?{' '}
-            <a href="/login" style={{ color: '#fff', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/login" style={{ color: '#fff', fontWeight: 600, textDecoration: 'none' }}>
               Sign In
-            </a>
+            </Link>
           </p>
 
         </div>
