@@ -54,7 +54,7 @@ const plans = [
   },
   {
     name: 'Premium',
-    price: '$4.99',
+    price: '$9.99',
     period: 'per month',
     highlight: true,
     features: [
@@ -468,7 +468,7 @@ export default function LandingPage() {
             }}>
               {/* Android */}
               <div
-              onClick={() => window.location.href = '/downloads/scure.apk'}
+              onClick={() => window.location.href = 'https://github.com/scure-weblinkscanner/scure-repo/releases/download/v1.0.0/scure-v1.apk'}
               style={{
                 background: 'rgba(74,255,145,0.06)',
                 border: '1px solid rgba(74,255,145,0.25)',
