@@ -81,7 +81,7 @@ export default function LoginScreen() {
             </View>
             <Text
               style={[styles.inputText, { fontSize: 12, marginRight: 10, textDecorationLine: 'underline' }]}
-              onPress={() => Linking.openURL('http://192.168.0.119:5173/register')}
+              //onPress={() => Linking.openURL('https://scure.up.railway.app/login')}
             >
               Forget Password?
             </Text>

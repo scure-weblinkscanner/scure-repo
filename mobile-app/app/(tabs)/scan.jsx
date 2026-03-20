@@ -64,7 +64,7 @@ export default function ScanScreen() {
 
   const handleUpgradeRedirect = () => {
     setShowUpgradeModal(false);
-    Linking.openURL('https://yourwebsite.com/upgrade');
+    Linking.openURL('https://scure.up.railway.app/upgrade');
   };
 
   if (!fontsLoaded) return <View style={styles.wrapper} />;

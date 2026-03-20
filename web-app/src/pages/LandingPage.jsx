@@ -222,7 +222,7 @@ export default function LandingPage() {
       </div>
 
       {/* Pill Tab Navbar */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 24px 48px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 24px 48px', overflowX: 'auto' }}>
         <div style={{
           display: 'inline-flex',
           background: 'rgba(255,255,255,0.04)',
@@ -230,6 +230,7 @@ export default function LandingPage() {
           borderRadius: 999,
           padding: 5,
           gap: 4,
+          flexShrink: 0,
         }}>
           {tabs.map(tab => (
             <button
@@ -240,12 +241,13 @@ export default function LandingPage() {
                 color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.45)',
                 border: activeTab === tab ? '1px solid rgba(255,255,255,0.15)' : '1px solid transparent',
                 borderRadius: 999,
-                padding: '10px 24px',
-                fontSize: 14,
+                padding: '10px 18px',
+                fontSize: 13,
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 whiteSpace: 'nowrap',
+                flexShrink: 0,
                 fontFamily: "'DM Sans', sans-serif",
               }}
             >
@@ -366,7 +368,7 @@ export default function LandingPage() {
                       </div>
                     ))}
                   </div>
-                  <Link to="/register" style={{
+                  <Link to="/upgrade" style={{
                     display: 'block',
                     textAlign: 'center',
                     background: plan.highlight ? '#0E0E95' : 'rgba(255,255,255,0.06)',

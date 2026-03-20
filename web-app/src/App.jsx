@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage'
 import UserAccountPage from './pages/UserAccountPage'
 import UserProfilePage from './pages/UserProfilePage'
 import TicketsPage from './pages/TicketsPage'
+import UpgradePage from './pages/UpgradePage'
 import './App.css'
 
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/user-accounts" element={<UserAccountPage />} />
         <Route path="/user-profiles" element={<UserProfilePage />} />
         <Route path="/admin/tickets" element={<TicketsPage />} />
+        <Route path="/upgrade" element={<UpgradePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

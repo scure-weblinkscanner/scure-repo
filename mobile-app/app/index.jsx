@@ -26,7 +26,7 @@ export default function LandingScreen() {
           Don't have an account?{' '}
           <Text
             style={styles.signupLink}
-            onPress={() => Linking.openURL('http://192.168.0.119:5173/register')}
+            onPress={() => Linking.openURL('https://scure.up.railway.app/register')}
           >
             Sign Up
           </Text>

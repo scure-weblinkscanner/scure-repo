@@ -5,6 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
+import { getScanActivity, getAllScans } from '../services/scan.service'
 
 const PERIODS = ['Daily', 'Weekly', 'Monthly']
 
@@ -103,13 +104,9 @@ export default function DashboardPage() {
   const loadActivity = async (selectedPeriod) => {
     try {
       setLoadingActivity(true)
-      const res = await fetch(`http://localhost:5000/api/scanURL/admin/activity?period=${selectedPeriod.toLowerCase()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
-      setActivityData(data.data)
-      setChartData(processActivityData(data.data, selectedPeriod))
+      const data = await getScanActivity(token, selectedPeriod)
+      setActivityData(data)
+      setChartData(processActivityData(data, selectedPeriod))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -120,12 +117,8 @@ export default function DashboardPage() {
   const loadAllScans = async () => {
     try {
       setLoadingScans(true)
-      const res = await fetch('http://localhost:5000/api/scanURL/admin/all', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
-      setAllScans(data.scans)
+      const scans = await getAllScans(token)
+      setAllScans(scans)
     } catch (err) {
       setError(err.message)
     } finally {

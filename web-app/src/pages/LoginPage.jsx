@@ -252,13 +252,13 @@ const handleLogin = async () => {
             color: 'rgba(255,255,255,0.35)',
           }}>
             Don't have an account?{' '}
-            <a href="/register" style={{
+            <Link to="/register" style={{
               color: '#fff',
               fontWeight: 600,
               textDecoration: 'none',
             }}>
               Register
-            </a>
+            </Link>
           </p>
 
         </div>

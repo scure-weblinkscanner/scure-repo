@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PublicNavbar from '../components/PublicNavbar'
 import backgroundWebsite from '../assets/background-website.jpg'
+import { Link } from 'react-router-dom'
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('')
