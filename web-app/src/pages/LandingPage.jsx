@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import PublicNavbar from '../components/PublicNavbar'
 import backgroundWebsite from '../assets/background-website.jpg'
+import { Link } from 'react-router-dom'
 
 const features = [
   {
@@ -188,7 +189,7 @@ export default function LandingPage() {
           </p>
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/register" style={{
+            <Link to="/register" style={{
               background: '#0E0E95',
               color: '#fff',
               border: '1px solid rgba(255,255,255,0.2)',
@@ -203,8 +204,8 @@ export default function LandingPage() {
               onMouseLeave={e => e.target.style.background = '#0E0E95'}
             >
               Get Started Free
-            </a>
-            <a href="/login" style={{
+            </Link>
+            <Link to="/login" style={{
               background: 'rgba(255,255,255,0.06)',
               color: '#fff',
               border: '1px solid rgba(255,255,255,0.12)',
@@ -215,7 +216,7 @@ export default function LandingPage() {
               textDecoration: 'none',
             }}>
               Sign In
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -365,7 +366,7 @@ export default function LandingPage() {
                       </div>
                     ))}
                   </div>
-                  <a href="/register" style={{
+                  <Link to="/register" style={{
                     display: 'block',
                     textAlign: 'center',
                     background: plan.highlight ? '#0E0E95' : 'rgba(255,255,255,0.06)',
@@ -383,7 +384,7 @@ export default function LandingPage() {
                     onMouseLeave={e => e.target.style.opacity = '1'}
                   >
                     {plan.highlight ? 'Get Premium' : 'Start Free'}
-                  </a>
+                  </Link>
                 </div>
               ))}
             </div>
