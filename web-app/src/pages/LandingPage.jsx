@@ -223,12 +223,13 @@ export default function LandingPage() {
 
     {/* Pill Tab Navbar */}
     <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center',
-      padding: '0 24px 48px',
-      overflowX: 'auto',
-      WebkitOverflowScrolling: 'touch',
-      scrollbarWidth: 'none',
+        display: 'flex', 
+        justifyContent: 'flex-start',
+        padding: '0 24px 48px',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
     }}>
       <div style={{
         display: 'inline-flex',
