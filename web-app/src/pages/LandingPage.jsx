@@ -225,7 +225,7 @@ export default function LandingPage() {
     <div style={{ 
       display: 'flex', 
       justifyContent: 'center',
-      padding: '0 0 48px',
+      padding: '0 24px 48px',
       overflowX: 'auto',
       WebkitOverflowScrolling: 'touch',
       scrollbarWidth: 'none',
@@ -238,7 +238,6 @@ export default function LandingPage() {
         padding: 5,
         gap: 4,
         flexShrink: 0,
-        margin: '0 24px',
       }}>
         {tabs.map(tab => (
           <button
@@ -469,7 +468,7 @@ export default function LandingPage() {
             }}>
               {/* Android */}
               <div
-              onClick={() => window.location.href = 'https://github.com/scure-weblinkscanner/scure-repo/releases/download/v1.0.0/scure-v1.apk'}
+              onClick={() => window.location.href = 'https://www.dropbox.com/scl/fi/8u89fupr96d77kw6ril65/scure-v1.apk?rlkey=957sih1adg3gff2kkr58ijzyo&st=o8k8nre9&dl=1'}
               style={{
                 background: 'rgba(74,255,145,0.06)',
                 border: '1px solid rgba(74,255,145,0.25)',
