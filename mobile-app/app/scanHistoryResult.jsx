@@ -182,10 +182,6 @@ export default function PublicScanResultScreen() {
             </Text>
             <Text style={styles.heroUrl} numberOfLines={3}>{item.shUrl}</Text>
             <Text style={styles.heroSuggestion}>{item.shSuggestion}</Text>
-            <View style={styles.scannedByRow}>
-              <MaterialIcons name="person" size={13} color="rgba(255,255,255,0.35)" />
-              <Text style={styles.scannedByText}>Scanned by {username}</Text>
-            </View>
             {u?.categories?.length > 0 && (
               <View style={styles.tagsRow}>
                 {u.categories.map((c, i) => <Tag key={i} label={c} color="#FFD60A" />)}
