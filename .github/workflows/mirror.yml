@@ -1,0 +1,24 @@
+name: Mirror develop branch
+
+# Trigger workflow only on pushes to develop
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout source repo
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ensures all commits are available
+
+      # Step 2: Push develop branch to mirror repo
+      - name: Push develop branch to mirror repo
+        run: |
+          git remote add mirror https://bruhhzxc:${{ secrets.MIRROR_TOKEN }}@github.com/bruhhzxc/mirrorScure.git
+          git push mirror develop
