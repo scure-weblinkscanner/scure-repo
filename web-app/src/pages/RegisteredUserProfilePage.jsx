@@ -401,15 +401,14 @@ const RegisteredUserProfilePage = () => {
                     <>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
                         {[
-                          { label: 'User ID', value: `#${account?.uaId}` },
                           { label: 'Username', value: account?.uaUsername },
                           { label: 'Email', value: account?.uaEmail },
-                          { label: 'Member Since', value: account?.uaCreatedAt ? new Date(account.uaCreatedAt).toLocaleDateString('en-GB') : '—' },
+                          { label: 'Member Since', value: account?.uaCreatedAt ? new Date(account.uaCreatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—' },
                         ].map((row, i) => (
                           <div key={i} style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                             paddingBottom: 16,
-                            borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                            borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                           }}>
                             <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>{row.label}</span>
                             <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{row.value}</span>
@@ -596,7 +595,7 @@ const RegisteredUserProfilePage = () => {
                       <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Next Billing Date</span>
                       <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>
                         {subscription?.spNextBillingDate
-                          ? new Date(subscription.spNextBillingDate).toLocaleDateString('en-GB')
+                          ? new Date(subscription.spNextBillingDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
                           : '—'}
                       </span>
                     </div>
@@ -604,7 +603,7 @@ const RegisteredUserProfilePage = () => {
                       <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Member Since</span>
                       <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>
                         {subscription?.spCreatedAt
-                          ? new Date(subscription.spCreatedAt).toLocaleDateString('en-GB')
+                          ? new Date(subscription.spCreatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
                           : '—'}
                       </span>
                     </div>
