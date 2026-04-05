@@ -709,7 +709,7 @@ const RegisteredUserProfilePage = () => {
                         e.currentTarget.style.borderColor = 'rgba(240,165,0,0.3)'
                       }}
                     >
-                      View Plans →
+                      View Plans
                     </button>
                   </div>
                 )}
