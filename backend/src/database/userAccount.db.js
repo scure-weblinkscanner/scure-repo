@@ -70,3 +70,14 @@ export const getUserAccountByEmail = async (email) => {
   if (error) throw error
   return result
 }
+
+export const checkEmailExists = async (email) => {
+  const { data: result, error } = await supabase
+    .from('userAccount')
+    .select('uaId')
+    .eq('uaEmail', email)
+    .maybeSingle()
+ 
+  if (error) throw error
+  return result !== null
+}

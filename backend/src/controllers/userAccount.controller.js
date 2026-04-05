@@ -86,3 +86,14 @@ export const loginAdminUserAccount = async (req, res) => {
     res.status(401).json({ error: error.message });
   }
 };
+
+export const checkEmailExists = async (req, res) => {
+  try {
+    const { email } = req.query
+    if (!email) return res.status(400).json({ error: 'Email is required' })
+    const exists = await userAccountService.checkEmailExists(email)
+    res.status(200).json({ exists })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}

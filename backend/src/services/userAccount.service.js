@@ -109,3 +109,7 @@ export const loginAdminUserAccount = async (uaEmail, uaPassword) => {
     },
   };
 };
+
+export const checkEmailExists = async (email) => {
+  return await userAccountDb.checkEmailExists(email)
+}

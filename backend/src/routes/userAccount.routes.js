@@ -10,6 +10,7 @@ router.get('/search', userAccountController.searchUserAccounts)
 // static routes BEFORE dynamic ones
 router.post('/login', userAccountController.loginUserAccount)
 router.post('/login/admin', userAccountController.loginAdminUserAccount)
+router.get('/check-email', userAccountController.checkEmailExists)
 
 // dynamic route LAST
 router.get('/:uaId', userAccountController.getUserAccountById)
