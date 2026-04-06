@@ -62,7 +62,6 @@ export default function SubmitTicketScreen() {
     setSubmitting(true);
 
     try {
-      console.log(token)
       await submitTicket(token, subject.trim(), description.trim());
       setShowSuccessModal(true);
       setSubject('');
