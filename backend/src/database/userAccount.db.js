@@ -1,5 +1,6 @@
 // src/database/userAccount.db.js
 import { supabase } from '../utils/supabaseClient.js'
+import { createSubscription } from './subscriptionPlan.db.js'
 
 export const createUserAccount = async (data) => {
   const { data: result, error } = await supabase
@@ -8,6 +9,13 @@ export const createUserAccount = async (data) => {
     .select()
 
   if (error) throw error
+
+  await createSubscription({
+    spUaId: result[0].uaId,
+    spPlanId: 2,
+    spStatus: 'active',
+  })
+
   return result
 }
 
@@ -69,4 +77,15 @@ export const getUserAccountByEmail = async (email) => {
     .maybeSingle()
   if (error) throw error
   return result
+}
+
+export const checkEmailExists = async (email) => {
+  const { data: result, error } = await supabase
+    .from('userAccount')
+    .select('uaId')
+    .eq('uaEmail', email)
+    .maybeSingle()
+ 
+  if (error) throw error
+  return result !== null
 }

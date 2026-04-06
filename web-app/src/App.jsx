@@ -7,6 +7,7 @@ import UserAccountPage from './pages/UserAccountPage'
 import UserProfilePage from './pages/UserProfilePage'
 import TicketsPage from './pages/TicketsPage'
 import UpgradePage from './pages/UpgradePage'
+import RegisteredUserProfilePage from './pages/RegisteredUserProfilePage'
 import './App.css'
 
 const App = () => {
@@ -21,6 +22,8 @@ const App = () => {
         <Route path="/user-profiles" element={<UserProfilePage />} />
         <Route path="/admin/tickets" element={<TicketsPage />} />
         <Route path="/upgrade" element={<UpgradePage />} />
+        <Route path="/dashboard" element={<Navigate to="/profile" />} />
+        <Route path="/profile" element={<RegisteredUserProfilePage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
