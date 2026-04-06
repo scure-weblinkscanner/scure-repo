@@ -91,7 +91,9 @@ export default function SubmitTicketScreen() {
             <MaterialIcons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.navTitle}>Report an Issue</Text>
-          <View style={{ width: 40 }} />
+          <TouchableOpacity onPress={() => router.push('/submittedTickets')} hitSlop={12} style={styles.backBtn}>
+            <MaterialIcons name="history" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
 
         <ScrollView

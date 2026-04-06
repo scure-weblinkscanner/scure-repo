@@ -19,6 +19,16 @@ export const getTicketById = async (tkId) => {
   return data
 }
 
+export const getTicketsByUser = async (uaId) => {
+  const { data, error } = await supabase
+    .from('tickets')
+    .select('*')
+    .eq('tkUserId', uaId)
+    .order('tkCreatedAt', { ascending: false })
+  if (error) throw error
+  return data
+}
+
 export const createTicket = async ({ tkUserId, tkSubject, tkDescription }) => {
   const { data: result, error } = await supabase
     .from('tickets')

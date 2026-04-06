@@ -20,6 +20,16 @@ export const getTicketById = async (req, res) => {
   }
 }
 
+export const getTicketsByUser = async (req, res) => {
+  try {
+    const { uaId } = req.params
+    const tickets = await ticketsService.getTicketsByUser(uaId)
+    res.status(200).json({ tickets })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
 export const createTicket = async (req, res) => {
   try {
     const decoded = jwt.verify(req.headers.authorization?.split(' ')[1], process.env.JWT_SECRET)

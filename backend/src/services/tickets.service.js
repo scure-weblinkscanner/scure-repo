@@ -8,6 +8,10 @@ export const getTicketById = async (tkId) => {
   return await ticketsDb.getTicketById(tkId)
 }
 
+export const getTicketsByUser = async (uaId) => {
+  return await ticketsDb.getTicketsByUser(uaId)
+}
+
 export const createTicket = async (tkUserId, tkSubject, tkDescription) => {
   return await ticketsDb.createTicket({ tkUserId, tkSubject, tkDescription })
 }

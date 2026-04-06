@@ -10,18 +10,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ImageBackground,
-
+  Modal,
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
-import { updateUserAccount } from '../services/userAccount.service';
+import { updateUserAccount, deleteUserAccount } from '../services/userAccount.service';
 
 export default function AccountDetailsScreen() {
   const router = useRouter();
-  const { token, account, login } = useAuth();
+  const { token, account, login, logout } = useAuth();
 
   const [username, setUsername] = useState(account?.uaUsername ?? '');
   const [email, setEmail] = useState(account?.uaEmail ?? '');
@@ -31,6 +30,8 @@ export default function AccountDetailsScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const saveAnim = useRef(new Animated.Value(0.2)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -115,6 +116,19 @@ export default function AccountDetailsScreen() {
       setError(err.message || 'Failed to update account.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    setShowDeleteModal(false);
+    setDeleting(true);
+    try {
+      await deleteUserAccount(account?.uaId, token);
+      await logout();
+      router.replace('/');
+    } catch (err) {
+      setError(err.message || 'Failed to delete account.');
+      setDeleting(false);
     }
   };
 
@@ -267,6 +281,25 @@ export default function AccountDetailsScreen() {
               </Text>
             </View>
 
+            {/* Danger Zone */}
+            <View style={styles.dangerCard}>
+              <Text style={styles.dangerTitle}>DANGER ZONE</Text>
+              <Text style={styles.dangerDescription}>
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </Text>
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={() => setShowDeleteModal(true)}
+                disabled={deleting}
+                activeOpacity={0.85}
+              >
+                <MaterialIcons name="delete-forever" size={18} color="#ff6b6b" />
+                <Text style={styles.deleteBtnText}>
+                  {deleting ? 'Deleting...' : 'Delete Account'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
           </Animated.View>
         </ScrollView>
 
@@ -294,6 +327,30 @@ export default function AccountDetailsScreen() {
         </View>
       </KeyboardAvoidingView>
    
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={showDeleteModal}
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <MaterialIcons name="delete-forever" size={48} color="#ff6b6b" style={{ marginBottom: 12 }} />
+            <Text style={styles.modalTitle}>Delete Account?</Text>
+            <Text style={styles.modalMessage}>
+              This will permanently delete your account and all associated data. This action{' '}
+              <Text style={{ fontWeight: '700', color: '#fff' }}>cannot be undone</Text>.
+            </Text>
+            <TouchableOpacity style={styles.modalDeleteBtn} onPress={handleConfirmDelete}>
+              <Text style={styles.modalDeleteBtnText}>Yes, Delete My Account</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShowDeleteModal(false)}>
+              <Text style={styles.modalCancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ImageBackground>
 
   );
@@ -376,6 +433,44 @@ const styles = StyleSheet.create({
   loadingBarFill: {
     width: '100%', height: '100%', borderRadius: 50, backgroundColor: '#FFD60A',
   },
+
+  dangerCard: {
+    backgroundColor: '#141414', borderRadius: 18,
+    paddingHorizontal: 18, paddingVertical: 16,
+    borderWidth: 1.5, borderColor: '#3a1010', marginBottom: 10, marginTop: 10,
+  },
+  dangerTitle: { fontSize: 10, color: '#ff6b6b', fontWeight: '700', letterSpacing: 1.5, marginBottom: 10 },
+  dangerDescription: { fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 18, marginBottom: 14 },
+  deleteBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderWidth: 1, borderColor: '#ff6b6b', borderRadius: 50, paddingVertical: 13,
+  },
+  deleteBtnText: { color: '#ff6b6b', fontSize: 15, fontWeight: '700' },
+
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#141414', borderRadius: 20,
+    padding: 28, width: '80%', alignItems: 'center',
+    borderWidth: 1, borderColor: '#222',
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#fff', marginBottom: 8, textAlign: 'center' },
+  modalMessage: { fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginBottom: 24, lineHeight: 20 },
+  modalDeleteBtn: {
+    backgroundColor: '#ff6b6b', borderRadius: 12,
+    paddingVertical: 12, paddingHorizontal: 24,
+    width: '100%', alignItems: 'center', marginBottom: 10,
+  },
+  modalDeleteBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  modalCancelBtn: {
+    backgroundColor: '#1E1E1E', borderRadius: 12,
+    paddingVertical: 12, paddingHorizontal: 24,
+    width: '100%', alignItems: 'center',
+    borderWidth: 1, borderColor: '#333',
+  },
+  modalCancelBtnText: { color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: 15 },
 });
 
 

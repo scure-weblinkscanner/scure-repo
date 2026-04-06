@@ -46,6 +46,9 @@ function RootLayoutNav() {
         <Stack.Screen name="scanQR" options={{ headerShown: false }} />
         <Stack.Screen name="submitTicket" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="subscription" options={{ headerShown: false }} />
+        <Stack.Screen name="submittedTickets" options={{ headerShown: false }} />
+        <Stack.Screen name="accountDetails" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />

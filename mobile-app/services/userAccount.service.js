@@ -16,6 +16,26 @@ export const loginUserAccount = async (uaEmail, uaPassword) => {
   return data; // { token, account }
 };
 
+export const getUserAccountById = async (uaId, token) => {
+  const response = await fetch(`${BASE_URL}/userAccount/${uaId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to fetch account');
+  return data;
+};
+
+export const deleteUserAccount = async (uaId, token) => {
+  const response = await fetch(`${BASE_URL}/userAccount/${uaId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to delete account');
+  }
+};
+
 export const updateUserAccount = async (uaId, data, token) => {
   const response = await fetch(`${BASE_URL}/userAccount/${uaId}`, {
     method: 'PUT',
