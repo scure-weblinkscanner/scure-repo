@@ -85,7 +85,7 @@ export const checkEmailExists = async (email) => {
     .select('uaId')
     .eq('uaEmail', email)
     .maybeSingle()
- 
+
   if (error) throw error
-  return result !== null
+  return result
 }
