@@ -8,13 +8,13 @@ import {
   Image,
   Linking,
   ImageBackground,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useScan } from '../context/ScanContext';
 import { useAuth } from '../context/AuthContext';
 
-const PREMIUM_PROFILE_ID = 3;
 
 const verdictConfig = {
   clean:      { color: '#4AFF91', bg: 'rgba(74,255,145,0.12)',  icon: 'check-circle', label: 'Safe'       },
@@ -131,10 +131,96 @@ const ScannerRow = ({ name, verdict, detail }) => (
   </View>
 );
 
+const PREMIUM_PROFILE_ID = 3;
+
+// Placeholder links shown in the blurred preview for free users
+const PLACEHOLDER_LINKS = [
+  { url: 'https://cdn.example.com/assets/script.js', verdict: 'clean' },
+  { url: 'https://tracker.thirdparty.net/pixel?uid=xxx', verdict: 'suspicious' },
+  { url: 'https://fonts.googleapis.com/css2?family=Inter', verdict: 'clean' },
+  { url: 'https://analytics.service.io/collect', verdict: 'unknown' },
+];
+
 const EmbeddedLinksCard = ({ links }) => {
   const { account } = useAuth();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
-  if (!isPremium) return null;
+  const [showModal, setShowModal] = useState(false);
+
+  // ── FREE USER: blurred placeholder card with upgrade overlay ──
+  if (!isPremium) {
+    return (
+      <>
+        <View style={styles.lockedCardWrapper}>
+          {/* Blurred placeholder content */}
+          <View pointerEvents="none" style={styles.lockedCardBlurred}>
+            <View style={styles.card}>
+              <CardTitle icon="link" label="Embedded Links (4)" />
+              {PLACEHOLDER_LINKS.map((link, i) => {
+                const vc = getVC(link.verdict);
+                return (
+                  <View key={i} style={styles.embeddedLinkRow}>
+                    <MaterialIcons name={vc.icon} size={14} color={vc.color} style={{ flexShrink: 0 }} />
+                    <Text style={styles.embeddedLinkUrl} numberOfLines={1}>{link.url}</Text>
+                    <Badge verdict={link.verdict} />
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Upgrade overlay */}
+          <View style={styles.lockedCardOverlay}>
+            <TouchableOpacity
+              style={styles.premiumScanBtn}
+              onPress={() => setShowModal(true)}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="link" size={18} color="#FFD60A" />
+              <Text style={styles.premiumScanBtnText}>Second-level Scan</Text>
+              <View style={styles.premiumBadge}>
+                <MaterialIcons name="lock" size={11} color="#fff" />
+                <Text style={styles.premiumBadgeText}>Premium</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Modal
+          transparent
+          animationType="fade"
+          visible={showModal}
+          onRequestClose={() => setShowModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              <MaterialIcons name="workspace-premium" size={36} color="#f0a500" style={{ marginBottom: 12 }} />
+              <Text style={styles.modalTitle}>Premium Feature</Text>
+              <Text style={styles.modalMessage}>
+                Second-level scan checks all embedded links inside the page for threats. Upgrade to unlock this feature.
+              </Text>
+              <TouchableOpacity
+                style={styles.modalBtnPrimary}
+                onPress={() => {
+                  setShowModal(false);
+                  Linking.openURL('https://scure.up.railway.app/upgrade');
+                }}
+              >
+                <Text style={styles.modalBtnPrimaryText}>Yes, upgrade now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalBtnSecondary}
+                onPress={() => setShowModal(false)}
+              >
+                <Text style={styles.modalBtnSecondaryText}>Maybe later</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </>
+    );
+  }
+
+  // ── PREMIUM USER: real data ──
   if (!links?.length) return null;
 
   const anyMalicious = links.some((r) => r.verdict === 'malicious');
@@ -144,7 +230,8 @@ const EmbeddedLinksCard = ({ links }) => {
 
   return (
     <Card>
-    <CardTitle icon="link" label={`Embedded Links (${links.length})`} />
+      <CardTitle icon="link" label={`Embedded Links (${links.length})`} />
+
       {anyMalicious && (
         <View style={styles.linkWarningBanner}>
           <MaterialIcons name="dangerous" size={15} color="#FF6B6B" />
@@ -173,7 +260,7 @@ const EmbeddedLinksCard = ({ links }) => {
           </View>
         );
       })}
-      </Card>
+    </Card>
   );
 };
 
@@ -367,7 +454,7 @@ export default function ScanResultScreen() {
         )}
 
         {/* ── DOM / Content Analysis ── */}
-        {(u?.content?.cookies?.length > 0 || u?.content?.links?.length > 0 || u?.content?.globals?.length > 0) && (
+        {(u?.content?.cookies?.length > 0 || u?.content?.globals?.length > 0) && (
           <CollapsibleCard icon="article" label="DOM / Content Analysis">
             {u.content.cookies?.length > 0 && (
               <>
@@ -389,14 +476,6 @@ export default function ScanResultScreen() {
                 <Text style={[styles.subLabel, { marginTop: 10 }]}>JS Globals ({u.content.globals.length})</Text>
                 {u.content.globals.map((g, i) => (
                   <Row key={i} label={g.name} value={g.type} mono />
-                ))}
-              </>
-            )}
-            {u.content.links?.length > 0 && (
-              <>
-                <Text style={[styles.subLabel, { marginTop: 10 }]}>Outbound Links ({u.content.links.length})</Text>
-                {u.content.links.map((l, i) => (
-                  <Text key={i} style={styles.linkText} numberOfLines={1}>{l.href}</Text>
                 ))}
               </>
             )}
@@ -515,4 +594,62 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
   },
   embeddedLinkUrl: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontFamily: 'monospace', flex: 1 },
+
+  // ── Locked card (free user blurred preview) ──
+  lockedCardWrapper: {
+    position: 'relative',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  lockedCardBlurred: {
+    opacity: 0.18,
+  },
+  lockedCardOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(10,10,10,0.55)',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,214,10,0.25)',
+    padding: 20,
+  },
+
+  premiumScanBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: 'rgba(255,214,10,0.1)', borderRadius: 14,
+    padding: 16, borderWidth: 1.5, borderColor: 'rgba(255,214,10,0.4)',
+    width: '100%',
+  },
+  premiumScanBtnText: { color: '#FFD60A', fontSize: 15, fontWeight: '700', flex: 1 },
+  premiumBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#f0a500', borderRadius: 50,
+    paddingHorizontal: 8, paddingVertical: 3,
+  },
+  premiumBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#1A1A1A', borderRadius: 20,
+    padding: 28, width: '80%', alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  modalTitle: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 8 },
+  modalMessage: {
+    color: 'rgba(255,255,255,0.6)', fontSize: 14,
+    textAlign: 'center', lineHeight: 20, marginBottom: 24,
+  },
+  modalBtnPrimary: {
+    backgroundColor: '#FFD60A', borderRadius: 50,
+    paddingVertical: 13, paddingHorizontal: 24,
+    width: '100%', alignItems: 'center', marginBottom: 10,
+  },
+  modalBtnPrimaryText: { color: '#000', fontWeight: '700', fontSize: 15 },
+  modalBtnSecondary: { paddingVertical: 10 },
+  modalBtnSecondaryText: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
 });
