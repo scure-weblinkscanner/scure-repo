@@ -12,6 +12,9 @@ import {
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useScan } from '../context/ScanContext';
+import { useAuth } from '../context/AuthContext';
+
+const PREMIUM_PROFILE_ID = 3;
 
 const verdictConfig = {
   clean:      { color: '#4AFF91', bg: 'rgba(74,255,145,0.12)',  icon: 'check-circle', label: 'Safe'       },
@@ -22,10 +25,8 @@ const verdictConfig = {
 
 const getVC = (verdict) => verdictConfig[verdict?.toLowerCase()] ?? verdictConfig.unknown;
 
-// ── Regular card (always expanded) ──
 const Card = ({ children }) => <View style={styles.card}>{children}</View>;
 
-// ── Collapsible card — starts collapsed, tap title to expand/collapse ──
 const CollapsibleCard = ({ icon, label, children, badge }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -74,7 +75,6 @@ const Row = ({ label, value, valueColor, mono }) => {
   );
 };
 
-// ── Row with expandable "..." for long lists ──
 const ExpandableRow = ({ label, values, mono }) => {
   const [expanded, setExpanded] = useState(false);
   if (!values?.length) return null;
@@ -131,7 +131,51 @@ const ScannerRow = ({ name, verdict, detail }) => (
   </View>
 );
 
-// ── Main Screen ──
+const EmbeddedLinksCard = ({ links }) => {
+  const { account } = useAuth();
+  const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
+  if (!isPremium) return null;
+  if (!links?.length) return null;
+
+  const anyMalicious = links.some((r) => r.verdict === 'malicious');
+  const anySuspicious = links.some((r) => r.verdict === 'suspicious');
+  const maliciousCount = links.filter((r) => r.verdict === 'malicious').length;
+  const suspiciousCount = links.filter((r) => r.verdict === 'suspicious').length;
+
+  return (
+    <Card>
+    <CardTitle icon="link" label={`Embedded Links (${links.length})`} />
+      {anyMalicious && (
+        <View style={styles.linkWarningBanner}>
+          <MaterialIcons name="dangerous" size={15} color="#FF6B6B" />
+          <Text style={styles.linkWarningText}>
+            {maliciousCount} malicious link{maliciousCount > 1 ? 's' : ''} found — site flagged as dangerous!
+          </Text>
+        </View>
+      )}
+
+      {!anyMalicious && anySuspicious && (
+        <View style={styles.linkSuspiciousBanner}>
+          <MaterialIcons name="warning" size={15} color="#FFD60A" />
+          <Text style={styles.linkSuspiciousText}>
+            {suspiciousCount} suspicious link{suspiciousCount > 1 ? 's' : ''} found.
+          </Text>
+        </View>
+      )}
+
+      {links.map((link, i) => {
+        const vc = getVC(link.verdict);
+        return (
+          <View key={i} style={styles.embeddedLinkRow}>
+            <MaterialIcons name={vc.icon} size={14} color={vc.color} style={{ flexShrink: 0 }} />
+            <Text style={styles.embeddedLinkUrl} numberOfLines={1}>{link.url}</Text>
+            <Badge verdict={link.verdict} />
+          </View>
+        );
+      })}
+      </Card>
+  );
+};
 
 export default function ScanResultScreen() {
   const router = useRouter();
@@ -153,11 +197,11 @@ export default function ScanResultScreen() {
   const u = result.urlscan;
 
   return (
-      <ImageBackground
-        source={require('../assets/background.png')}
-        style={styles.wrapper}
-        resizeMode="cover"
-      >
+    <ImageBackground
+      source={require('../assets/background.png')}
+      style={styles.wrapper}
+      resizeMode="cover"
+    >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -225,6 +269,9 @@ export default function ScanResultScreen() {
           </Card>
         )}
 
+        {/* ── Embedded Links ── */}
+        <EmbeddedLinksCard links={result.embeddedLinks} />
+
         {/* ── Website Content ── */}
         {u?.page && (
           <Card>
@@ -241,7 +288,7 @@ export default function ScanResultScreen() {
           </Card>
         )}
 
-        {/* ── Network Information — All IPs expandable ── */}
+        {/* ── Network Information ── */}
         {u?.network && (
           <Card>
             <CardTitle icon="hub" label="Network Information" />
@@ -280,7 +327,7 @@ export default function ScanResultScreen() {
           </Card>
         )}
 
-        {/* ── Technologies — collapsible ── */}
+        {/* ── Technologies ── */}
         {u?.technologies?.length > 0 && (
           <CollapsibleCard
             icon="memory"
@@ -306,7 +353,7 @@ export default function ScanResultScreen() {
           </CollapsibleCard>
         )}
 
-        {/* ── HTTP Headers — collapsible ── */}
+        {/* ── HTTP Headers ── */}
         {u?.httpHeaders?.length > 0 && (
           <CollapsibleCard
             icon="code"
@@ -319,7 +366,7 @@ export default function ScanResultScreen() {
           </CollapsibleCard>
         )}
 
-        {/* ── DOM / Content Analysis — collapsible ── */}
+        {/* ── DOM / Content Analysis ── */}
         {(u?.content?.cookies?.length > 0 || u?.content?.links?.length > 0 || u?.content?.globals?.length > 0) && (
           <CollapsibleCard icon="article" label="DOM / Content Analysis">
             {u.content.cookies?.length > 0 && (
@@ -371,7 +418,7 @@ export default function ScanResultScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      </ImageBackground>
+    </ImageBackground>
   );
 }
 
@@ -380,7 +427,6 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 56, gap: 12 },
 
-  // Hero
   hero: { borderRadius: 20, borderWidth: 1.5, padding: 24, alignItems: 'center', gap: 8 },
   heroVerdict: { fontSize: 28, fontWeight: '800', letterSpacing: 0.5 },
   heroMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
@@ -388,7 +434,6 @@ const styles = StyleSheet.create({
   heroSuggestion: { color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center', marginTop: 4, lineHeight: 20 },
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, justifyContent: 'center' },
 
-  // Card
   card: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16,
     padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 10,
@@ -396,7 +441,6 @@ const styles = StyleSheet.create({
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
   cardTitleText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
 
-  // Collapsible
   collapsibleHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   collapsibleBadge: {
     color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700',
@@ -405,49 +449,40 @@ const styles = StyleSheet.create({
   },
   collapsibleContent: { gap: 10, marginTop: 4 },
 
-  // Row
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   rowLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, flex: 1 },
   rowValue: { color: '#fff', fontSize: 12, fontWeight: '500', flex: 2, textAlign: 'right' },
   mono: { fontFamily: 'monospace', fontSize: 11 },
 
-  // Expandable row
   expandBtn: { marginTop: 4 },
   expandBtnText: { color: '#FFD60A', fontSize: 12, fontWeight: '600' },
 
-  // Badge
   badge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingVertical: 3, paddingHorizontal: 10, borderRadius: 50, borderWidth: 1 },
   badgeText: { fontSize: 12, fontWeight: '700' },
 
-  // Tag
   tag: { paddingVertical: 2, paddingHorizontal: 8, borderRadius: 50, borderWidth: 1 },
   tagText: { fontSize: 11, fontWeight: '600' },
 
-  // Scanner
   scannerRow: { gap: 3 },
   scannerTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   scannerName: { color: '#fff', fontSize: 14, fontWeight: '600' },
   scannerDetail: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
 
-  // Screenshot
   screenshot: { width: '100%', height: 190, borderRadius: 10, marginTop: 4 },
   screenshotHint: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   screenshotHintText: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
 
-  // Technologies
   techRow: { gap: 2, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   techName: { color: '#fff', fontSize: 13, fontWeight: '600' },
   techCategory: { color: 'rgba(255,255,255,0.4)', fontSize: 11 },
   techConfidence: { color: 'rgba(255,255,255,0.3)', fontSize: 11 },
 
-  // DOM
   subLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
   cookieRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   cookieName: { color: '#fff', fontSize: 12, fontFamily: 'monospace', flex: 1 },
   cookieBadges: { flexDirection: 'row', gap: 4 },
   linkText: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontFamily: 'monospace' },
 
-  // Actions
   actionsRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
   actionBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -457,9 +492,27 @@ const styles = StyleSheet.create({
   actionBtnPrimary: { backgroundColor: '#fff', borderColor: '#fff' },
   actionBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
 
-  // Error
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0a0a0a', gap: 16 },
   errorText: { color: '#FF6B6B', fontSize: 16 },
   backButton: { paddingVertical: 12, paddingHorizontal: 28, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.1)' },
   backButtonText: { color: '#fff', fontWeight: '600' },
+
+  linkWarningBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(255,107,107,0.12)', borderRadius: 10,
+    padding: 10, borderWidth: 1, borderColor: 'rgba(255,107,107,0.3)',
+  },
+  linkWarningText: { color: '#FF6B6B', fontSize: 12, fontWeight: '600', flex: 1 },
+  linkSuspiciousBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(255,214,10,0.12)', borderRadius: 10,
+    padding: 10, borderWidth: 1, borderColor: 'rgba(255,214,10,0.3)',
+  },
+  linkSuspiciousText: { color: '#FFD60A', fontSize: 12, fontWeight: '600', flex: 1 },
+  embeddedLinkRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingVertical: 8,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  embeddedLinkUrl: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontFamily: 'monospace', flex: 1 },
 });
