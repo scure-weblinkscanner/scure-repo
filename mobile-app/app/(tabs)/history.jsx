@@ -6,6 +6,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
+import { useScan } from '../../context/ScanContext';
 import { fetchScanHistory } from '../../services/scanApi.service';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -62,6 +63,7 @@ const HistoryItem = ({ item, onPress }) => {
 export default function HistoryScreen() {
   const router = useRouter();
   const { token } = useAuth();
+  const { setSelectedHistoryItem } = useScan();
   const [history, setHistory] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -96,7 +98,8 @@ export default function HistoryScreen() {
   ).length;
 
   const handleItemPress = (item) => {
-    router.push({ pathname: '/scanHistoryResult', params: { item: JSON.stringify(item) } });
+    setSelectedHistoryItem(item);
+    router.push('/scanHistoryResult');
   };
 
   return (

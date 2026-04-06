@@ -176,7 +176,7 @@ const EmbeddedLinksCard = ({ links }) => {
               activeOpacity={0.85}
             >
               <MaterialIcons name="link" size={18} color="#FFD60A" />
-              <Text style={styles.premiumScanBtnText}>Second-level Scan</Text>
+              <Text style={styles.premiumScanBtnText}>Second-Level Scan</Text>
               <View style={styles.premiumBadge}>
                 <MaterialIcons name="lock" size={11} color="#fff" />
                 <Text style={styles.premiumBadgeText}>Premium</Text>
@@ -356,9 +356,6 @@ export default function ScanResultScreen() {
           </Card>
         )}
 
-        {/* ── Embedded Links ── */}
-        <EmbeddedLinksCard links={result.embeddedLinks} />
-
         {/* ── Website Content ── */}
         {u?.page && (
           <Card>
@@ -374,6 +371,9 @@ export default function ScanResultScreen() {
             <Row label="Redirected"  value={u.page.redirected} />
           </Card>
         )}
+
+        {/* ── Embedded Links ── */}
+        <EmbeddedLinksCard links={result.embeddedLinks} />
 
         {/* ── Network Information ── */}
         {u?.network && (
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   lockedCardBlurred: {
-    opacity: 0.18,
+    opacity: 0.05,
   },
   lockedCardOverlay: {
     position: 'absolute',
