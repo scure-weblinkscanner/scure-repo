@@ -6,6 +6,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
+import { useScan } from '../context/ScanContext';
 import { fetchPublicScans } from '../services/scanApi.service';
 
 const verdictConfig = {
@@ -67,6 +68,7 @@ const PublicScanItem = ({ item, onPress }) => {
 export default function PublicScansScreen() {
   const router = useRouter();
   const { token } = useAuth();
+  const { setSelectedHistoryItem } = useScan();
   const [scans, setScans] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -96,7 +98,8 @@ export default function PublicScansScreen() {
   );
 
   const handleItemPress = (item) => {
-    router.push({ pathname: '/publicScanResult', params: { item: JSON.stringify(item) } });
+    setSelectedHistoryItem(item);
+    router.push('/publicScanResult');
   };
 
   return (

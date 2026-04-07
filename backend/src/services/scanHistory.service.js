@@ -14,6 +14,7 @@ export const createScanHistory = async (userId, scanMethod, scanData) => {
     shVirustotal: scanData.virustotal,
     shSafebrowsing: scanData.safebrowsing,
     shScriptAnalysis: scanData.scriptAnalysis,
+    shEmbeddedLinks: scanData.embeddedLinks,
   })
 }
 
