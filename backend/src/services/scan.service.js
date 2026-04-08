@@ -1,5 +1,5 @@
-import { extractScriptsFromURL, extractLinksFromURL } from '../utils/playwright.js';
-import { analyzeScripts, generateSuggestion } from '../utils/geminiAnalysis.js';
+import { extractScriptsFromURL, extractLinksFromURL, extractTextContentFromURL } from '../utils/playwright.js';
+import { analyzeScripts, generateSuggestion, analyzeForMisinformation } from '../utils/geminiAnalysis.js';
 import { scanWithURLScan } from '../utils/urlScan.js';
 import { scanWithVirusTotal } from '../utils/virusTotal.js';
 import { scanWithSafeBrowsing } from '../utils/safeBrowsing.js';
@@ -34,7 +34,6 @@ export const analyzeURL = async (url) => {
     (r) => r.verdict === 'malicious'
   );
 
-  // collect who flagged it as malicious
   const flaggedBy = [];
   if (scriptAnalysis.verdict === 'malicious') flaggedBy.push('AI Script Analysis');
   if (virustotal.verdict === 'malicious') flaggedBy.push('VirusTotal');
@@ -42,7 +41,6 @@ export const analyzeURL = async (url) => {
   if (urlscan.verdict === 'malicious') flaggedBy.push('URLScan.io');
   if (anyEmbeddedMalicious) flaggedBy.push('Embedded Links');
 
-  // calculate risk score
   let riskScore = scriptAnalysis.riskScore || 0;
   if (virustotal.malicious > 0) riskScore += 30;
   if (safebrowsing.verdict === 'malicious') riskScore += 30;
@@ -50,7 +48,6 @@ export const analyzeURL = async (url) => {
   if (anyEmbeddedMalicious) riskScore += 20;
   riskScore = Math.min(riskScore, 100);
 
-  // overall verdict
   const safebrowsingMalicious = safebrowsing.verdict === 'malicious';
   const overallVerdict = safebrowsingMalicious || anyEmbeddedMalicious || riskScore >= 60
     ? 'malicious'
@@ -58,14 +55,12 @@ export const analyzeURL = async (url) => {
     ? 'suspicious'
     : 'clean';
 
-  // human readable score label
   const scoreLabel = riskScore >= 60
     ? 'High risk'
     : riskScore >= 25
     ? 'Moderate risk'
     : 'Mostly clean';
 
-  // suggestion from AI or fallback
   const suggestion = await generateSuggestion(riskScore, flaggedBy, scoreLabel, url);
 
   return {
@@ -80,5 +75,20 @@ export const analyzeURL = async (url) => {
     virustotal,
     safebrowsing,
     embeddedLinks: embeddedLinkResults,
+  };
+};
+
+export const factCheckURL = async (url) => {
+  // Extract visible page text for Gemini to analyse
+  const textContent = await extractTextContentFromURL(url).catch((err) => {
+    console.warn('Text extraction skipped:', err.message);
+    return '';
+  });
+
+  const analysis = await analyzeForMisinformation(url, textContent);
+
+  return {
+    url,
+    ...analysis,
   };
 };

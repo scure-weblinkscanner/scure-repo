@@ -9,11 +9,13 @@ import {
   Linking,
   ImageBackground,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useScan } from '../context/ScanContext';
 import { useAuth } from '../context/AuthContext';
+import BASE_URL from '../constants/api';
 
 
 const verdictConfig = {
@@ -151,7 +153,6 @@ const EmbeddedLinksCard = ({ links }) => {
     return (
       <>
         <View style={styles.lockedCardWrapper}>
-          {/* Blurred placeholder content */}
           <View pointerEvents="none" style={styles.lockedCardBlurred}>
             <View style={styles.card}>
               <CardTitle icon="link" label="Embedded Links (4)" />
@@ -168,7 +169,6 @@ const EmbeddedLinksCard = ({ links }) => {
             </View>
           </View>
 
-          {/* Upgrade overlay */}
           <View style={styles.lockedCardOverlay}>
             <TouchableOpacity
               style={styles.premiumScanBtn}
@@ -261,6 +261,151 @@ const EmbeddedLinksCard = ({ links }) => {
         );
       })}
     </Card>
+  );
+};
+
+// ── NEW: Fact-Check Card (Premium only) ──
+const FactCheckCard = ({ url }) => {
+  const { account, token } = useAuth();
+  const { setFactCheckResult } = useScan();
+  const router = useRouter();
+  const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleFactCheck = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${BASE_URL}/scanURL/fact-check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      // Always read as text first — server may return HTML on unexpected errors
+      const raw = await response.text();
+
+      if (!response.ok) {
+        try {
+          const data = JSON.parse(raw);
+          throw new Error(data.error || `Server error (${response.status})`);
+        } catch {
+          throw new Error(`Server error (${response.status})`);
+        }
+      }
+
+      let result;
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        throw new Error('Received an unexpected response from the server. Please try again.');
+      }
+
+      setFactCheckResult(result);
+      router.push('/factCheckResult');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── FREE USER: locked card ──
+  if (!isPremium) {
+    return (
+      <>
+        <View style={styles.lockedCardWrapper}>
+          {/* Blurred placeholder */}
+          <View pointerEvents="none" style={styles.lockedCardBlurred}>
+            <View style={styles.card}>
+              <CardTitle icon="fact-check" label="Fact-Check Content" />
+              <View style={{ gap: 8, marginTop: 4 }}>
+                {['Claim accuracy analysis', 'Misinformation detection', 'Source credibility check'].map((t, i) => (
+                  <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <MaterialIcons name="check-circle" size={14} color="#4AFF91" />
+                    <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{t}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          {/* Upgrade overlay */}
+          <View style={styles.lockedCardOverlay}>
+            <TouchableOpacity
+              style={styles.premiumScanBtn}
+              onPress={() => setShowModal(true)}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="fact-check" size={18} color="#FFD60A" />
+              <Text style={styles.premiumScanBtnText}>Fact-check this website</Text>
+              <View style={styles.premiumBadge}>
+                <MaterialIcons name="lock" size={11} color="#fff" />
+                <Text style={styles.premiumBadgeText}>Premium</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Modal transparent animationType="fade" visible={showModal} onRequestClose={() => setShowModal(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              <MaterialIcons name="workspace-premium" size={36} color="#f0a500" style={{ marginBottom: 12 }} />
+              <Text style={styles.modalTitle}>Premium Feature</Text>
+              <Text style={styles.modalMessage}>
+                Fact-check uses AI to analyse the page content for misinformation, false claims, and credibility signals. Upgrade to unlock.
+              </Text>
+              <TouchableOpacity
+                style={styles.modalBtnPrimary}
+                onPress={() => { setShowModal(false); Linking.openURL('https://scure.up.railway.app/upgrade'); }}
+              >
+                <Text style={styles.modalBtnPrimaryText}>Yes, upgrade now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalBtnSecondary} onPress={() => setShowModal(false)}>
+                <Text style={styles.modalBtnSecondaryText}>Maybe later</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </>
+    );
+  }
+
+  // ── PREMIUM USER: active button ──
+  return (
+    <View style={styles.card}>
+      <CardTitle icon="fact-check" label="Content Fact-Check" />
+      <Text style={styles.factCheckDescription}>
+        Use AI to analyse this page's content for misinformation, false claims, and credibility signals.
+      </Text>
+      {error ? (
+        <Text style={styles.factCheckError}>{error}</Text>
+      ) : null}
+      <TouchableOpacity
+        style={[styles.factCheckBtn, loading && { opacity: 0.6 }]}
+        onPress={handleFactCheck}
+        disabled={loading}
+        activeOpacity={0.8}
+      >
+        {loading ? (
+          <>
+            <ActivityIndicator size="small" color="#000" />
+            <Text style={styles.factCheckBtnText}>Analysing content…</Text>
+          </>
+        ) : (
+          <>
+            <MaterialIcons name="fact-check" size={18} color="#000" />
+            <Text style={styles.factCheckBtnText}>Fact-check this website</Text>
+          </>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -374,6 +519,9 @@ export default function ScanResultScreen() {
 
         {/* ── Embedded Links ── */}
         <EmbeddedLinksCard links={result.embeddedLinks} />
+
+        {/* ── Fact-Check (Premium) ── */}
+        <FactCheckCard url={result.url} />
 
         {/* ── Network Information ── */}
         {u?.network && (
@@ -596,54 +744,50 @@ const styles = StyleSheet.create({
   embeddedLinkUrl: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontFamily: 'monospace', flex: 1 },
 
   // ── Locked card (free user blurred preview) ──
-  lockedCardWrapper: {
-    position: 'relative',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  lockedCardBlurred: {
-    opacity: 0.05,
-  },
+  lockedCardWrapper: { position: 'relative', borderRadius: 16, overflow: 'hidden' },
+  lockedCardBlurred: { opacity: 0.05 },
   lockedCardOverlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(10,10,10,0.55)',
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,214,10,0.25)',
-    padding: 20,
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(10,10,10,0.55)', borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,214,10,0.25)', padding: 20,
   },
 
   premiumScanBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: 'rgba(255,214,10,0.1)', borderRadius: 14,
-    padding: 16, borderWidth: 1.5, borderColor: 'rgba(255,214,10,0.4)',
-    width: '100%',
+    padding: 16, borderWidth: 1.5, borderColor: 'rgba(255,214,10,0.4)', width: '100%',
   },
   premiumScanBtnText: { color: '#FFD60A', fontSize: 15, fontWeight: '700', flex: 1 },
   premiumBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#f0a500', borderRadius: 50,
-    paddingHorizontal: 8, paddingVertical: 3,
+    backgroundColor: '#f0a500', borderRadius: 50, paddingHorizontal: 8, paddingVertical: 3,
   },
   premiumBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
 
-  modalOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center', alignItems: 'center',
+  // ── Fact-Check card (premium active) ──
+  factCheckDescription: {
+    color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 19,
   },
+  factCheckBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#FFD60A', borderRadius: 50,
+    paddingVertical: 13, marginTop: 4,
+  },
+  factCheckBtnText: { color: '#000', fontSize: 15, fontWeight: '700' },
+  factCheckError: {
+    color: '#FF6B6B', fontSize: 12, textAlign: 'center',
+    backgroundColor: 'rgba(255,107,107,0.1)', padding: 8, borderRadius: 8,
+  },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
   modalBox: {
     backgroundColor: '#1A1A1A', borderRadius: 20,
     padding: 28, width: '80%', alignItems: 'center',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   modalTitle: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 8 },
-  modalMessage: {
-    color: 'rgba(255,255,255,0.6)', fontSize: 14,
-    textAlign: 'center', lineHeight: 20, marginBottom: 24,
-  },
+  modalMessage: { color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
   modalBtnPrimary: {
     backgroundColor: '#FFD60A', borderRadius: 50,
     paddingVertical: 13, paddingHorizontal: 24,
