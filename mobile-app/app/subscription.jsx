@@ -48,6 +48,7 @@ export default function SubscriptionScreen() {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   const isPremium = account?.uaUserProfileId === 3;
+  const formatStatus = (status) => status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '';
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -203,7 +204,7 @@ export default function SubscriptionScreen() {
                   </View>
                   <View style={styles.metaRow}>
                     <Text style={styles.metaLabel}>Status</Text>
-                    <Text style={styles.metaValue}>{subscription.spStatus}</Text>
+                    <Text style={[styles.metaValue, {color: subscription.spStatus === 'active' ? '#4AFF91' : '#ff6b6b'}]}>{formatStatus(subscription.spStatus)}</Text>
                   </View>
                 </>
               )}
@@ -346,7 +347,7 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#222', marginVertical: 14 },
 
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  metaLabel: { fontSize: 13, color: '#555' },
+  metaLabel: { fontSize: 13, color: '#fff' },
   metaValue: { fontSize: 13, color: '#fff', fontWeight: '600' },
 
   featureRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },

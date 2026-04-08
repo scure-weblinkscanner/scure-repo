@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 45,
+    marginTop: 55,
     color: '#0E0E95',
   },
   email: {
