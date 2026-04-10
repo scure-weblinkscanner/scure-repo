@@ -19,8 +19,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const normalizeUrl = (url) => {
   const u = url.trim().toLowerCase();

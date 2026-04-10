@@ -15,6 +15,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { getSubscriptionByUser, cancelSubscription } from '../services/subscriptionPlan.service';
 import { getUserAccountById } from '../services/userAccount.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const UPGRADE_URL = 'https://scure.up.railway.app/upgrade';
 
@@ -37,6 +38,7 @@ const PREMIUM_FEATURES = [
 ];
 
 export default function SubscriptionScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token, account, login } = useAuth();
 
@@ -119,7 +121,7 @@ export default function SubscriptionScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, {paddingBottom: insets.bottom + 90}]}
         showsVerticalScrollIndicator={false}
       >
         {loading ? (
@@ -243,7 +245,7 @@ export default function SubscriptionScreen() {
 
       {/* Bottom Bar */}
       {!loading && !error && (
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 15}]}>
           {isPremium ? (
             <TouchableOpacity
               style={styles.cancelBtn}
@@ -309,7 +311,7 @@ const styles = StyleSheet.create({
   },
   navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
 
-  content: { paddingHorizontal: 20, paddingBottom: 120 },
+  content: { paddingHorizontal: 20},
 
   infoText: { color: '#fff', fontSize: 14, textAlign: 'center', paddingVertical: 40 },
 
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: '#0A0A0A', paddingHorizontal: 20,
-    paddingTop: 12, paddingBottom: 36,
+    paddingTop: 12,
     borderTopWidth: 1, borderTopColor: '#1E1E1E',
   },
   upgradeBtn: {

@@ -11,10 +11,12 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
 import { analyzeUrl } from '../services/scanApi.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const OCR_MAX_WIDTH = 1500;
 
 export default function ScanQRScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
   const { setScanResult } = useScan();
@@ -200,7 +202,7 @@ export default function ScanQRScreen() {
       ) : null}
 
       {/* Bottom controls */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 15}]}>
         {!detectedUrl ? (
           <TouchableOpacity
             style={styles.captureBtn}
@@ -366,7 +368,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 48,
     paddingHorizontal: 24,
     paddingTop: 20,
     backgroundColor: 'rgba(0,0,0,0.5)',

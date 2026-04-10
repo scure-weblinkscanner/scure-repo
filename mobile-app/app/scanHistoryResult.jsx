@@ -7,6 +7,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { publishScanHistory } from '../services/scanApi.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const verdictConfig = {
   clean:      { color: '#4AFF91', bg: 'rgba(74,255,145,0.12)',  icon: 'check-circle', label: 'Safe'       },
@@ -121,6 +122,7 @@ const ScannerRow = ({ name, verdict, detail }) => (
 );
 
 export default function PublicScanResultScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
   const { item: itemParam } = useLocalSearchParams();
@@ -358,7 +360,7 @@ export default function PublicScanResultScreen() {
       </ImageBackground>
 
       {/* Publish button — fixed at bottom, excluded from scroll */}
-      <View style={styles.publishBar}>
+      <View style={[styles.publishBar, {paddingBottom: insets.bottom + 15}]}>
         <TouchableOpacity
           style={[styles.publishBtn, isPublished && styles.publishBtnDone]}
           onPress={handlePublish}

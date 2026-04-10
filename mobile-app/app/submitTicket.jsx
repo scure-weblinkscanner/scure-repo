@@ -17,8 +17,10 @@ import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { submitTicket } from '../services/tickets.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SubmitTicketScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
 
@@ -82,7 +84,7 @@ export default function SubmitTicketScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         style={styles.wrapper}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Top Nav */}
         <View style={styles.topNav}>
@@ -96,7 +98,7 @@ export default function SubmitTicketScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, {paddingBottom: insets.bottom + 100}]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -176,7 +178,7 @@ export default function SubmitTicketScreen() {
         </ScrollView>
 
         {/* Bottom Bar */}
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 15}]}>
           {submitting ? (
             <View style={styles.loadingBarContainer}>
               <Text style={styles.loadingBarLabel}>Submitting ticket…</Text>
@@ -241,7 +243,7 @@ const styles = StyleSheet.create({
   },
   navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
 
-  content: { paddingHorizontal: 20, paddingBottom: 120 },
+  content: { paddingHorizontal: 20},
 
   headerRow: {
     alignItems: 'center',
@@ -295,7 +297,7 @@ const styles = StyleSheet.create({
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: '#0A0A0A', paddingHorizontal: 20,
-    paddingTop: 12, paddingBottom: 36,
+    paddingTop: 12,
     borderTopWidth: 1, borderTopColor: '#1E1E1E',
   },
   submitBtn: {
