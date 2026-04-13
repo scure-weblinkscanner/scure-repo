@@ -17,8 +17,10 @@ import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { updateUserAccount, deleteUserAccount } from '../services/userAccount.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AccountDetailsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token, account, login, logout } = useAuth();
 
@@ -143,7 +145,7 @@ export default function AccountDetailsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         style={styles.wrapper}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.topNav}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
@@ -154,7 +156,7 @@ export default function AccountDetailsScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, {paddingBottom: insets.bottom + 90}]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -303,7 +305,7 @@ export default function AccountDetailsScreen() {
           </Animated.View>
         </ScrollView>
 
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 15}]}>
           {saving ? (
             <View style={styles.loadingBarContainer}>
               <Text style={styles.loadingBarLabel}>Saving changes…</Text>
@@ -368,7 +370,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center',
   },
   navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
-  content: { paddingHorizontal: 20, paddingBottom: 120 },
+  content: { paddingHorizontal: 20 },
   avatarRow: { alignItems: 'center', paddingVertical: 28, gap: 6 },
   avatar: {
     width: 72, height: 72, borderRadius: 36,
@@ -412,7 +414,7 @@ const styles = StyleSheet.create({
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: '#0A0A0A', paddingHorizontal: 20,
-    paddingTop: 12, paddingBottom: 36,
+    paddingTop: 12,
     borderTopWidth: 1, borderTopColor: '#1E1E1E',
   },
   saveBtn: {

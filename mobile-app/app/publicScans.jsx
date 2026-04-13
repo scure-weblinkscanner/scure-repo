@@ -8,6 +8,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
 import { fetchPublicScans } from '../services/scanApi.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const verdictConfig = {
   clean:      { color: '#4AFF91', icon: 'check-circle' },
@@ -66,6 +67,7 @@ const PublicScanItem = ({ item, onPress }) => {
 };
 
 export default function PublicScansScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
   const { setSelectedHistoryItem } = useScan();
@@ -171,7 +173,7 @@ export default function PublicScansScreen() {
       </ImageBackground>
       {/* Stats footer */}
       {!loading && !error && (
-        <View style={styles.statsBar}>
+        <View style={[styles.statsBar, {paddingBottom: insets.bottom + 15}]}>
           <Text style={styles.statsText}>
             <Text style={styles.statsHighlight}>{filteredScans.length}</Text>
             {searchQuery ? ' results found.' : ' public scans available.'}
@@ -307,7 +309,6 @@ const styles = StyleSheet.create({
   statsBar: {
     paddingHorizontal: 20, 
     paddingVertical: 14,
-    paddingBottom: 30,
     borderTopWidth: 1, 
     borderTopColor: 'rgba(255,255,255,0.08)',
     backgroundColor: '#0a0a0a',

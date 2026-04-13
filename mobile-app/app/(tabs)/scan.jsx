@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Image, Modal, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
@@ -47,6 +47,7 @@ const scanOptions = [
 ];
 
 export default function ScanScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { account } = useAuth();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -84,7 +85,7 @@ export default function ScanScreen() {
         resizeMode="cover"
       >
         <ScrollView
-          contentContainerStyle={[styles.container, { paddingBottom: 80 }]}
+          contentContainerStyle={[styles.container, {paddingBottom: insets.bottom + 60}]}
           style={{ backgroundColor: 'transparent' }}
         >
           {/* Logo Area */}
