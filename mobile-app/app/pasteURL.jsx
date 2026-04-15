@@ -20,6 +20,7 @@ import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
 import { useNotifications } from '../hooks/useNotifications';
+import { useAdDetection } from '../hooks/useAdDetection';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import BlocklistModal from '../components/BlocklistModal';
 
@@ -50,6 +51,7 @@ export default function PasteURLScreen() {
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
   const pendingUrl = useRef(null);
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
+  const { adDetectionEnabled } = useAdDetection();
   const isFocused = useRef(true);
 
   useFocusEffect(
@@ -116,7 +118,7 @@ export default function PasteURLScreen() {
   const runScan = async (normalizedUrl, skipBlocklist = false) => {
     setScanning(true);
     try {
-      const result = await analyzeUrl(normalizedUrl, token, 'pasteUrl', skipBlocklist);
+      const result = await analyzeUrl(normalizedUrl, token, 'pasteUrl', skipBlocklist, adDetectionEnabled);
       setScanResult(result);
       if (result.blocklist && !skipBlocklist) {
         pendingUrl.current = normalizedUrl;

@@ -20,6 +20,7 @@ import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
 import { useNotifications } from '../hooks/useNotifications';
+import { useAdDetection } from '../hooks/useAdDetection';
 import BlocklistModal from '../components/BlocklistModal';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -89,6 +90,7 @@ export default function ScanURLScreen() {
   const pendingUrl = useRef(null);
   const { setScanResult } = useScan();
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
+  const { adDetectionEnabled } = useAdDetection();
   const isFocused = useRef(true);
 
   useEffect(() => {
@@ -196,7 +198,7 @@ export default function ScanURLScreen() {
   const runScan = async (url, skipBlocklist = false) => {
     setScanning(true);
     try {
-      const result = await analyzeUrl(url, token, 'cameraUrl', skipBlocklist);
+      const result = await analyzeUrl(url, token, 'cameraUrl', skipBlocklist, adDetectionEnabled);
       setScanResult(result);
       if (result.blocklist && !skipBlocklist) {
         pendingUrl.current = url;

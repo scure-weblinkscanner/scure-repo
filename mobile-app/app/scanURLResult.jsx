@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -132,6 +132,87 @@ const ScannerRow = ({ name, verdict, detail }) => (
 );
 
 const PREMIUM_PROFILE_ID = 3;
+
+const SLIDE_LABELS = ['Initial Load', 'After Scroll', 'After Interaction'];
+
+const AdAnalysisCard = ({ adAnalysis }) => {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (adAnalysis?.isAdIntensive && adAnalysis.screenshots?.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIdx((i) => (i + 1) % adAnalysis.screenshots.length);
+      }, 1200);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [adAnalysis]);
+
+  if (!adAnalysis) return null;
+
+  if (!adAnalysis.isAdIntensive) {
+    return (
+      <View style={[styles.card, styles.adCleanCard]}>
+        <View style={styles.cardTitleRow}>
+          <MaterialIcons name="check-circle" size={15} color="#4AFF91" />
+          <Text style={[styles.cardTitleText, { color: '#4AFF91' }]}>Ad Check Complete</Text>
+        </View>
+        <Text style={styles.adCleanText}>
+          No excessive ads were found on this page. It looks clean and distraction-free to browse.
+        </Text>
+      </View>
+    );
+  }
+
+  const { screenshots, adNetworks } = adAnalysis;
+
+  return (
+    <View style={[styles.card, styles.adWarningCard]}>
+      <View style={styles.cardTitleRow}>
+        <MaterialIcons name="ad-units" size={15} color="#FFA500" />
+        <Text style={[styles.cardTitleText, { color: '#FFA500' }]}>Ad Intensive Page</Text>
+      </View>
+
+      {screenshots?.length > 0 && (
+        <View style={styles.adSlideshow}>
+          <Image
+            source={{ uri: `data:image/jpeg;base64,${screenshots[currentIdx]}` }}
+            style={styles.adScreenshot}
+            resizeMode="cover"
+          />
+          <View style={styles.adSlideCaption}>
+            <Text style={styles.adSlideLabelText}>{SLIDE_LABELS[currentIdx]}</Text>
+          </View>
+          <View style={styles.adSlideDots}>
+            {screenshots.map((_, i) => (
+              <View
+                key={i}
+                style={[styles.adDot, i === currentIdx && styles.adDotActive]}
+              />
+            ))}
+          </View>
+        </View>
+      )}
+
+      {adNetworks?.length > 0 && (
+        <View>
+          <Text style={styles.adNetworksLabel}>Ad Networks Detected</Text>
+          <View style={styles.adNetworksRow}>
+            {adNetworks.map((n, i) => (
+              <View key={i} style={styles.adNetworkChip}>
+                <Text style={styles.adNetworkChipText}>{n}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      <Text style={styles.adWarningText}>
+        This page loads ads from multiple sources and injects new content as you scroll and interact. It may slow down your device, use extra mobile data, and disrupt your experience.
+      </Text>
+    </View>
+  );
+};
 
 // Placeholder links shown in the blurred preview for free users
 const PLACEHOLDER_LINKS = [
@@ -279,6 +360,8 @@ export default function ScanResultScreen() {
       </View>
     );
   }
+
+  console.log('[AdDetection] adAnalysis:', JSON.stringify(result.adAnalysis ?? null));
 
   const vc = getVC(result.overallVerdict);
   const u = result.urlscan;
@@ -482,6 +565,9 @@ export default function ScanResultScreen() {
           </CollapsibleCard>
         )}
 
+        {/* ── Ad Intensive Detection ── */}
+        <AdAnalysisCard adAnalysis={result.adAnalysis} />
+
         {/* ── Actions ── */}
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.actionBtn} onPress={() => router.back()}>
@@ -652,4 +738,59 @@ const styles = StyleSheet.create({
   modalBtnPrimaryText: { color: '#000', fontWeight: '700', fontSize: 15 },
   modalBtnSecondary: { paddingVertical: 10 },
   modalBtnSecondaryText: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
+
+  // ── Ad Analysis Card ──
+  adWarningCard: {
+    borderColor: 'rgba(255,165,0,0.4)',
+    backgroundColor: 'rgba(255,165,0,0.05)',
+  },
+  adCleanCard: {
+    borderColor: 'rgba(74,255,145,0.3)',
+    backgroundColor: 'rgba(74,255,145,0.04)',
+  },
+  adCleanText: {
+    color: 'rgba(255,255,255,0.6)', fontSize: 13, lineHeight: 20,
+  },
+  adSlideshow: {
+    borderRadius: 10, overflow: 'hidden', backgroundColor: '#111',
+  },
+  adScreenshot: {
+    width: '100%', height: 180,
+  },
+  adSlideCaption: {
+    backgroundColor: 'rgba(0,0,0,0.6)', paddingVertical: 5, paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  adSlideLabelText: {
+    color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '600',
+  },
+  adSlideDots: {
+    flexDirection: 'row', justifyContent: 'center', gap: 6,
+    paddingVertical: 8,
+  },
+  adDot: {
+    width: 6, height: 6, borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  adDotActive: {
+    backgroundColor: '#FFA500',
+  },
+  adNetworksLabel: {
+    color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '700',
+    letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6,
+  },
+  adNetworksRow: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 6,
+  },
+  adNetworkChip: {
+    backgroundColor: 'rgba(255,165,0,0.1)', borderRadius: 50,
+    paddingVertical: 4, paddingHorizontal: 10,
+    borderWidth: 1, borderColor: 'rgba(255,165,0,0.3)',
+  },
+  adNetworkChipText: {
+    color: '#FFA500', fontSize: 11, fontWeight: '600',
+  },
+  adWarningText: {
+    color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 20,
+  },
 });

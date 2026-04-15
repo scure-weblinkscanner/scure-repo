@@ -4,8 +4,9 @@ import { scanWithURLScan } from '../utils/urlScan.js';
 import { scanWithVirusTotal } from '../utils/virusTotal.js';
 import { scanWithSafeBrowsing } from '../utils/safeBrowsing.js';
 import { checkBlocklist } from './blocklist.service.js';
+import { detectAds } from '../utils/adDetection.js';
 
-export const analyzeURL = async (url, isPremium = false) => {
+export const analyzeURL = async (url, isPremium = false, adDetection = false) => {
   // ── Fast local blocklist check (premium users only) ──
   if (isPremium) {
     const blocklistHit = await checkBlocklist(url);
@@ -32,7 +33,7 @@ export const analyzeURL = async (url, isPremium = false) => {
   }
 
   // ── Full external API scan ────────────────────────────────────
-  const [scripts, embeddedLinks, urlscanResult, virustotal, safebrowsing] = await Promise.all([
+  const [scripts, embeddedLinks, urlscanResult, virustotal, safebrowsing, adAnalysis] = await Promise.all([
     extractScriptsFromURL(url),
     extractLinksFromURL(url),
     scanWithURLScan(url).catch((err) => {
@@ -41,6 +42,7 @@ export const analyzeURL = async (url, isPremium = false) => {
     }),
     scanWithVirusTotal(url),
     scanWithSafeBrowsing(url),
+    (isPremium && adDetection) ? detectAds(url).catch(() => null) : Promise.resolve(null),
   ]);
 
   const urlscan = urlscanResult;
@@ -105,5 +107,6 @@ export const analyzeURL = async (url, isPremium = false) => {
     virustotal,
     safebrowsing,
     embeddedLinks: embeddedLinkResults,
+    adAnalysis,
   };
 };

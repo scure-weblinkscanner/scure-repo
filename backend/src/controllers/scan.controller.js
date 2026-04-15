@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 export const analyzeScan = async (req, res) => {
   try {
-    const { url, scanMethod, skipBlocklist } = req.body;
+    const { url, scanMethod, skipBlocklist, adDetection } = req.body;
 
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
@@ -19,7 +19,7 @@ export const analyzeScan = async (req, res) => {
     const subscription = await getSubscriptionByUser(userId)
     const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active'
 
-    const result = await analyzeURL(url, isPremium && !skipBlocklist);
+    const result = await analyzeURL(url, isPremium && !skipBlocklist, isPremium && !!adDetection);
 
     createScanHistory(userId, scanMethod ?? 'cameraUrl', result).catch((err) =>
       console.error('Failed to save scan history:', err.message)

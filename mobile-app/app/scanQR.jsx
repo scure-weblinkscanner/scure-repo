@@ -13,6 +13,7 @@ import { useScan } from '../context/ScanContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNotifications } from '../hooks/useNotifications';
+import { useAdDetection } from '../hooks/useAdDetection';
 import BlocklistModal from '../components/BlocklistModal';
 
 const OCR_MAX_WIDTH = 1500;
@@ -33,6 +34,7 @@ export default function ScanQRScreen() {
   const scanAnim = useRef(new Animated.Value(0.2)).current;
   const loadingAnim = useRef(new Animated.Value(0)).current;
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
+  const { adDetectionEnabled } = useAdDetection();
   const isFocused = useRef(true);
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
   const pendingUrl = useRef(null);
@@ -115,7 +117,7 @@ export default function ScanQRScreen() {
     setScanning(true);
     startLoadingBar();
     try {
-      const result = await analyzeUrl(url, token, 'cameraQr', skipBlocklist);
+      const result = await analyzeUrl(url, token, 'cameraQr', skipBlocklist, adDetectionEnabled);
       setScanResult(result);
       if (result.blocklist && !skipBlocklist) {
         pendingUrl.current = url;
