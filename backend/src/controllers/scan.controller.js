@@ -1,5 +1,6 @@
 import { analyzeURL } from '../services/scan.service.js';
 import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans, getScanActivity, getAllScansAdmin } from '../services/scanHistory.service.js'
+import { getSubscriptionByUser } from '../database/subscriptionPlan.db.js'
 import jwt from 'jsonwebtoken';
 
 export const analyzeScan = async (req, res) => {
@@ -15,7 +16,10 @@ export const analyzeScan = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.uaId;
 
-    const result = await analyzeURL(url);
+    const subscription = await getSubscriptionByUser(userId)
+    const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active'
+
+    const result = await analyzeURL(url, isPremium);
 
     createScanHistory(userId, scanMethod ?? 'cameraUrl', result).catch((err) =>
       console.error('Failed to save scan history:', err.message)

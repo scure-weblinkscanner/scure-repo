@@ -3,9 +3,40 @@ import { analyzeScripts, generateSuggestion } from '../utils/geminiAnalysis.js';
 import { scanWithURLScan } from '../utils/urlScan.js';
 import { scanWithVirusTotal } from '../utils/virusTotal.js';
 import { scanWithSafeBrowsing } from '../utils/safeBrowsing.js';
+import { checkBlocklist } from './blocklist.service.js';
 
+<<<<<<< Updated upstream
 export const analyzeURL = async (url) => {
   const [scripts, embeddedLinks, urlscanResult, virustotal, safebrowsing] = await Promise.all([
+=======
+export const analyzeURL = async (url, isPremium = false) => {
+  // ── Fast local blocklist check (premium users only) ──
+  if (isPremium) {
+    const blocklistHit = await checkBlocklist(url);
+    if (blocklistHit) {
+      return {
+        url,
+        overallVerdict: 'malicious',
+        riskScore: 100,
+        scoreLabel: 'High risk',
+        flaggedBy: [`${blocklistHit.blSource} Blocklist`],
+        suggestion: 'This URL is on our blocklist and is known to be malicious. Do not visit it.',
+        blocklist: {
+          source: blocklistHit.blSource,
+          threatType: blocklistHit.blThreatType,
+          addedAt: blocklistHit.blAddedAt,
+        },
+        scriptAnalysis: null,
+        urlscan: null,
+        virustotal: null,
+        safebrowsing: null,
+      };
+    }
+  }
+
+  // ── Full external API scan ────────────────────────────────────
+  const [scripts, urlscanResult, virustotal, safebrowsing] = await Promise.all([
+>>>>>>> Stashed changes
     extractScriptsFromURL(url),
     extractLinksFromURL(url),
     scanWithURLScan(url).catch((err) => {
