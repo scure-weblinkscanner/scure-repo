@@ -6,9 +6,9 @@ import { scanWithSafeBrowsing } from '../utils/safeBrowsing.js';
 import { checkBlocklist } from './blocklist.service.js';
 import { detectAds } from '../utils/adDetection.js';
 
-export const analyzeURL = async (url, isPremium = false, adDetection = false) => {
+export const analyzeURL = async (url, isPremium = false, adDetection = false, skipBlocklist = false) => {
   // ── Fast local blocklist check (premium users only) ──
-  if (isPremium) {
+  if (isPremium && !skipBlocklist) {
     const blocklistHit = await checkBlocklist(url);
     if (blocklistHit) {
       return {

@@ -19,11 +19,14 @@ export const analyzeScan = async (req, res) => {
     const subscription = await getSubscriptionByUser(userId)
     const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active'
 
-    const result = await analyzeURL(url, isPremium && !skipBlocklist, isPremium && !!adDetection);
+    const result = await analyzeURL(url, isPremium, isPremium && !!adDetection, !!skipBlocklist);
 
-    createScanHistory(userId, scanMethod ?? 'cameraUrl', result).catch((err) =>
-      console.error('Failed to save scan history:', err.message)
-    );
+    // Don't save blocklist fast-returns — the "Continue" full scan will save the complete result
+    if (!result.blocklist) {
+      createScanHistory(userId, scanMethod ?? 'cameraUrl', result).catch((err) =>
+        console.error('Failed to save scan history:', err.message)
+      );
+    }
 
     res.status(200).json(result);
   } catch (error) {
