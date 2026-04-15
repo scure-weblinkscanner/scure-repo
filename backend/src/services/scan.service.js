@@ -5,10 +5,6 @@ import { scanWithVirusTotal } from '../utils/virusTotal.js';
 import { scanWithSafeBrowsing } from '../utils/safeBrowsing.js';
 import { checkBlocklist } from './blocklist.service.js';
 
-<<<<<<< Updated upstream
-export const analyzeURL = async (url) => {
-  const [scripts, embeddedLinks, urlscanResult, virustotal, safebrowsing] = await Promise.all([
-=======
 export const analyzeURL = async (url, isPremium = false) => {
   // ── Fast local blocklist check (premium users only) ──
   if (isPremium) {
@@ -30,13 +26,13 @@ export const analyzeURL = async (url, isPremium = false) => {
         urlscan: null,
         virustotal: null,
         safebrowsing: null,
+        embeddedLinks: null,
       };
     }
   }
 
   // ── Full external API scan ────────────────────────────────────
-  const [scripts, urlscanResult, virustotal, safebrowsing] = await Promise.all([
->>>>>>> Stashed changes
+  const [scripts, embeddedLinks, urlscanResult, virustotal, safebrowsing] = await Promise.all([
     extractScriptsFromURL(url),
     extractLinksFromURL(url),
     scanWithURLScan(url).catch((err) => {
