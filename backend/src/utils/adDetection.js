@@ -33,23 +33,22 @@ export const detectAds = async (url) => {
     let redirectCount = 0;
     const originalHost = new URL(url).hostname;
 
-    // Track ad network requests
     page.on('request', (req) => {
       const reqUrl = req.url();
       const matched = AD_NETWORKS.find((n) => reqUrl.includes(n));
       if (matched) detectedNetworks.add(matched);
     });
 
-    // Track popup windows (window.open calls) — key indicator for streaming/piracy sites
+    // Track popup windows opened via window.open()
     context.on('page', () => { popupCount++; });
 
-    // Track unexpected navigations away from original domain after interaction
+    // Track main-frame navigations away from the original domain
     page.on('framenavigated', (frame) => {
       if (frame === page.mainFrame()) {
         try {
           const navHost = new URL(frame.url()).hostname;
-          if (navHost !== originalHost && frame.url() !== url) redirectCount++;
-        } catch { /* ignore invalid URLs */ }
+          if (navHost !== originalHost) redirectCount++;
+        } catch { /* ignore */ }
       }
     });
 
@@ -74,13 +73,14 @@ export const detectAds = async (url) => {
     );
     const dynamicScripts = Math.max(0, afterScrollScripts - initialScriptCount);
 
-    // Click on a likely interactive element to trigger click-activated ads/popups
-    const clicked = await page.evaluate(() => {
+    // Find a clickable non-navigating element (button, div, role=button — NOT plain links)
+    // to trigger click-activated ad scripts / popups without navigating the page away
+    const clickTarget = await page.evaluate(() => {
       const candidates = [
-        ...document.querySelectorAll('a[href], button, [role="button"], .play-btn, .watch-btn'),
+        ...document.querySelectorAll('button, [role="button"], div[onclick], span[onclick]'),
       ].filter((el) => {
         const r = el.getBoundingClientRect();
-        return r.width > 0 && r.height > 0 && r.top > 100 && r.top < window.innerHeight;
+        return r.width > 10 && r.height > 10 && r.top > 80 && r.top < window.innerHeight - 80;
       });
       if (candidates[0]) {
         const r = candidates[0].getBoundingClientRect();
@@ -89,25 +89,33 @@ export const detectAds = async (url) => {
       return null;
     });
 
-    if (clicked) {
-      await page.mouse.click(clicked.x, clicked.y);
-    } else {
-      await page.mouse.click(300, 450);
+    // Click the target (or a safe fallback coordinate), then grab screenshot regardless
+    try {
+      if (clickTarget) {
+        await page.mouse.click(clickTarget.x, clickTarget.y);
+      } else {
+        await page.mouse.click(300, 450);
+      }
+      await page.waitForTimeout(2000);
+    } catch { /* page may have navigated — that itself counts as a redirect */ }
+
+    // Screenshot 3: capture current state (may be a redirected page)
+    let shot3;
+    try {
+      shot3 = await page.screenshot({ type: 'jpeg', quality: 60 });
+    } catch {
+      shot3 = shot2; // fallback to scroll screenshot if page is gone
     }
-    await page.waitForTimeout(2000);
 
-    // Screenshot 3: after click
-    const shot3 = await page.screenshot({ type: 'jpeg', quality: 60 });
-
-    const adElementCount = await page.evaluate((selectors) =>
-      selectors.reduce((n, s) => n + document.querySelectorAll(s).length, 0),
-      AD_SELECTORS
-    );
+    let adElementCount = 0;
+    try {
+      adElementCount = await page.evaluate((selectors) =>
+        selectors.reduce((n, s) => n + document.querySelectorAll(s).length, 0),
+        AD_SELECTORS
+      );
+    } catch { /* page navigated, skip element count */ }
 
     const adNetworks = [...detectedNetworks];
-
-    // isAdIntensive: any popup/redirect is an immediate flag;
-    // otherwise check ad networks, elements, dynamic scripts
     const isAdIntensive =
       popupCount >= 1 ||
       redirectCount >= 1 ||
@@ -129,7 +137,7 @@ export const detectAds = async (url) => {
       ],
     };
   } catch (err) {
-    console.log('Ad detection warning:', err.message);
+    console.error('Ad detection error:', err.message);
     return null;
   } finally {
     await browser.close();
