@@ -22,37 +22,38 @@ const AD_SELECTORS = [
 
 export const detectAds = async (url) => {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
-  const page = await context.newPage();
+  const page = await browser.newPage();
+
+  const detectedNetworks = new Set();
+  let popupCount = 0;
+  let redirectCount = 0;
+  const originalHost = new URL(url).hostname;
 
   try {
     await page.setViewportSize({ width: 600, height: 900 });
 
-    const detectedNetworks = new Set();
-    let popupCount = 0;
-    let redirectCount = 0;
-    const originalHost = new URL(url).hostname;
-
+    // Track ad network requests
     page.on('request', (req) => {
       const reqUrl = req.url();
       const matched = AD_NETWORKS.find((n) => reqUrl.includes(n));
       if (matched) detectedNetworks.add(matched);
     });
 
-    // Track popup windows opened via window.open()
-    context.on('page', () => { popupCount++; });
+    // Detect window.open() popups
+    page.on('popup', () => { popupCount++; });
 
-    // Track main-frame navigations away from the original domain
+    // Detect main-frame navigations away from original domain after load
+    let pageLoaded = false;
     page.on('framenavigated', (frame) => {
-      if (frame === page.mainFrame()) {
-        try {
-          const navHost = new URL(frame.url()).hostname;
-          if (navHost !== originalHost) redirectCount++;
-        } catch { /* ignore */ }
-      }
+      if (!pageLoaded || frame !== page.mainFrame()) return;
+      try {
+        const navHost = new URL(frame.url()).hostname;
+        if (navHost !== originalHost) redirectCount++;
+      } catch { /* ignore */ }
     });
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    pageLoaded = true;
 
     // Screenshot 1: initial load
     const shot1 = await page.screenshot({ type: 'jpeg', quality: 60 });
@@ -61,7 +62,7 @@ export const detectAds = async (url) => {
       document.querySelectorAll('script[src]').length
     );
 
-    // Scroll to mid-page to trigger lazy-loaded ads
+    // Scroll to trigger lazy-loaded ads
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
     await page.waitForTimeout(2000);
 
@@ -73,47 +74,37 @@ export const detectAds = async (url) => {
     );
     const dynamicScripts = Math.max(0, afterScrollScripts - initialScriptCount);
 
-    // Find a clickable non-navigating element (button, div, role=button — NOT plain links)
-    // to trigger click-activated ad scripts / popups without navigating the page away
+    // Click a non-link interactive element to trigger click-activated popups
+    // Deliberately exclude <a href> to avoid navigating the page away
     const clickTarget = await page.evaluate(() => {
-      const candidates = [
-        ...document.querySelectorAll('button, [role="button"], div[onclick], span[onclick]'),
-      ].filter((el) => {
-        const r = el.getBoundingClientRect();
-        return r.width > 10 && r.height > 10 && r.top > 80 && r.top < window.innerHeight - 80;
-      });
-      if (candidates[0]) {
-        const r = candidates[0].getBoundingClientRect();
+      const els = [...document.querySelectorAll('button, [role="button"], div[onclick], span[onclick]')]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > 10 && r.height > 10 && r.top > 80 && r.top < window.innerHeight - 80;
+        });
+      if (els[0]) {
+        const r = els[0].getBoundingClientRect();
         return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
       }
       return null;
     });
 
-    // Click the target (or a safe fallback coordinate), then grab screenshot regardless
     try {
-      if (clickTarget) {
-        await page.mouse.click(clickTarget.x, clickTarget.y);
-      } else {
-        await page.mouse.click(300, 450);
-      }
+      await page.mouse.click(clickTarget?.x ?? 300, clickTarget?.y ?? 450);
       await page.waitForTimeout(2000);
-    } catch { /* page may have navigated — that itself counts as a redirect */ }
+    } catch { /* navigation on click is fine — redirectCount will capture it */ }
 
-    // Screenshot 3: capture current state (may be a redirected page)
-    let shot3;
-    try {
-      shot3 = await page.screenshot({ type: 'jpeg', quality: 60 });
-    } catch {
-      shot3 = shot2; // fallback to scroll screenshot if page is gone
-    }
+    // Screenshot 3: after click
+    let shot3 = shot2;
+    try { shot3 = await page.screenshot({ type: 'jpeg', quality: 60 }); } catch { /* use shot2 */ }
 
     let adElementCount = 0;
     try {
-      adElementCount = await page.evaluate((selectors) =>
-        selectors.reduce((n, s) => n + document.querySelectorAll(s).length, 0),
+      adElementCount = await page.evaluate(
+        (selectors) => selectors.reduce((n, s) => n + document.querySelectorAll(s).length, 0),
         AD_SELECTORS
       );
-    } catch { /* page navigated, skip element count */ }
+    } catch { /* page may have navigated */ }
 
     const adNetworks = [...detectedNetworks];
     const isAdIntensive =
