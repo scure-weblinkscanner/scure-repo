@@ -22,11 +22,11 @@ export const analyzeURL = async (url, isPremium = false) => {
           threatType: blocklistHit.blThreatType,
           addedAt: blocklistHit.blAddedAt,
         },
-        scriptAnalysis: null,
-        urlscan: null,
-        virustotal: null,
-        safebrowsing: null,
-        embeddedLinks: null,
+        scriptAnalysis: { verdict: 'malicious', riskScore: 100, findings: [] },
+        urlscan: { verdict: 'malicious', score: 0, categories: [], screenshot: null, uuid: null },
+        virustotal: { verdict: 'malicious', malicious: 0, suspicious: 0, harmless: 0 },
+        safebrowsing: { verdict: 'malicious', threats: [] },
+        embeddedLinks: [],
       };
     }
   }
