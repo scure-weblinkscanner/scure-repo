@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNotifications } from '../hooks/useNotifications';
 
 const OCR_MAX_WIDTH = 1500;
 
@@ -30,14 +31,18 @@ export default function ScanQRScreen() {
   const [error, setError] = useState('');
   const scanAnim = useRef(new Animated.Value(0.2)).current;
   const loadingAnim = useRef(new Animated.Value(0)).current;
+  const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
+  const isFocused = useRef(true);
 
     useFocusEffect(
     useCallback(() => {
+        isFocused.current = true;
         setDetectedUrl(null);
         setScanning(false);
         setCapturing(false);
         setError('');
         scanAnim.setValue(0.2);
+        return () => { isFocused.current = false; };
     }, [])
     );
 
@@ -106,7 +111,13 @@ export default function ScanQRScreen() {
     try {
       const result = await analyzeUrl(detectedUrl, token, 'cameraQr');
       setScanResult(result);
-      router.push({ pathname: '/scanURLResult' });
+      if (isFocused.current) {
+        router.push({ pathname: '/scanURLResult' });
+      } else if (notificationsEnabled) {
+        sendScanCompleteNotification(result);
+      } else {
+        router.push({ pathname: '/scanURLResult' });
+      }
     } catch (err) {
       setError('Scan failed: ' + err.message);
     } finally {

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,12 @@ import {
   ScrollView,
   ImageBackground
 } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
+import { useNotifications } from '../hooks/useNotifications';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const normalizeUrl = (url) => {
@@ -45,6 +46,15 @@ export default function PasteURLScreen() {
   const [url, setUrl] = useState('');
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState('');
+  const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
+  const isFocused = useRef(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      isFocused.current = true;
+      return () => { isFocused.current = false; };
+    }, [])
+  );
 
   const scanAnim = useRef(new Animated.Value(0.2)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -102,7 +112,13 @@ export default function PasteURLScreen() {
       const normalized = normalizeUrl(url.trim());
       const result = await analyzeUrl(normalized, token, 'pasteUrl');
       setScanResult(result);
-      router.push({ pathname: '/scanURLResult' });
+      if (isFocused.current) {
+        router.push({ pathname: '/scanURLResult' });
+      } else if (notificationsEnabled) {
+        sendScanCompleteNotification(result);
+      } else {
+        router.push({ pathname: '/scanURLResult' });
+      }
     } catch (err) {
       setError('Scan failed: ' + err.message);
     } finally {
