@@ -19,6 +19,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
+import { useNotifications } from '../hooks/useNotifications';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -84,6 +85,8 @@ export default function ScanURLScreen() {
   const [selectedUrl, setSelectedUrl] = useState(null);
   const [scanning, setScanning] = useState(false);
   const { setScanResult } = useScan();
+  const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
+  const isFocused = useRef(true);
 
   useEffect(() => {
     if (scanning) {
@@ -111,11 +114,13 @@ export default function ScanURLScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      isFocused.current = true;
       setCapturedImageUri(null);
       setDetectedUrls([]);
       setSelectedUrl(null);
       setError('');
       setScanning(false);
+      return () => { isFocused.current = false; };
     }, [])
   );
 
@@ -192,7 +197,13 @@ export default function ScanURLScreen() {
       const url = normalizeUrl(selectedUrl);
       const result = await analyzeUrl(url, token, 'cameraUrl');
       setScanResult(result);
-      router.push({ pathname: '/scanURLResult' });
+      if (isFocused.current) {
+        router.push({ pathname: '/scanURLResult' });
+      } else if (notificationsEnabled) {
+        sendScanCompleteNotification(result);
+      } else {
+        router.push({ pathname: '/scanURLResult' });
+      }
     } catch (err) {
       setError('Scan failed: ' + err.message);
     } finally {

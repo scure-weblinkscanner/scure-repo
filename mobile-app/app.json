@@ -11,7 +11,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Scure needs camera access to scan URLs"
+        "NSCameraUsageDescription": "Scure needs camera access to scan URLs",
+        "NSUserNotificationsUsageDescription": "Scure notifies you when your URL scan finishes."
       }
     },
     "android": {
@@ -25,7 +26,9 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.mobileapp",
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
       ]
     },
     "web": {
@@ -52,7 +55,14 @@
           "cameraPermissionText": "Scure needs camera access to scan URLs"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/app-foreground.jpg",
+          "color": "#0E0E95"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

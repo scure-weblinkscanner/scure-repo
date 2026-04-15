@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
 import { ScanProvider } from '../context/ScanContext';
+import * as Notifications from 'expo-notifications';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
@@ -33,6 +34,13 @@ function RootLayoutNav() {
     }
   }, [token, loading, segments]);
 
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener(() => {
+      router.push('/scanURLResult' as any);
+    });
+    return () => sub.remove();
+  }, []);
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
@@ -49,6 +57,7 @@ function RootLayoutNav() {
         <Stack.Screen name="subscription" options={{ headerShown: false }} />
         <Stack.Screen name="submittedTickets" options={{ headerShown: false }} />
         <Stack.Screen name="accountDetails" options={{ headerShown: false }} />
+        <Stack.Screen name="notifications" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
