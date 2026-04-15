@@ -39,8 +39,12 @@ export const detectAds = async (url) => {
       if (matched) detectedNetworks.add(matched);
     });
 
-    // Detect window.open() popups
-    page.on('popup', () => { popupCount++; });
+    // Detect window.open() popups and capture the first one
+    let popupPage = null;
+    page.on('popup', (newPage) => {
+      popupCount++;
+      if (!popupPage) popupPage = newPage;
+    });;
 
     // Detect main-frame navigations away from original domain after load
     let pageLoaded = false;
@@ -94,9 +98,16 @@ export const detectAds = async (url) => {
       await page.waitForTimeout(2000);
     } catch { /* navigation on click is fine — redirectCount will capture it */ }
 
-    // Screenshot 3: after click
+    // Screenshot 3: capture the popup page if one opened, otherwise the current page
     let shot3 = shot2;
-    try { shot3 = await page.screenshot({ type: 'jpeg', quality: 60 }); } catch { /* use shot2 */ }
+    try {
+      if (popupPage) {
+        await popupPage.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
+        shot3 = await popupPage.screenshot({ type: 'jpeg', quality: 60 });
+      } else {
+        shot3 = await page.screenshot({ type: 'jpeg', quality: 60 });
+      }
+    } catch { /* use shot2 as fallback */ }
 
     let adElementCount = 0;
     try {

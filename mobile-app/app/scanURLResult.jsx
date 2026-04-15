@@ -133,11 +133,16 @@ const ScannerRow = ({ name, verdict, detail }) => (
 
 const PREMIUM_PROFILE_ID = 3;
 
-const SLIDE_LABELS = ['Initial Load', 'After Scroll', 'After Interaction'];
+const getSlideLabels = (adAnalysis) => [
+  'Initial Load',
+  'After Scroll',
+  adAnalysis?.popupCount >= 1 ? 'Popup Opened' : adAnalysis?.redirectCount >= 1 ? 'After Redirect' : 'After Interaction',
+];
 
 const AdAnalysisCard = ({ adAnalysis }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const intervalRef = useRef(null);
+  const slideLabels = getSlideLabels(adAnalysis);
 
   useEffect(() => {
     if (adAnalysis?.isAdIntensive && adAnalysis.screenshots?.length > 1) {
@@ -181,7 +186,7 @@ const AdAnalysisCard = ({ adAnalysis }) => {
             resizeMode="cover"
           />
           <View style={styles.adSlideCaption}>
-            <Text style={styles.adSlideLabelText}>{SLIDE_LABELS[currentIdx]}</Text>
+            <Text style={styles.adSlideLabelText}>{slideLabels[currentIdx]}</Text>
           </View>
           <View style={styles.adSlideDots}>
             {screenshots.map((_, i) => (
