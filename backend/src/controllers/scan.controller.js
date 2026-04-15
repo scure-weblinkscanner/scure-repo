@@ -1,10 +1,11 @@
 import { analyzeURL } from '../services/scan.service.js';
 import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans, getScanActivity, getAllScansAdmin } from '../services/scanHistory.service.js'
+import { getSubscriptionByUser } from '../database/subscriptionPlan.db.js'
 import jwt from 'jsonwebtoken';
 
 export const analyzeScan = async (req, res) => {
   try {
-    const { url, scanMethod } = req.body;
+    const { url, scanMethod, skipBlocklist } = req.body;
 
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
@@ -15,7 +16,10 @@ export const analyzeScan = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.uaId;
 
-    const result = await analyzeURL(url);
+    const subscription = await getSubscriptionByUser(userId)
+    const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active'
+
+    const result = await analyzeURL(url, isPremium && !skipBlocklist);
 
     createScanHistory(userId, scanMethod ?? 'cameraUrl', result).catch((err) =>
       console.error('Failed to save scan history:', err.message)
