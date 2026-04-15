@@ -27,7 +27,7 @@ const getVC = (verdict) => verdictConfig[verdict?.toLowerCase()] ?? verdictConfi
 
 const Card = ({ children }) => <View style={styles.card}>{children}</View>;
 
-const CollapsibleCard = ({ icon, label, children, badge }) => {
+const CollapsibleCard = ({ icon, label, children, badge, description }) => {
   const [open, setOpen] = useState(false);
   return (
     <View style={styles.card}>
@@ -47,6 +47,7 @@ const CollapsibleCard = ({ icon, label, children, badge }) => {
           color="rgba(255,255,255,0.35)"
         />
       </TouchableOpacity>
+      {description ? <Text style={styles.cardDesc}>{description}</Text> : null}
       {open && <View style={styles.collapsibleContent}>{children}</View>}
     </View>
   );
@@ -219,6 +220,29 @@ const AdAnalysisCard = ({ adAnalysis }) => {
   );
 };
 
+const EmbeddedLinksExpander = ({ links }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      {expanded && links.map((link, i) => {
+        const vc = getVC(link.verdict);
+        return (
+          <View key={i} style={styles.embeddedLinkRow}>
+            <MaterialIcons name={vc.icon} size={14} color={vc.color} style={{ flexShrink: 0 }} />
+            <Text style={styles.embeddedLinkUrl} numberOfLines={1}>{link.url}</Text>
+            <Badge verdict={link.verdict} />
+          </View>
+        );
+      })}
+      <TouchableOpacity onPress={() => setExpanded((v) => !v)} style={styles.expandBtn}>
+        <Text style={styles.expandBtnText}>
+          {expanded ? 'Show less' : `· · · ${links.length} more`}
+        </Text>
+      </TouchableOpacity>
+    </>
+  );
+};
+
 // Placeholder links shown in the blurred preview for free users
 const PLACEHOLDER_LINKS = [
   { url: 'https://cdn.example.com/assets/script.js', verdict: 'clean' },
@@ -314,9 +338,16 @@ const EmbeddedLinksCard = ({ links }) => {
   const maliciousCount = links.filter((r) => r.verdict === 'malicious').length;
   const suspiciousCount = links.filter((r) => r.verdict === 'suspicious').length;
 
+  const VISIBLE_COUNT = 5;
+  const visibleLinks = links.slice(0, VISIBLE_COUNT);
+  const hiddenLinks = links.slice(VISIBLE_COUNT);
+
   return (
     <Card>
       <CardTitle icon="link" label={`Embedded Links (${links.length})`} />
+      <Text style={styles.cardDesc}>
+        Links found inside this page were scanned for threats. Dangerous links hiding on a page are a common sign the whole site may be unsafe.
+      </Text>
 
       {anyMalicious && (
         <View style={styles.linkWarningBanner}>
@@ -336,7 +367,7 @@ const EmbeddedLinksCard = ({ links }) => {
         </View>
       )}
 
-      {links.map((link, i) => {
+      {visibleLinks.map((link, i) => {
         const vc = getVC(link.verdict);
         return (
           <View key={i} style={styles.embeddedLinkRow}>
@@ -346,6 +377,10 @@ const EmbeddedLinksCard = ({ links }) => {
           </View>
         );
       })}
+
+      {hiddenLinks.length > 0 && (
+        <EmbeddedLinksExpander links={hiddenLinks} />
+      )}
     </Card>
   );
 };
@@ -365,8 +400,6 @@ export default function ScanResultScreen() {
       </View>
     );
   }
-
-  console.log('[AdDetection] adAnalysis:', JSON.stringify(result.adAnalysis ?? null));
 
   const vc = getVC(result.overallVerdict);
   const u = result.urlscan;
@@ -409,6 +442,7 @@ export default function ScanResultScreen() {
         {u?.screenshot ? (
           <Card>
             <CardTitle icon="image" label="Page Screenshot" />
+            <Text style={styles.cardDesc}>A snapshot of what this webpage looks like. If it looks unexpected or suspicious, that's a red flag.</Text>
             <TouchableOpacity onPress={() => Linking.openURL(u.screenshot)} activeOpacity={0.85}>
               <Image source={{ uri: u.screenshot }} style={styles.screenshot} resizeMode="cover" />
               <View style={styles.screenshotHint}>
@@ -422,6 +456,7 @@ export default function ScanResultScreen() {
         {/* ── Security Risk Assessment ── */}
         <Card>
           <CardTitle icon="security" label="Security Risk Assessment" />
+          <Text style={styles.cardDesc}>This link was checked against three independent security engines. Even one flag is worth taking seriously.</Text>
           <ScannerRow name="URLScan.io" verdict={u?.verdict}
             detail={u?.score != null ? `Score: ${u.score}` : null} />
           <ScannerRow name="VirusTotal" verdict={result.virustotal?.verdict}
@@ -438,6 +473,7 @@ export default function ScanResultScreen() {
         {result.scriptAnalysis && (
           <Card>
             <CardTitle icon="smart-toy" label="AI Script Analysis" />
+            <Text style={styles.cardDesc}>Our AI reviewed the code running on this page to check if anything is happening in the background without your knowledge.</Text>
             <Row label="Verdict"    value={result.scriptAnalysis.verdict} valueColor={getVC(result.scriptAnalysis.verdict).color} />
             <Row label="Risk Score" value={result.scriptAnalysis.riskScore} />
             <Row label="Reason"     value={result.scriptAnalysis.reason} />
@@ -448,6 +484,7 @@ export default function ScanResultScreen() {
         {u?.page && (
           <Card>
             <CardTitle icon="web" label="Website Content" />
+            <Text style={styles.cardDesc}>Basic details about what this page actually loaded, including where it ended up if it redirected you along the way.</Text>
             <Row label="Title"       value={u.page.title} />
             <Row label="Final URL"   value={u.page.url} mono />
             <Row label="Domain"      value={u.page.domain} mono />
@@ -467,6 +504,7 @@ export default function ScanResultScreen() {
         {u?.network && (
           <Card>
             <CardTitle icon="hub" label="Network Information" />
+            <Text style={styles.cardDesc}>Shows where this website's server is physically located. Servers in high-risk countries or behind anonymous networks can be a warning sign.</Text>
             <Row label="IP"       value={u.network.ip}      mono />
             <Row label="ASN"      value={u.network.asn} />
             <Row label="ASN Name" value={u.network.asnName} />
@@ -483,6 +521,7 @@ export default function ScanResultScreen() {
         {u?.task && (
           <Card>
             <CardTitle icon="dns" label="Domain / DNS Details" />
+            <Text style={styles.cardDesc}>Technical details about the website's address. Newly registered or recently changed domains are sometimes used for scams.</Text>
             <Row label="Apex Domain" value={u.page?.apexDomain} mono />
             <Row label="Scan Time"   value={u.task.time} />
             <Row label="Method"      value={u.task.method} />
@@ -495,6 +534,7 @@ export default function ScanResultScreen() {
         {u?.ssl && (
           <Card>
             <CardTitle icon="lock" label="SSL / TLS Certificate" />
+            <Text style={styles.cardDesc}>A valid certificate means your connection to the site is encrypted. An expired, missing, or untrusted certificate is a warning sign.</Text>
             <Row label="Issuer"      value={u.ssl.issuer} />
             <Row label="Valid From"  value={u.ssl.validFrom} />
             <Row label="Valid Days"  value={u.ssl.validDays} />
@@ -508,6 +548,7 @@ export default function ScanResultScreen() {
             icon="memory"
             label="Technologies Detected"
             badge={`${u.technologies.length}`}
+            description="The tools and software this website uses to run. Some technologies can track your activity or affect your privacy."
           >
             {u.technologies.map((tech, i) => (
               <View key={i} style={styles.techRow}>
@@ -534,6 +575,7 @@ export default function ScanResultScreen() {
             icon="code"
             label="HTTP Headers"
             badge={`${u.httpHeaders.length}`}
+            description="Behind-the-scenes instructions sent by the website's server. Missing security headers can leave users more exposed to attacks."
           >
             {u.httpHeaders.map((h, i) => (
               <Row key={i} label={h.key} value={h.value} mono />
@@ -543,7 +585,7 @@ export default function ScanResultScreen() {
 
         {/* ── DOM / Content Analysis ── */}
         {(u?.content?.cookies?.length > 0 || u?.content?.globals?.length > 0) && (
-          <CollapsibleCard icon="article" label="DOM / Content Analysis">
+          <CollapsibleCard icon="article" label="DOM / Content Analysis" description="A look at what this website stored on your device, including cookies (small tracking files) and scripts running in the background.">
             {u.content.cookies?.length > 0 && (
               <>
                 <Text style={styles.subLabel}>Cookies ({u.content.cookies.length})</Text>
@@ -610,6 +652,7 @@ const styles = StyleSheet.create({
   },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
   cardTitleText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
+  cardDesc: { fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 18 },
 
   collapsibleHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   collapsibleBadge: {

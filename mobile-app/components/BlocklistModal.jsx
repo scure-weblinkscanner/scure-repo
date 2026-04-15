@@ -12,7 +12,7 @@ export default function BlocklistModal({ visible, onContinue, onExit }) {
           <Text style={styles.title}>Malicious Link Detected</Text>
           <Text style={styles.body}>
             This is a malicious link automatically flagged by our blocklist for faster loading.
-            You may continue scanning to get a full detailed report or exit to scan another link.
+            You may continue scanning to get a full detailed report which takes a few moments, or exit to scan another link.
           </Text>
           <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
             <MaterialIcons name="search" size={18} color="#fff" />
