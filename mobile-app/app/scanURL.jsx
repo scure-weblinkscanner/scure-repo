@@ -20,6 +20,7 @@ import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
 import { useNotifications } from '../hooks/useNotifications';
+import BlocklistModal from '../components/BlocklistModal';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -84,6 +85,8 @@ export default function ScanURLScreen() {
   const [detectedUrls, setDetectedUrls] = useState([]);
   const [selectedUrl, setSelectedUrl] = useState(null);
   const [scanning, setScanning] = useState(false);
+  const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const pendingUrl = useRef(null);
   const { setScanResult } = useScan();
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const isFocused = useRef(true);
@@ -190,14 +193,15 @@ export default function ScanURLScreen() {
     setError('');
   };
 
-  const confirmScan = async () => {
-    if (!selectedUrl || scanning) return;
+  const runScan = async (url, skipBlocklist = false) => {
     setScanning(true);
     try {
-      const url = normalizeUrl(selectedUrl);
-      const result = await analyzeUrl(url, token, 'cameraUrl');
+      const result = await analyzeUrl(url, token, 'cameraUrl', skipBlocklist);
       setScanResult(result);
-      if (isFocused.current) {
+      if (result.blocklist && !skipBlocklist) {
+        pendingUrl.current = url;
+        setShowBlocklistModal(true);
+      } else if (isFocused.current) {
         router.push({ pathname: '/scanURLResult' });
       } else if (notificationsEnabled) {
         sendScanCompleteNotification(result);
@@ -205,16 +209,28 @@ export default function ScanURLScreen() {
         router.push({ pathname: '/scanURLResult' });
       }
     } catch (err) {
-      setError('Scan failed: ' + err.message);
+      if (isFocused.current) {
+        setError('Scan failed: ' + err.message);
+      }
     } finally {
       setScanning(false);
     }
+  };
+
+  const confirmScan = async () => {
+    if (!selectedUrl || scanning) return;
+    await runScan(normalizeUrl(selectedUrl));
   };
 
   // ── CAMERA VIEW ──
   if (!capturedImageUri) {
     return (
       <View style={styles.wrapper}>
+        <BlocklistModal
+          visible={showBlocklistModal}
+          onExit={() => { setShowBlocklistModal(false); retake(); }}
+          onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+        />
         <View style={styles.topNav}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
             <MaterialIcons name="arrow-back" size={28} color="#fff" />
@@ -251,6 +267,11 @@ export default function ScanURLScreen() {
   // ── RESULT VIEW ──
   return (
     <View style={styles.wrapper}>
+      <BlocklistModal
+        visible={showBlocklistModal}
+        onExit={() => { setShowBlocklistModal(false); retake(); }}
+        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+      />
       <Image
         source={{ uri: capturedImageUri }}
         style={StyleSheet.absoluteFill}

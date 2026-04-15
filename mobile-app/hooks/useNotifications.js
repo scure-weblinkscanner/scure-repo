@@ -6,7 +6,8 @@ const STORAGE_KEY = 'notificationsEnabled';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -39,7 +40,7 @@ export const useNotifications = () => {
     const title =
       verdict === 'malicious' ? '⚠️ Malicious link detected' :
       verdict === 'suspicious' ? '⚠️ Suspicious link detected' :
-      '✅ Scan complete';
+      'Scan complete!';
 
     const body =
       verdict === 'malicious' ? `${url} was flagged as malicious. Tap to view the full report.` :

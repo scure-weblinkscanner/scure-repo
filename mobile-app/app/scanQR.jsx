@@ -13,6 +13,7 @@ import { useScan } from '../context/ScanContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNotifications } from '../hooks/useNotifications';
+import BlocklistModal from '../components/BlocklistModal';
 
 const OCR_MAX_WIDTH = 1500;
 
@@ -33,6 +34,8 @@ export default function ScanQRScreen() {
   const loadingAnim = useRef(new Animated.Value(0)).current;
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const isFocused = useRef(true);
+  const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const pendingUrl = useRef(null);
 
     useFocusEffect(
     useCallback(() => {
@@ -105,13 +108,19 @@ export default function ScanQRScreen() {
   const handleScan = async () => {
     if (!detectedUrl || scanning) return;
     setError('');
+    await runScan(detectedUrl);
+  };
+
+  const runScan = async (url, skipBlocklist = false) => {
     setScanning(true);
     startLoadingBar();
-
     try {
-      const result = await analyzeUrl(detectedUrl, token, 'cameraQr');
+      const result = await analyzeUrl(url, token, 'cameraQr', skipBlocklist);
       setScanResult(result);
-      if (isFocused.current) {
+      if (result.blocklist && !skipBlocklist) {
+        pendingUrl.current = url;
+        setShowBlocklistModal(true);
+      } else if (isFocused.current) {
         router.push({ pathname: '/scanURLResult' });
       } else if (notificationsEnabled) {
         sendScanCompleteNotification(result);
@@ -119,7 +128,9 @@ export default function ScanQRScreen() {
         router.push({ pathname: '/scanURLResult' });
       }
     } catch (err) {
-      setError('Scan failed: ' + err.message);
+      if (isFocused.current) {
+        setError('Scan failed: ' + err.message);
+      }
     } finally {
       setScanning(false);
       stopLoadingBar();
@@ -153,6 +164,11 @@ export default function ScanQRScreen() {
 
   return (
     <View style={styles.wrapper}>
+      <BlocklistModal
+        visible={showBlocklistModal}
+        onExit={() => { setShowBlocklistModal(false); setDetectedUrl(null); }}
+        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+      />
       {/* Camera */}
       <View style={styles.topNav}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={12}>

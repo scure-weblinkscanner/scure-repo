@@ -1,6 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet, Switch, ImageBackground } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TouchableOpacity, StyleSheet, Switch, ScrollView, ImageBackground } from 'react-native';
+import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNotifications } from '../hooks/useNotifications';
 
@@ -9,114 +8,83 @@ export default function NotificationsScreen() {
   const { notificationsEnabled, toggleNotifications } = useNotifications();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0E0E95' }}>
-      <ImageBackground
-        source={require('../assets/background.png')}
-        style={styles.wrapper}
-        resizeMode="cover"
-      >
-        <View style={styles.topbar}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backbtn}>
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.barText}>Notifications</Text>
-          <View style={{ width: 40 }} />
-        </View>
+    <ImageBackground
+      source={require('../assets/background.png')}
+      style={styles.wrapper}
+      resizeMode="cover"
+    >
+      <Stack.Screen options={{ headerShown: false }} />
 
-        <View style={styles.whiteBottom} />
+      <View style={styles.topNav}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
+          <MaterialIcons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.navTitle}>Notifications</Text>
+        <View style={{ width: 40 }} />
+      </View>
 
-        <View style={styles.content}>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <View style={styles.rowLeft}>
-                <MaterialIcons name="notifications-active" size={22} color="#0E0E95" style={{ marginRight: 12 }} />
-                <View style={styles.rowText}>
-                  <Text style={styles.rowTitle}>App Security Notifications</Text>
-                  <Text style={styles.rowDesc}>
-                    Get notified when your scan finishes, even if you leave the app.
-                  </Text>
-                </View>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>APP NOTIFICATIONS</Text>
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <MaterialIcons name="notifications-active" size={20} color="#555" style={{ marginRight: 12 }} />
+              <View style={styles.rowText}>
+                <Text style={styles.rowTitle}>Security Notifications</Text>
+                <Text style={styles.rowDesc}>
+                  Receive a notification banner when your scan finishes.
+                </Text>
               </View>
-              <Switch
-                value={notificationsEnabled}
-                onValueChange={toggleNotifications}
-                trackColor={{ false: '#ccc', true: '#0E0E95' }}
-                thumbColor="#fff"
-              />
             </View>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={toggleNotifications}
+              trackColor={{ false: '#333', true: '#0E0E95' }}
+              thumbColor="#fff"
+            />
           </View>
         </View>
-      </ImageBackground>
-    </SafeAreaView>
+      </ScrollView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: { flex: 1 },
-  topbar: {
+  topNav: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16,
     backgroundColor: '#0E0E95',
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    height: 70,
-    justifyContent: 'space-between',
   },
-  barText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
-    marginLeft: -60,
+  backBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center',
   },
-  backbtn: {
-    justifyContent: 'center',
-    marginLeft: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  whiteBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '70%',
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    zIndex: 1,
-  },
-  card: {
-    backgroundColor: '#D9D9D9',
-    borderRadius: 16,
+  navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
+  content: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 120 },
+  sectionCard: {
+    backgroundColor: '#141414',
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     borderWidth: 1.5,
-    borderColor: '#0E0E95',
-    padding: 16,
+    borderColor: '#222',
+    gap: 14,
+  },
+  sectionTitle: {
+    fontSize: 10, color: '#555', fontWeight: '700', letterSpacing: 1.5,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
   rowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 12,
+    flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 12,
   },
   rowText: { flex: 1 },
   rowTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0E0E95',
-    marginBottom: 2,
+    fontSize: 15, fontWeight: '600', color: '#fff', marginBottom: 2,
   },
   rowDesc: {
-    fontSize: 12,
-    color: '#555',
-    lineHeight: 17,
+    fontSize: 12, color: '#888', lineHeight: 17,
   },
 });

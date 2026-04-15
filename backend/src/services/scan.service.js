@@ -57,9 +57,7 @@ export const analyzeURL = async (url, isPremium = false) => {
     })
   );
 
-  const anyEmbeddedMalicious = embeddedLinkResults.some(
-    (r) => r.verdict === 'malicious'
-  );
+  const anyEmbeddedMalicious = embeddedLinkResults.some((r) => r.verdict === 'malicious');
 
   // collect who flagged it as malicious
   const flaggedBy = [];

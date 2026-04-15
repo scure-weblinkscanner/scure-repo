@@ -21,6 +21,7 @@ import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
 import { useNotifications } from '../hooks/useNotifications';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import BlocklistModal from '../components/BlocklistModal';
 
 const normalizeUrl = (url) => {
   const u = url.trim().toLowerCase();
@@ -46,6 +47,8 @@ export default function PasteURLScreen() {
   const [url, setUrl] = useState('');
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState('');
+  const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const pendingUrl = useRef(null);
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const isFocused = useRef(true);
 
@@ -107,12 +110,18 @@ export default function PasteURLScreen() {
       return;
     }
     setError('');
+    await runScan(normalizeUrl(url.trim()));
+  };
+
+  const runScan = async (normalizedUrl, skipBlocklist = false) => {
     setScanning(true);
     try {
-      const normalized = normalizeUrl(url.trim());
-      const result = await analyzeUrl(normalized, token, 'pasteUrl');
+      const result = await analyzeUrl(normalizedUrl, token, 'pasteUrl', skipBlocklist);
       setScanResult(result);
-      if (isFocused.current) {
+      if (result.blocklist && !skipBlocklist) {
+        pendingUrl.current = normalizedUrl;
+        setShowBlocklistModal(true);
+      } else if (isFocused.current) {
         router.push({ pathname: '/scanURLResult' });
       } else if (notificationsEnabled) {
         sendScanCompleteNotification(result);
@@ -120,7 +129,9 @@ export default function PasteURLScreen() {
         router.push({ pathname: '/scanURLResult' });
       }
     } catch (err) {
-      setError('Scan failed: ' + err.message);
+      if (isFocused.current) {
+        setError('Scan failed: ' + err.message);
+      }
     } finally {
       setScanning(false);
     }
@@ -131,6 +142,11 @@ export default function PasteURLScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+      <BlocklistModal
+        visible={showBlocklistModal}
+        onExit={() => { setShowBlocklistModal(false); setUrl(''); }}
+        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+      />
       <SafeAreaView style={{ flex: 1, backgroundColor:"#0E0E95"}} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.wrapper}
