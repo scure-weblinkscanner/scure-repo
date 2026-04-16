@@ -30,6 +30,7 @@ export const analyzeScan = async (req, res) => {
 
     res.status(200).json(result);
   } catch (error) {
+    console.error('[analyzeScan] 500 error:', error.message, error.stack);
     res.status(500).json({ error: error.message });
   }
 };
