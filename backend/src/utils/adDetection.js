@@ -20,13 +20,18 @@ const AD_SELECTORS = [
   '[class*="overlay"]',
 ];
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const detectAds = async (url) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox'],
+  });
   const page = await browser.newPage();
 
   const detectedNetworks = new Set();
   let popupCount = 0;
-  let redirectCount = 0;
+  let popupPage = null;
   const originalHost = new URL(url).hostname;
 
   try {
@@ -40,26 +45,18 @@ export const detectAds = async (url) => {
     });
 
     // Detect window.open() popups and capture the first one
-    let popupPage = null;
     page.on('popup', (newPage) => {
       popupCount++;
       if (!popupPage) popupPage = newPage;
-    });;
-
-    // Detect main-frame navigations away from original domain after load
-    let pageLoaded = false;
-    page.on('framenavigated', (frame) => {
-      if (!pageLoaded || frame !== page.mainFrame()) return;
-      try {
-        const navHost = new URL(frame.url()).hostname;
-        if (navHost !== originalHost) redirectCount++;
-      } catch { /* ignore */ }
     });
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    pageLoaded = true;
+    // Use 'load' so JS-rendered pages (YouTube, SPAs) actually paint content
+    await page.goto(url, { waitUntil: 'load', timeout: 12000 });
 
-    // Screenshot 1: initial load
+    // Extra wait for JS hydration (SPAs need this to render above the fold)
+    await sleep(1500);
+
+    // Screenshot 1: initial load (now rendered)
     const shot1 = await page.screenshot({ type: 'jpeg', quality: 60 });
 
     const initialScriptCount = await page.evaluate(() =>
@@ -68,7 +65,7 @@ export const detectAds = async (url) => {
 
     // Scroll to trigger lazy-loaded ads
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
-    await page.waitForTimeout(2000);
+    await sleep(1500);
 
     // Screenshot 2: after scroll
     const shot2 = await page.screenshot({ type: 'jpeg', quality: 60 });
@@ -95,14 +92,14 @@ export const detectAds = async (url) => {
 
     try {
       await page.mouse.click(clickTarget?.x ?? 300, clickTarget?.y ?? 450);
-      await page.waitForTimeout(2000);
-    } catch { /* navigation on click is fine — redirectCount will capture it */ }
+      await sleep(1500);
+    } catch { /* navigation on click is fine */ }
 
     // Screenshot 3: capture the popup page if one opened, otherwise the current page
     let shot3 = shot2;
     try {
       if (popupPage) {
-        await popupPage.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
+        await popupPage.waitForLoadState('domcontentloaded', { timeout: 3000 }).catch(() => {});
         shot3 = await popupPage.screenshot({ type: 'jpeg', quality: 60 });
       } else {
         shot3 = await page.screenshot({ type: 'jpeg', quality: 60 });
@@ -118,9 +115,9 @@ export const detectAds = async (url) => {
     } catch { /* page may have navigated */ }
 
     const adNetworks = [...detectedNetworks];
+    // redirectCount removed — too many false positives (login redirects, CDN hops, regional redirects)
     const isAdIntensive =
       popupCount >= 1 ||
-      redirectCount >= 1 ||
       adNetworks.length >= 2 ||
       adElementCount >= 3 ||
       dynamicScripts >= 3;
@@ -128,7 +125,6 @@ export const detectAds = async (url) => {
     return {
       isAdIntensive,
       popupCount,
-      redirectCount,
       adNetworks,
       adElementCount,
       dynamicScripts,
@@ -142,6 +138,6 @@ export const detectAds = async (url) => {
     console.error('Ad detection error:', err.message);
     return null;
   } finally {
-    await browser.close();
+    try { await browser.close(); } catch { /* ignore cleanup errors */ }
   }
 };

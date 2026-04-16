@@ -137,7 +137,7 @@ const PREMIUM_PROFILE_ID = 3;
 const getSlideLabels = (adAnalysis) => [
   'Initial Load',
   'After Scroll',
-  adAnalysis?.popupCount >= 1 ? 'Popup Opened' : adAnalysis?.redirectCount >= 1 ? 'After Redirect' : 'After Interaction',
+  adAnalysis?.popupCount >= 1 ? 'Popup Opened' : 'After Interaction',
 ];
 
 const AdAnalysisCard = ({ adAnalysis }) => {

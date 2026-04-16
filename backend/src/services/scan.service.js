@@ -42,7 +42,12 @@ export const analyzeURL = async (url, isPremium = false, adDetection = false, sk
     }),
     scanWithVirusTotal(url),
     scanWithSafeBrowsing(url),
-    (isPremium && adDetection) ? detectAds(url).catch(() => null) : Promise.resolve(null),
+    (isPremium && adDetection)
+      ? Promise.race([
+          detectAds(url),
+          new Promise((resolve) => setTimeout(() => resolve(null), 20000)),
+        ]).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
   const urlscan = urlscanResult;
