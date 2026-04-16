@@ -803,7 +803,7 @@ const styles = StyleSheet.create({
     borderRadius: 10, overflow: 'hidden', backgroundColor: '#111',
   },
   adScreenshot: {
-    width: '100%', height: 180,
+    width: '100%', aspectRatio: 12 / 7, backgroundColor: '#111',
   },
   adSlideCaption: {
     backgroundColor: 'rgba(0,0,0,0.6)', paddingVertical: 5, paddingHorizontal: 12,

@@ -35,7 +35,7 @@ export const detectAds = async (url) => {
   const originalHost = new URL(url).hostname;
 
   try {
-    await page.setViewportSize({ width: 600, height: 900 });
+    await page.setViewportSize({ width: 1200, height: 700 });
 
     // Track ad network requests
     page.on('request', (req) => {

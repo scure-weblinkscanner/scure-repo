@@ -129,6 +129,34 @@ const ScannerRow = ({ name, verdict, detail }) => (
   </View>
 );
 
+const VISIBLE_LINKS_COUNT = 5;
+
+const EmbeddedLinksExpander = ({ links }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      {expanded && links.map((link, i) => {
+        const vc = getVc(link.verdict);
+        return (
+          <View key={i} style={styles.embeddedLinkRow}>
+            <MaterialIcons name={vc.icon} size={14} color={vc.color} style={{ flexShrink: 0 }} />
+            <Text style={styles.embeddedLinkUrl} numberOfLines={1}>{link.url}</Text>
+            <View style={[styles.badge, { backgroundColor: vc.bg, borderColor: vc.color }]}>
+              <MaterialIcons name={vc.icon} size={13} color={vc.color} />
+              <Text style={[styles.badgeText, { color: vc.color }]}>{link.verdict}</Text>
+            </View>
+          </View>
+        );
+      })}
+      <TouchableOpacity onPress={() => setExpanded((v) => !v)} style={styles.expandBtn}>
+        <Text style={styles.expandBtnText}>
+          {expanded ? 'Show less' : `· · · ${links.length} more`}
+        </Text>
+      </TouchableOpacity>
+    </>
+  );
+};
+
 const EmbeddedLinksCard = ({ links }) => {
   const { account } = useAuth();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
@@ -205,6 +233,8 @@ const EmbeddedLinksCard = ({ links }) => {
   const anySuspicious = links.some((r) => r.verdict === 'suspicious');
   const maliciousCount = links.filter((r) => r.verdict === 'malicious').length;
   const suspiciousCount = links.filter((r) => r.verdict === 'suspicious').length;
+  const visibleLinks = links.slice(0, VISIBLE_LINKS_COUNT);
+  const hiddenLinks = links.slice(VISIBLE_LINKS_COUNT);
 
   return (
     <View style={styles.card}>
@@ -228,7 +258,7 @@ const EmbeddedLinksCard = ({ links }) => {
           </Text>
         </View>
       )}
-      {links.map((link, i) => {
+      {visibleLinks.map((link, i) => {
         const vc = getVc(link.verdict);
         return (
           <View key={i} style={styles.embeddedLinkRow}>
@@ -241,6 +271,7 @@ const EmbeddedLinksCard = ({ links }) => {
           </View>
         );
       })}
+      {hiddenLinks.length > 0 && <EmbeddedLinksExpander links={hiddenLinks} />}
     </View>
   );
 };
