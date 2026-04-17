@@ -5,6 +5,7 @@ import userProfileRoutes from './routes/userProfile.routes.js'
 import scanRoutes from './routes/scan.routes.js'
 import ticketsRoutes from './routes/tickets.routes.js'
 import subscriptionPlanRoutes from './routes/subscriptionPlan.routes.js'
+import settingsRoutes from './routes/settings.routes.js'
 
 const app = express()
 
@@ -16,6 +17,7 @@ app.use('/api/userProfile', userProfileRoutes)
 app.use('/api/scanURL', scanRoutes)
 app.use('/api/tickets', ticketsRoutes)
 app.use('/api/subscriptionPlan', subscriptionPlanRoutes)
+app.use('/api/settings', settingsRoutes)
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'test works' })

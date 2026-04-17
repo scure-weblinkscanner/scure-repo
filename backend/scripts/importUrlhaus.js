@@ -1,18 +1,15 @@
 /**
- * URLhaus CSV Import Script
+ * URLhaus Import Script
  *
- * Mode 1 — Download directly from URLhaus:
+ * Mode 1 — Download directly from URLhaus (no API key needed):
  *   node backend/scripts/importUrlhaus.js --download
- *   (reads URLHAUS_API_KEY from backend/.env)
  *
- * Mode 2 — Use a locally saved CSV file:
- *   node backend/scripts/importUrlhaus.js path/to/urlhaus.csv
+ * Mode 2 — Use a locally saved URLhaus CSV file (includes threat type):
+ *   node backend/scripts/importUrlhaus.js path/to/csv_recent.csv
  *
  * Re-running is safe — duplicate URLs are silently skipped (UNIQUE constraint).
- *
- * Only rows with url_status 'online' or 'unknown' are imported.
- * The URLhaus full dump contains URLs from the past 90 days that are either
- * actively distributing malware or were recently added.
+ * --download fetches the public online-URL text list (~100k entries).
+ * CSV mode parses the full dump for threat type metadata.
  */
 
 import fs from 'fs'
@@ -25,12 +22,7 @@ import dotenv from 'dotenv'
 dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') })
 
 const BATCH_SIZE = 500
-const ACTIVE_STATUSES = new Set(['online', 'unknown'])
-
-// Full URL database dump endpoint (CSV)
-// Auth key is embedded in the URL as per URLhaus API v2 docs
-const URLHAUS_DUMP_URL = (key) =>
-  `https://urlhaus-api.abuse.ch/v2/files/exports/${key}/online.csv`
+const URLHAUS_TEXT_URL = 'https://urlhaus.abuse.ch/downloads/text/'
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -38,6 +30,20 @@ const supabase = createClient(
 )
 
 // ── Helpers ──────────────────────────────────────────────────
+
+const fetchText = (url) =>
+  new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        reject(new Error(`URLhaus returned HTTP ${res.statusCode}`))
+        return
+      }
+      let data = ''
+      res.on('data', (chunk) => (data += chunk))
+      res.on('end', () => resolve(data))
+      res.on('error', reject)
+    }).on('error', reject)
+  })
 
 const parseCsvLine = (line) => {
   const fields = []
@@ -64,101 +70,79 @@ const insertBatch = async (batch) => {
   if (error) throw error
 }
 
-// Download the CSV from URLhaus and return a readable stream
-const downloadCsv = (key) => {
-  return new Promise((resolve, reject) => {
-    const url = URLHAUS_DUMP_URL(key)
-    console.log(`Downloading from URLhaus...`)
-    https.get(url, (res) => {
-      if (res.statusCode === 302 || res.statusCode === 301) {
-        // Follow redirect
-        https.get(res.headers.location, (redirected) => {
-          if (redirected.statusCode !== 200) {
-            reject(new Error(`URLhaus returned HTTP ${redirected.statusCode}. Check your API key.`))
-          } else {
-            resolve(redirected)
-          }
-        }).on('error', reject)
-      } else if (res.statusCode !== 200) {
-        reject(new Error(`URLhaus returned HTTP ${res.statusCode}. Check your API key.`))
-      } else {
-        resolve(res)
-      }
-    }).on('error', reject)
-  })
+// ── Download mode: plain text list, one URL per line ─────────
+
+const runDownload = async () => {
+  console.log('Downloading URLhaus online URL list...')
+  const raw = await fetchText(URLHAUS_TEXT_URL)
+  const lines = raw.split('\n').filter((l) => l.trim() && !l.startsWith('#'))
+  console.log(`Got ${lines.length} URLs. Inserting in batches of ${BATCH_SIZE}...`)
+
+  let inserted = 0
+  for (let i = 0; i < lines.length; i += BATCH_SIZE) {
+    const batch = lines.slice(i, i + BATCH_SIZE).map((url) => ({
+      blUrl: url.trim(),
+      blSource: 'URLhaus',
+      blThreatType: null,
+    }))
+    await insertBatch(batch)
+    inserted += batch.length
+    process.stdout.write(`\r${inserted} / ${lines.length}`)
+  }
+  console.log(`\nDone. Inserted/updated: ${inserted}`)
 }
 
-// ── Main ─────────────────────────────────────────────────────
+// ── CSV mode: local file with full metadata ───────────────────
 
-const processStream = async (inputStream) => {
-  const rl = readline.createInterface({ input: inputStream, crlfDelay: Infinity })
+const runCsv = async (filePath) => {
+  if (!fs.existsSync(filePath)) {
+    console.error(`File not found: ${filePath}`)
+    process.exit(1)
+  }
+  console.log(`Reading from file: ${filePath}`)
 
-  // URLhaus online.csv has no header row. Fixed column positions:
-  // 0:id  1:dateadded  2:url  3:url_status  4:last_online  5:threat  6:tags  7:urlhaus_link  8:reporter
-  const URL_COL    = 2
-  const STATUS_COL = 3
-  const THREAT_COL = 5
+  const rl = readline.createInterface({
+    input: fs.createReadStream(filePath),
+    crlfDelay: Infinity,
+  })
 
+  // CSV columns: id, dateadded, url, url_status, last_online, threat, tags, urlhaus_link, reporter
+  const ACTIVE_STATUSES = new Set(['online', 'unknown'])
   let batch = []
-  let totalInserted = 0
-  let totalSkipped = 0
+  let inserted = 0
+  let skipped = 0
 
   for await (const line of rl) {
-    if (line.startsWith('#') || line.trim() === '') continue
-
-    const fields = parseCsvLine(line)
-
-    const url = fields[URL_COL]
-    const status = fields[STATUS_COL] ?? 'unknown'
-    const threat = fields[THREAT_COL] ?? null
-
-    if (!url) continue
-
-    if (!ACTIVE_STATUSES.has(status)) {
-      totalSkipped++
-      continue
-    }
+    if (line.startsWith('#') || !line.trim()) continue
+    const f = parseCsvLine(line)
+    const url = f[2]
+    const status = f[3] ?? 'unknown'
+    const threat = f[5] ?? null
+    if (!url || !url.startsWith('http')) continue
+    if (!ACTIVE_STATUSES.has(status)) { skipped++; continue }
 
     batch.push({ blUrl: url, blSource: 'URLhaus', blThreatType: threat || null })
 
     if (batch.length >= BATCH_SIZE) {
       await insertBatch(batch)
-      totalInserted += batch.length
-      process.stdout.write(`\rInserted ${totalInserted} rows...`)
+      inserted += batch.length
+      process.stdout.write(`\rInserted ${inserted}...`)
       batch = []
     }
   }
 
   if (batch.length > 0) {
     await insertBatch(batch)
-    totalInserted += batch.length
+    inserted += batch.length
   }
 
-  console.log(`\nDone. Inserted/updated: ${totalInserted} | Skipped (offline): ${totalSkipped}`)
+  console.log(`\nDone. Inserted/updated: ${inserted} | Skipped (offline): ${skipped}`)
 }
 
-const run = async () => {
-  const arg = process.argv[2]
+// ── Entry point ───────────────────────────────────────────────
 
-  if (!arg || arg === '--download') {
-    // Download mode
-    const key = process.env.URLHAUS_API_KEY
-    if (!key || key === 'your_urlhaus_auth_key_here') {
-      console.error('Set URLHAUS_API_KEY in backend/.env before running with --download')
-      process.exit(1)
-    }
-    const stream = await downloadCsv(key)
-    await processStream(stream)
-  } else {
-    // Local file mode
-    if (!fs.existsSync(arg)) {
-      console.error(`File not found: ${arg}`)
-      process.exit(1)
-    }
-    console.log(`Reading from file: ${arg}`)
-    await processStream(fs.createReadStream(arg))
-  }
-}
+const arg = process.argv[2]
+const run = !arg || arg === '--download' ? runDownload : () => runCsv(arg)
 
 run().catch((err) => {
   console.error('Import failed:', err.message)

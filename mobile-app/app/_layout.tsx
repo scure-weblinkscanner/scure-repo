@@ -59,6 +59,7 @@ function RootLayoutNav() {
         <Stack.Screen name="accountDetails" options={{ headerShown: false }} />
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
         <Stack.Screen name="securitySettings" options={{ headerShown: false }} />
+        <Stack.Screen name="factCheckResult" options={{ title: 'Fact Check Result', headerStyle: { backgroundColor: '#0a0a0a' }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '600' } }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />

@@ -727,6 +727,9 @@ export default function ScanResultScreen() {
         {/* ── Fact-Check (Premium) ── */}
         <FactCheckCard url={result.url} />
 
+        {/* ── Ad Intensive Detection ── */}
+        <AdAnalysisCard adAnalysis={result.adAnalysis} />
+
         {/* ── Network Information ── */}
         {u?.network && (
           <Card>
@@ -841,8 +844,6 @@ export default function ScanResultScreen() {
           </CollapsibleCard>
         )}
 
-        {/* ── Ad Intensive Detection ── */}
-        <AdAnalysisCard adAnalysis={result.adAnalysis} />
       </ScrollView>
 
       {/* ── Floating bottom bar ── */}
