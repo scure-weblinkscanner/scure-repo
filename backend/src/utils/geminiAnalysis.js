@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // v1beta is required for gemini-2.5-flash on this API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, {
-  apiVersion: 'v1'
+  apiVersion: 'v1beta'
 });
 
 export const analyzeScripts = async (scripts, url) => {
@@ -154,7 +154,14 @@ Respond in JSON format only, no markdown:
         continue;
       }
 
-      throw error;
+      return {
+        verdict: 'questionable',
+        confidenceScore: 50,
+        summary: 'AI analysis is temporarily unavailable. Please try again later.',
+        claims: [],
+        redFlags: [],
+        positiveIndicators: [],
+      };
     }
   }
 };
