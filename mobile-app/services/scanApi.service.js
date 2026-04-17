@@ -1,13 +1,7 @@
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+import { apiFetch } from './api';
 
-/**
- * Sends a URL to the backend for analysis.
- * @param {string} url - The URL to scan
- * @param {string} token - JWT from useAuth()
- * @returns {Promise<ScanResult>}
- */
 export const analyzeUrl = async (url, token, scanMethod = 'cameraUrl', skipBlocklist = false, adDetection = false) => {
-  const response = await fetch(`${BASE_URL}/scanURL/analyze`, {
+  const response = await apiFetch('/scanURL/analyze', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -23,43 +17,35 @@ export const analyzeUrl = async (url, token, scanMethod = 'cameraUrl', skipBlock
 };
 
 export const fetchScanHistory = async (token) => {
-  const response = await fetch(`${BASE_URL}/scanURL/history`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const response = await apiFetch('/scanURL/history', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `Server error: ${response.status}`)
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Server error: ${response.status}`);
   }
-  return response.json()
-}
+  return response.json();
+};
 
 export const publishScanHistory = async (shId, token) => {
-  const response = await fetch(`${BASE_URL}/scanURL/history/${shId}/publish`, {
+  const response = await apiFetch(`/scanURL/history/${shId}/publish`, {
     method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `Server error: ${response.status}`)
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Server error: ${response.status}`);
   }
-  return response.json()
-}
+  return response.json();
+};
 
 export const fetchPublicScans = async (token) => {
-  const response = await fetch(`${BASE_URL}/scanURL/public`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const response = await apiFetch('/scanURL/public', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `Server error: ${response.status}`)
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Server error: ${response.status}`);
   }
-  return response.json()
-}
+  return response.json();
+};

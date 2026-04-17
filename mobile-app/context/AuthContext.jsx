@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { getUserAccountById } from '../services/userAccount.service';
+import { setOnUnauthorized } from '../services/api';
 
 const AuthContext = createContext({
   token: null,
@@ -22,6 +23,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     authRef.current = { token, account };
   }, [token, account]);
+
+  useEffect(() => {
+    setOnUnauthorized(logout);
+  }, []);
 
   useEffect(() => {
     const loadAuth = async () => {

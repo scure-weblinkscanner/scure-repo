@@ -45,8 +45,8 @@ export const analyzeURL = async (url, isPremium = false, adDetection = false, sk
     (isPremium && adDetection)
       ? Promise.race([
           detectAds(url),
-          new Promise((resolve) => setTimeout(() => resolve(null), 60000)),
-        ]).catch(() => null)
+          new Promise((resolve) => setTimeout(() => resolve({ failed: true }), 60000)),
+        ]).catch(() => ({ failed: true }))
       : Promise.resolve(null),
   ]);
 

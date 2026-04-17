@@ -1,23 +1,18 @@
-import BASE_URL from '../constants/api';
+import { apiFetch } from './api';
 
 export const loginUserAccount = async (uaEmail, uaPassword) => {
-  const response = await fetch(`${BASE_URL}/userAccount/login`, {
+  const response = await apiFetch('/userAccount/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ uaEmail, uaPassword }),
   });
-
   const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Login failed');
-  }
-
-  return data; // { token, account }
+  if (!response.ok) throw new Error(data.error || 'Login failed');
+  return data;
 };
 
 export const getUserAccountById = async (uaId, token) => {
-  const response = await fetch(`${BASE_URL}/userAccount/${uaId}`, {
+  const response = await apiFetch(`/userAccount/${uaId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const data = await response.json();
@@ -26,7 +21,7 @@ export const getUserAccountById = async (uaId, token) => {
 };
 
 export const deleteUserAccount = async (uaId, token) => {
-  const response = await fetch(`${BASE_URL}/userAccount/${uaId}`, {
+  const response = await apiFetch(`/userAccount/${uaId}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -37,7 +32,7 @@ export const deleteUserAccount = async (uaId, token) => {
 };
 
 export const updateUserAccount = async (uaId, data, token) => {
-  const response = await fetch(`${BASE_URL}/userAccount/${uaId}`, {
+  const response = await apiFetch(`/userAccount/${uaId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -45,12 +40,7 @@ export const updateUserAccount = async (uaId, data, token) => {
     },
     body: JSON.stringify(data),
   });
-
   const result = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(result.message || `Server error: ${response.status}`);
-  }
-
+  if (!response.ok) throw new Error(result.message || `Server error: ${response.status}`);
   return result;
 };

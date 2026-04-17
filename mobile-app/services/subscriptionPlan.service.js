@@ -1,7 +1,7 @@
-import BASE_URL from '../constants/api';
+import { apiFetch } from './api';
 
 export const getSubscriptionByUser = async (uaId, token) => {
-  const response = await fetch(`${BASE_URL}/subscriptionPlan/user/${uaId}`, {
+  const response = await apiFetch(`/subscriptionPlan/user/${uaId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const data = await response.json();
@@ -10,7 +10,7 @@ export const getSubscriptionByUser = async (uaId, token) => {
 };
 
 export const cancelSubscription = async (spId, uaId, token) => {
-  const response = await fetch(`${BASE_URL}/subscriptionPlan/${spId}/cancel`, {
+  const response = await apiFetch(`/subscriptionPlan/${spId}/cancel`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

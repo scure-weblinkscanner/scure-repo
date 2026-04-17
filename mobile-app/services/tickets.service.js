@@ -1,7 +1,7 @@
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+import { apiFetch } from './api';
 
 export const getTicketsByUser = async (uaId, token) => {
-  const response = await fetch(`${BASE_URL}/tickets/user/${uaId}`, {
+  const response = await apiFetch(`/tickets/user/${uaId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   let data;
@@ -15,11 +15,11 @@ export const getTicketsByUser = async (uaId, token) => {
 };
 
 export const submitTicket = async (token, subject, description) => {
-  const response = await fetch(`${BASE_URL}/tickets`, {
+  const response = await apiFetch('/tickets', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ tkSubject: subject, tkDescription: description }),
   });
