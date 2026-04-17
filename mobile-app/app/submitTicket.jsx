@@ -59,7 +59,14 @@ export default function SubmitTicketScreen() {
 
   const handleSubmit = async () => {
     if (!hasContent || submitting) return;
-
+    if (subject.trim().length < 5) {
+      setError('Subject must be at least 5 characters.');
+      return;
+    }
+    if (description.trim().length < 20) {
+      setError('Description must be at least 20 characters.');
+      return;
+    }
     setError('');
     setSubmitting(true);
 

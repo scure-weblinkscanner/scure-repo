@@ -28,7 +28,7 @@ export const analyzeScan = async (req, res) => {
 
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
@@ -48,7 +48,7 @@ export const factCheckScan = async (req, res) => {
     const result = await factCheckURL(url);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
@@ -57,7 +57,7 @@ export const getScanHistory = async (req, res) => {
     const history = await getScanHistoryByUserId(req.user.uaId);
     res.status(200).json({ history });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
@@ -67,7 +67,7 @@ export const publishScan = async (req, res) => {
     const result = await publishScanHistory(shId, req.user.uaId);
     res.status(200).json({ result });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
@@ -76,7 +76,7 @@ export const getPublicScansList = async (req, res) => {
     const scans = await getPublicScans()
     res.status(200).json({ scans })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' })
   }
 }
 
@@ -90,7 +90,7 @@ export const getScanActivityController = async (req, res) => {
     const data = await getScanActivity(period)
     res.status(200).json({ data })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' })
   }
 }
 
@@ -99,6 +99,6 @@ export const getAllScansAdminController = async (req, res) => {
     const scans = await getAllScansAdmin()
     res.status(200).json({ scans })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' })
   }
 }

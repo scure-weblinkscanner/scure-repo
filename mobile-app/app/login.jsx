@@ -28,10 +28,18 @@ export default function LoginScreen() {
   if (!fontsLoaded) return <View style={styles.wrapper} />;
 
   const handleLogin = async () => {
+    if (!uaEmail.trim() || !uaEmail.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (!uaPassword) {
+      setError('Please enter your password.');
+      return;
+    }
     setError('');
     setLoading(true);
     try {
-      const { token, account } = await loginUserAccount(uaEmail, uaPassword);
+      const { token, account } = await loginUserAccount(uaEmail.trim(), uaPassword);
       await login(token, account);
     } catch (err) {
       setError(err.message);

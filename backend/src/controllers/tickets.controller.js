@@ -5,7 +5,7 @@ export const getAllTickets = async (req, res) => {
     const tickets = await ticketsService.getAllTickets();
     res.status(200).json({ tickets });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
@@ -15,7 +15,7 @@ export const getTicketById = async (req, res) => {
     const ticket = await ticketsService.getTicketById(tkId);
     res.status(200).json({ ticket });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
@@ -28,7 +28,7 @@ export const getTicketsByUser = async (req, res) => {
     const tickets = await ticketsService.getTicketsByUser(uaId);
     res.status(200).json({ tickets });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
@@ -41,7 +41,7 @@ export const createTicket = async (req, res) => {
     const ticket = await ticketsService.createTicket(req.user.uaId, tkSubject, tkDescription);
     res.status(201).json({ ticket });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
@@ -59,6 +59,6 @@ export const respondToTicket = async (req, res) => {
     const ticket = await ticketsService.respondToTicket(tkId, tkAdminResponse, tkStatus ?? 'resolved');
     res.status(200).json({ ticket });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); res.status(500).json({ message: 'Something went wrong.' });
   }
 };

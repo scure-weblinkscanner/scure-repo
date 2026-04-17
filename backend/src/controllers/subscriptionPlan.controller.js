@@ -8,7 +8,7 @@ export const getSubscriptionByUser = async (req, res) => {
     const result = await subscriptionPlanService.getSubscriptionByUser(req.params.uaId);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
@@ -17,7 +17,7 @@ export const cancelSubscription = async (req, res) => {
     const result = await subscriptionPlanService.cancelSubscription(req.params.spId, req.user.uaId);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
@@ -28,7 +28,7 @@ export const createSubscription = async (req, res) => {
     const result = await subscriptionPlanService.createSubscription(uaId, planId);
     res.status(201).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
@@ -37,6 +37,6 @@ export const upgradeSubscription = async (req, res) => {
     const result = await subscriptionPlanService.upgradeSubscription(req.user.uaId);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
   }
 };
