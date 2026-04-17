@@ -1,4 +1,23 @@
 import axios from 'axios';
+import { takeScreenshot } from './playwright.js';
+
+const fallbackURLScan = async (url) => {
+  const id = Buffer.from(url).toString('base64url');
+  const res = await fetch(`https://www.virustotal.com/api/v3/urls/${id}`, {
+    headers: { 'x-apikey': process.env.VIRUSTOTAL_API_KEY },
+  });
+  if (!res.ok) return { verdict: 'unknown', score: 0, categories: [], screenshot: null, uuid: null };
+  const data = await res.json();
+  const stats = data.data?.attributes?.last_analysis_stats ?? {};
+  const total = Object.values(stats).reduce((a, b) => a + b, 0);
+  const malicious = stats.malicious ?? 0;
+  const suspicious = stats.suspicious ?? 0;
+  const verdict = malicious > 0 ? 'malicious' : suspicious > 0 ? 'suspicious' : total > 0 ? 'clean' : 'unknown';
+  const score = total > 0 ? Math.round((malicious / total) * 100) : 0;
+  const categories = Object.values(data.data?.attributes?.categories ?? {});
+  const screenshot = await takeScreenshot(url).catch(() => null);
+  return { verdict, score, categories, screenshot, uuid: data.data?.id ?? null, _source: 'virustotal' };
+};
 
 export const scanWithURLScan = async (url) => {
   try {
@@ -152,6 +171,7 @@ export const scanWithURLScan = async (url) => {
           httpHeaders,
           httpProtocol,
           content: { cookies, links, consoleLogs, globals },
+          _source: 'urlscan',
         };
       } catch {
         // Result not ready yet, keep retrying
@@ -161,7 +181,9 @@ export const scanWithURLScan = async (url) => {
 
     return { verdict: 'unknown', reason: 'URLScan timed out' };
   } catch (error) {
-    console.log('URLScan error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || error.message);
+    console.warn('URLScan failed, trying VirusTotal fallback:', error.response?.data?.message || error.message);
+    return fallbackURLScan(url).catch(() => ({
+      verdict: 'unknown', score: 0, categories: [], screenshot: null, uuid: null,
+    }));
   }
 };

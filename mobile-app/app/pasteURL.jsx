@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useElapsedTime } from '../hooks/useElapsedTime';
 import {
   View,
   Text,
@@ -43,7 +44,7 @@ export default function PasteURLScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
-  const { setScanResult } = useScan();
+  const { setScanResult, setScanDuration } = useScan();
 
   const [url, setUrl] = useState('');
   const [scanning, setScanning] = useState(false);
@@ -52,6 +53,7 @@ export default function PasteURLScreen() {
   const pendingUrl = useRef(null);
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const { adDetectionEnabled } = useAdDetection();
+  const elapsedTime = useElapsedTime(scanning);
   const isFocused = useRef(true);
 
   useFocusEffect(
@@ -117,8 +119,10 @@ export default function PasteURLScreen() {
 
   const runScan = async (normalizedUrl, skipBlocklist = false) => {
     setScanning(true);
+    const _start = Date.now();
     try {
       const result = await analyzeUrl(normalizedUrl, token, 'pasteUrl', skipBlocklist, adDetectionEnabled);
+      setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
       if (result.blocklist && !skipBlocklist) {
         pendingUrl.current = normalizedUrl;
@@ -243,7 +247,7 @@ export default function PasteURLScreen() {
         <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 16}]}>
           {scanning ? (
             <View style={styles.loadingBarContainer}>
-              <Text style={styles.loadingBarLabel}>Analyzing…</Text>
+              <Text style={styles.loadingBarLabel}>Analyzing · {elapsedTime}</Text>
               <View style={styles.loadingBarTrack}>
                 <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
               </View>

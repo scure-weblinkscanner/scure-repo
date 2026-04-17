@@ -14,6 +14,7 @@ import { analyzeUrl } from '../services/scanApi.service';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAdDetection } from '../hooks/useAdDetection';
+import { useElapsedTime } from '../hooks/useElapsedTime';
 import BlocklistModal from '../components/BlocklistModal';
 
 const OCR_MAX_WIDTH = 1500;
@@ -22,7 +23,7 @@ export default function ScanQRScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
-  const { setScanResult } = useScan();
+  const { setScanResult, setScanDuration } = useScan();
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
   const cameraRef = useRef(null);
@@ -35,6 +36,7 @@ export default function ScanQRScreen() {
   const loadingAnim = useRef(new Animated.Value(0)).current;
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const { adDetectionEnabled } = useAdDetection();
+  const elapsedTime = useElapsedTime(scanning);
   const isFocused = useRef(true);
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
   const pendingUrl = useRef(null);
@@ -116,8 +118,10 @@ export default function ScanQRScreen() {
   const runScan = async (url, skipBlocklist = false) => {
     setScanning(true);
     startLoadingBar();
+    const _start = Date.now();
     try {
       const result = await analyzeUrl(url, token, 'cameraQr', skipBlocklist, adDetectionEnabled);
+      setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
       if (result.blocklist && !skipBlocklist) {
         pendingUrl.current = url;
@@ -216,11 +220,14 @@ export default function ScanQRScreen() {
       )}
 
       {/* Loading bar */}
-    {scanning && (
-    <View style={styles.loadingBarTrack}>
-        <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
-    </View>
-    )}
+      {scanning && (
+        <View style={styles.loadingBarContainer}>
+          <Text style={styles.loadingBarLabel}>Analyzing · {elapsedTime}</Text>
+          <View style={styles.loadingBarTrack}>
+            <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
+          </View>
+        </View>
+      )}
 
       {/* Error */}
       {error ? (
@@ -359,21 +366,28 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
+    loadingBarContainer: {
+      position: 'absolute',
+      bottom: 90,
+      left: 0,
+      right: 0,
+      alignItems: 'center',
+      gap: 8,
+      paddingHorizontal: 24,
+    },
+    loadingBarLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '500' },
     loadingBarTrack: {
-    position: 'absolute',
-    bottom: 100,
-    left: 0,
-    right: 0,
-    height: 4,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden',
+      width: '100%',
+      height: 4,
+      borderRadius: 50,
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      overflow: 'hidden',
     },
     loadingBarFill: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 50,
-    backgroundColor: '#4AFF91',
+      width: '100%',
+      height: '100%',
+      borderRadius: 50,
+      backgroundColor: '#4AFF91',
     },
 
   errorBanner: {

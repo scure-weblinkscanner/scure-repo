@@ -93,7 +93,7 @@ export const analyzeURL = async (url, isPremium = false, adDetection = false, sk
     ? 'Moderate risk'
     : 'Mostly clean';
 
-  const suggestion = await generateSuggestion(riskScore, flaggedBy, scoreLabel, url);
+  const { text: suggestion, _source: suggestionSource } = await generateSuggestion(riskScore, flaggedBy, scoreLabel, url);
 
   return {
     url,
@@ -102,6 +102,7 @@ export const analyzeURL = async (url, isPremium = false, adDetection = false, sk
     scoreLabel,
     flaggedBy,
     suggestion,
+    suggestionSource,
     scriptAnalysis,
     urlscan,
     virustotal,

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useElapsedTime } from '../hooks/useElapsedTime';
 import {
   View,
   Text,
@@ -31,7 +32,7 @@ export default function UploadQRScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
-  const { setScanResult } = useScan();
+  const { setScanResult, setScanDuration } = useScan();
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [detectedUrl, setDetectedUrl] = useState('');
@@ -42,6 +43,7 @@ export default function UploadQRScreen() {
   const scanAnim = useRef(new Animated.Value(0.2)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
+  const elapsedTime = useElapsedTime(scanning);
 
   useEffect(() => {
     Animated.parallel([
@@ -114,9 +116,11 @@ export default function UploadQRScreen() {
     if (!detectedUrl || scanning) return;
     setError('');
     setScanning(true);
+    const _start = Date.now();
     try {
       const normalized = normalizeUrl(detectedUrl);
       const result = await analyzeUrl(normalized, token, 'uploadQr');
+      setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
       router.push({ pathname: '/scanURLResult' });
     } catch (err) {
@@ -236,7 +240,7 @@ export default function UploadQRScreen() {
         <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 16}]}>
           {scanning ? (
             <View style={styles.loadingBarContainer}>
-              <Text style={styles.loadingBarLabel}>Analyzing…</Text>
+              <Text style={styles.loadingBarLabel}>Analyzing · {elapsedTime}</Text>
               <View style={styles.loadingBarTrack}>
                 <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
               </View>

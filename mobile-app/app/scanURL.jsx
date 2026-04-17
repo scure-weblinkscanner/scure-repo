@@ -21,6 +21,7 @@ import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAdDetection } from '../hooks/useAdDetection';
+import { useElapsedTime } from '../hooks/useElapsedTime';
 import BlocklistModal from '../components/BlocklistModal';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -88,9 +89,10 @@ export default function ScanURLScreen() {
   const [scanning, setScanning] = useState(false);
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
   const pendingUrl = useRef(null);
-  const { setScanResult } = useScan();
+  const { setScanResult, setScanDuration } = useScan();
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const { adDetectionEnabled } = useAdDetection();
+  const elapsedTime = useElapsedTime(scanning);
   const isFocused = useRef(true);
 
   useEffect(() => {
@@ -197,8 +199,10 @@ export default function ScanURLScreen() {
 
   const runScan = async (url, skipBlocklist = false) => {
     setScanning(true);
+    const _start = Date.now();
     try {
       const result = await analyzeUrl(url, token, 'cameraUrl', skipBlocklist, adDetectionEnabled);
+      setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
       if (result.blocklist && !skipBlocklist) {
         pendingUrl.current = url;
@@ -350,7 +354,7 @@ export default function ScanURLScreen() {
 
             {scanning ? (
               <View style={styles.loadingBarContainer}>
-                <Text style={styles.loadingBarLabel}>Analyzing…</Text>
+                <Text style={styles.loadingBarLabel}>Analyzing · {elapsedTime}</Text>
                 <View style={styles.loadingBarTrack}>
                   <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
                 </View>

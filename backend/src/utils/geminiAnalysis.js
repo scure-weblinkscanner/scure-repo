@@ -1,9 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callGroq } from './groq.js';
 
-// v1beta is required for gemini-2.5-flash on this API key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, {
-  apiVersion: 'v1beta'
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, { apiVersion: 'v1beta' });
 
 export const analyzeScripts = async (scripts, url) => {
   if (!scripts || scripts.length === 0) {
@@ -38,25 +36,27 @@ Analyze these scripts and respond in JSON format only, no markdown:
 {
   "verdict": "malicious" | "suspicious" | "clean",
   "riskScore": 0-100,
-  "reason": "brief explanation",
-  "indicators": ["list", "of", "suspicious", "indicators"]
+  "reason": "detailed explanation of findings (2-3 sentences covering what was found and why it is or isn't a concern)",
+  "indicators": ["specific suspicious patterns or script sources found, or empty if clean"]
 }
 `;
 
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text().replace(/```json|```/g, '').trim();
-    return JSON.parse(text);
+    return { ...JSON.parse(text), _source: 'gemini' };
   } catch {
-    return { verdict: 'unknown', reason: 'AI analysis unavailable.', riskScore: 0, indicators: [] };
+    try {
+      const text = (await callGroq(prompt)).replace(/```json|```/g, '').trim();
+      return { ...JSON.parse(text), _source: 'groq' };
+    } catch {
+      return { verdict: 'unknown', reason: 'AI analysis unavailable.', riskScore: 0, indicators: [], _source: 'none' };
+    }
   }
 };
 
 export const generateSuggestion = async (riskScore, flaggedBy, scoreLabel, url) => {
-  try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
-    const prompt = `
+  const prompt = `
 You are a cybersecurity assistant giving advice to a regular user about a URL they want to visit.
 
 URL: ${url}
@@ -64,18 +64,31 @@ Risk Score: ${riskScore}/100
 Risk Level: ${scoreLabel}
 Flagged as malicious by: ${flaggedBy.length > 0 ? flaggedBy.join(', ') : 'None'}
 
-No need for greetings. Give a short, clear, friendly safety suggestion (2-3 sentences max) for this user. 
+No need for greetings. Give a short, clear, friendly safety suggestion (2-3 sentences max) for this user.
 Do not use technical jargon. Be direct about whether they should visit the URL or not.
+Do not use first-person language (no "I would", "I advise", "I recommend", etc.) — write as a professional security tool, not as a person.
 Respond with plain text only, no JSON, no markdown.
 `;
 
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const result = await model.generateContent(prompt);
-    return result.response.text().trim();
-  } catch (error) {
-    console.log('Gemini suggestion error:', error.message);
-    return flaggedBy.length > 0
-      ? `Proceed with caution. This URL was flagged by: ${flaggedBy.join(', ')}.`
-      : 'No threats detected. Safe to proceed.';
+    return { text: result.response.text().trim(), _source: 'gemini' };
+  } catch {
+    try {
+      return { text: (await callGroq(prompt)).trim(), _source: 'groq' };
+    } catch {
+      let text;
+      if (riskScore >= 60 || flaggedBy.length > 0) {
+        const flagText = flaggedBy.length > 0 ? ` Flagged by: ${flaggedBy.join(', ')}.` : '';
+        text = `This URL appears risky (${scoreLabel}).${flagText} We recommend avoiding it.`;
+      } else if (riskScore >= 25) {
+        text = `This URL shows some suspicious signals (${scoreLabel}). Proceed with caution and only visit if you trust the source.`;
+      } else {
+        text = 'No significant threats detected. Looks safe to proceed.';
+      }
+      return { text, _source: 'none' };
+    }
   }
 };
 
@@ -134,15 +147,12 @@ Respond in JSON format only, no markdown:
       const jsonStr = jsonMatch ? jsonMatch[0] : stripped;
 
       try {
-        return JSON.parse(jsonStr);
+        return { ...JSON.parse(jsonStr), _source: 'gemini' };
       } catch {
         return {
-          verdict: 'questionable',
-          confidenceScore: 50,
+          verdict: 'questionable', confidenceScore: 50,
           summary: 'Analysis could not be fully completed. Review the content manually.',
-          claims: [],
-          redFlags: [],
-          positiveIndicators: [],
+          claims: [], redFlags: [], positiveIndicators: [], _source: 'gemini',
         };
       }
     } catch (error) {
@@ -154,14 +164,18 @@ Respond in JSON format only, no markdown:
         continue;
       }
 
-      return {
-        verdict: 'questionable',
-        confidenceScore: 50,
-        summary: 'AI analysis is temporarily unavailable. Please try again later.',
-        claims: [],
-        redFlags: [],
-        positiveIndicators: [],
-      };
+      try {
+        const raw = await callGroq(prompt);
+        const stripped = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+        const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+        return { ...JSON.parse(jsonMatch ? jsonMatch[0] : stripped), _source: 'groq' };
+      } catch {
+        return {
+          verdict: 'questionable', confidenceScore: 50,
+          summary: 'AI analysis is temporarily unavailable. Please try again later.',
+          claims: [], redFlags: [], positiveIndicators: [], _source: 'none',
+        };
+      }
     }
   }
 };

@@ -29,7 +29,31 @@ const getVC = (verdict) => verdictConfig[verdict?.toLowerCase()] ?? verdictConfi
 
 const Card = ({ children }) => <View style={styles.card}>{children}</View>;
 
-const CollapsibleCard = ({ icon, label, children, badge, description }) => {
+const ENGINE_BADGE = {
+  urlscan:      { label: 'URL',        color: '#FF8C00', bg: 'rgba(255,140,0,0.15)' },
+  virustotal:   { label: 'VT',         color: '#4FC3F7', bg: 'rgba(79,195,247,0.15)' },
+  safebrowsing: { label: 'GSB',        color: '#81C784', bg: 'rgba(129,199,132,0.15)' },
+  gemini:       { label: 'AI (Gemini)',color: '#CE93D8', bg: 'rgba(206,147,216,0.15)' },
+  groq:         { label: 'AI (Groq)',  color: '#F97316', bg: 'rgba(249,115,22,0.15)' },
+};
+const EngineBadge = ({ engine }) => {
+  const cfg = ENGINE_BADGE[engine];
+  if (!cfg) return null;
+  return (
+    <View style={[styles.engineBadge, { backgroundColor: cfg.bg, borderColor: `${cfg.color}60` }]}>
+      <Text style={[styles.engineBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
+    </View>
+  );
+};
+
+const formatDuration = (secs) => {
+  if (!secs && secs !== 0) return null;
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+};
+
+const CollapsibleCard = ({ icon, label, children, badge, description, engine }) => {
   const [open, setOpen] = useState(false);
   return (
     <View style={styles.card}>
@@ -42,6 +66,7 @@ const CollapsibleCard = ({ icon, label, children, badge, description }) => {
           <MaterialIcons name={icon} size={15} color="rgba(255,255,255,0.4)" />
           <Text style={styles.cardTitleText}>{label}</Text>
           {badge ? <Text style={styles.collapsibleBadge}>{badge}</Text> : null}
+          {engine ? <EngineBadge engine={engine} /> : null}
         </View>
         <MaterialIcons
           name={open ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
@@ -55,12 +80,23 @@ const CollapsibleCard = ({ icon, label, children, badge, description }) => {
   );
 };
 
-const CardTitle = ({ icon, label }) => (
-  <View style={styles.cardTitleRow}>
-    <MaterialIcons name={icon} size={15} color="rgba(255,255,255,0.4)" />
-    <Text style={styles.cardTitleText}>{label}</Text>
-  </View>
-);
+const CardTitle = ({ icon, label, engine }) => {
+  const inner = (
+    <View style={styles.cardTitleRow}>
+      <MaterialIcons name={icon} size={15} color="rgba(255,255,255,0.4)" />
+      <Text style={styles.cardTitleText}>{label}</Text>
+    </View>
+  );
+  if (engine) {
+    return (
+      <View style={styles.cardTitleRowWithBadge}>
+        {inner}
+        <EngineBadge engine={engine} />
+      </View>
+    );
+  }
+  return inner;
+};
 
 const Row = ({ label, value, valueColor, mono }) => {
   if (value == null || value === '' || (Array.isArray(value) && value.length === 0)) return null;
@@ -124,10 +160,13 @@ const Tag = ({ label, color }) => (
   </View>
 );
 
-const ScannerRow = ({ name, verdict, detail }) => (
+const ScannerRow = ({ name, verdict, detail, engine }) => (
   <View style={styles.scannerRow}>
     <View style={styles.scannerTop}>
-      <Text style={styles.scannerName}>{name}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Text style={styles.scannerName}>{name}</Text>
+        {engine ? <EngineBadge engine={engine} /> : null}
+      </View>
       <Badge verdict={verdict} />
     </View>
     {detail ? <Text style={styles.scannerDetail}>{detail}</Text> : null}
@@ -344,7 +383,7 @@ const EmbeddedLinksCard = ({ links }) => {
 
   return (
     <Card>
-      <CardTitle icon="link" label={`Embedded Links (${links.length})`} />
+      <CardTitle icon="link" label={`Embedded Links (${links.length})`} engine="safebrowsing" />
       <Text style={styles.cardDesc}>
         Links found inside this page were scanned for threats. Dangerous links hiding on a page are a common sign the whole site may be unsafe.
       </Text>
@@ -532,7 +571,8 @@ const FactCheckCard = ({ url }) => {
 
 export default function ScanResultScreen() {
   const router = useRouter();
-  const { scanResult: result } = useScan();
+  const { scanResult: result, scanDuration } = useScan();
+  const [openUrlModal, setOpenUrlModal] = useState(false);
 
   if (!result) {
     return (
@@ -571,6 +611,13 @@ export default function ScanResultScreen() {
           </Text>
           <Text style={styles.heroUrl} numberOfLines={3}>{result.url}</Text>
           <Text style={styles.heroSuggestion}>{result.suggestion}</Text>
+          {result.suggestionSource && (
+            result.suggestionSource === 'static'
+              ? <View style={[styles.sourceBadge, styles.sourceBadgeUnavailable]}>
+                  <Text style={styles.sourceBadgeText}>Static fallback</Text>
+                </View>
+              : <EngineBadge engine={result.suggestionSource} />
+          )}
           {u?.categories?.length > 0 && (
             <View style={styles.tagsRow}>
               {u.categories.map((c, i) => <Tag key={i} label={c} color="#FFD60A" />)}
@@ -586,15 +633,27 @@ export default function ScanResultScreen() {
         {/* ── Screenshot ── */}
         {u?.screenshot ? (
           <Card>
-            <CardTitle icon="image" label="Page Screenshot" />
-            <Text style={styles.cardDesc}>A snapshot of what this webpage looks like. If it looks unexpected or suspicious, that's a red flag.</Text>
-            <TouchableOpacity onPress={() => Linking.openURL(u.screenshot)} activeOpacity={0.85}>
-              <Image source={{ uri: u.screenshot }} style={styles.screenshot} resizeMode="cover" />
-              <View style={styles.screenshotHint}>
-                <MaterialIcons name="open-in-new" size={13} color="rgba(255,255,255,0.4)" />
-                <Text style={styles.screenshotHintText}>Tap to open full screenshot</Text>
+            <View style={styles.cardTitleRowWithBadge}>
+              <CardTitle icon="image" label="Page Screenshot" />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <EngineBadge engine={u._source === 'virustotal' ? 'virustotal' : 'urlscan'} />
+                {u._source === 'virustotal' && (
+                  <View style={styles.sourceBadge}><Text style={styles.sourceBadgeText}>via Playwright</Text></View>
+                )}
               </View>
-            </TouchableOpacity>
+            </View>
+            <Text style={styles.cardDesc}>A snapshot of what this webpage looks like. If it looks unexpected or suspicious, that's a red flag.</Text>
+            {u._source === 'virustotal' ? (
+              <Image source={{ uri: u.screenshot }} style={styles.screenshot} resizeMode="cover" />
+            ) : (
+              <TouchableOpacity onPress={() => Linking.openURL(u.screenshot)} activeOpacity={0.85}>
+                <Image source={{ uri: u.screenshot }} style={styles.screenshot} resizeMode="contain" />
+                <View style={styles.screenshotHint}>
+                  <MaterialIcons name="open-in-new" size={13} color="rgba(255,255,255,0.4)" />
+                  <Text style={styles.screenshotHintText}>Tap to open full screenshot</Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </Card>
         ) : null}
 
@@ -602,22 +661,42 @@ export default function ScanResultScreen() {
         <Card>
           <CardTitle icon="security" label="Security Risk Assessment" />
           <Text style={styles.cardDesc}>This link was checked against three independent security engines. Even one flag is worth taking seriously.</Text>
-          <ScannerRow name="URLScan.io" verdict={u?.verdict}
-            detail={u?.score != null ? `Score: ${u.score}` : null} />
+          <ScannerRow
+            name={u?._source === 'virustotal' ? 'URLScan.io (via VirusTotal)' : 'URLScan.io'}
+            verdict={u?.verdict}
+            detail={u?.score != null ? `Score: ${u.score}` : null}
+            engine="urlscan" />
           <ScannerRow name="VirusTotal" verdict={result.virustotal?.verdict}
             detail={result.virustotal
               ? `${result.virustotal.malicious} malicious · ${result.virustotal.suspicious} suspicious · ${result.virustotal.clean}/${result.virustotal.total} clean`
-              : null} />
-          <ScannerRow name="Safe Browsing" verdict={result.safebrowsing?.verdict} />
+              : null}
+            engine="virustotal" />
+          <ScannerRow name="Safe Browsing" verdict={result.safebrowsing?.verdict} engine="safebrowsing" />
           {u?.brands?.length > 0 && (
             <Row label="Brand Impersonation" value={u.brands.map((b) => b.name).join(', ')} valueColor="#FF6B6B" />
+          )}
+          {(u?._source === 'virustotal' || result.scriptAnalysis?._source === 'groq' || result.scriptAnalysis?._source === 'none') && (
+            <View style={styles.partialWarning}>
+              <MaterialIcons name="info-outline" size={13} color="#FFD60A" />
+              <Text style={styles.partialWarningText}>
+                Some checks used fallback sources or were unavailable. Results may be less detailed than usual.
+              </Text>
+            </View>
           )}
         </Card>
 
         {/* ── AI Script Analysis ── */}
         {result.scriptAnalysis && (
           <Card>
-            <CardTitle icon="smart-toy" label="AI Script Analysis" />
+            <View style={styles.cardTitleRowWithBadge}>
+              <CardTitle icon="smart-toy" label="AI Script Analysis" />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <EngineBadge engine={result.scriptAnalysis._source} />
+                {result.scriptAnalysis._source === 'none' && (
+                  <View style={[styles.sourceBadge, styles.sourceBadgeUnavailable]}><Text style={styles.sourceBadgeText}>Unavailable</Text></View>
+                )}
+              </View>
+            </View>
             <Text style={styles.cardDesc}>Our AI reviewed the code running on this page to check if anything is happening in the background without your knowledge.</Text>
             <Row label="Verdict"    value={result.scriptAnalysis.verdict} valueColor={getVC(result.scriptAnalysis.verdict).color} />
             <Row label="Risk Score" value={result.scriptAnalysis.riskScore} />
@@ -628,7 +707,7 @@ export default function ScanResultScreen() {
         {/* ── Website Content ── */}
         {u?.page && (
           <Card>
-            <CardTitle icon="web" label="Website Content" />
+            <CardTitle icon="web" label="Website Content" engine="urlscan" />
             <Text style={styles.cardDesc}>Basic details about what this page actually loaded, including where it ended up if it redirected you along the way.</Text>
             <Row label="Title"       value={u.page.title} />
             <Row label="Final URL"   value={u.page.url} mono />
@@ -651,7 +730,7 @@ export default function ScanResultScreen() {
         {/* ── Network Information ── */}
         {u?.network && (
           <Card>
-            <CardTitle icon="hub" label="Network Information" />
+            <CardTitle icon="hub" label="Network Information" engine="urlscan" />
             <Text style={styles.cardDesc}>Shows where this website's server is physically located. Servers in high-risk countries or behind anonymous networks can be a warning sign.</Text>
             <Row label="IP"       value={u.network.ip}      mono />
             <Row label="ASN"      value={u.network.asn} />
@@ -668,7 +747,7 @@ export default function ScanResultScreen() {
         {/* ── Domain / DNS ── */}
         {u?.task && (
           <Card>
-            <CardTitle icon="dns" label="Domain / DNS Details" />
+            <CardTitle icon="dns" label="Domain / DNS Details" engine="urlscan" />
             <Text style={styles.cardDesc}>Technical details about the website's address. Newly registered or recently changed domains are sometimes used for scams.</Text>
             <Row label="Apex Domain" value={u.page?.apexDomain} mono />
             <Row label="Scan Time"   value={u.task.time} />
@@ -681,7 +760,7 @@ export default function ScanResultScreen() {
         {/* ── SSL / TLS ── */}
         {u?.ssl && (
           <Card>
-            <CardTitle icon="lock" label="SSL / TLS Certificate" />
+            <CardTitle icon="lock" label="SSL / TLS Certificate" engine="urlscan" />
             <Text style={styles.cardDesc}>A valid certificate means your connection to the site is encrypted. An expired, missing, or untrusted certificate is a warning sign.</Text>
             <Row label="Issuer"      value={u.ssl.issuer} />
             <Row label="Valid From"  value={u.ssl.validFrom} />
@@ -697,6 +776,7 @@ export default function ScanResultScreen() {
             label="Technologies Detected"
             badge={`${u.technologies.length}`}
             description="The tools and software this website uses to run. Some technologies can track your activity or affect your privacy."
+            engine="urlscan"
           >
             {u.technologies.map((tech, i) => (
               <View key={i} style={styles.techRow}>
@@ -724,6 +804,7 @@ export default function ScanResultScreen() {
             label="HTTP Headers"
             badge={`${u.httpHeaders.length}`}
             description="Behind-the-scenes instructions sent by the website's server. Missing security headers can leave users more exposed to attacks."
+            engine="urlscan"
           >
             {u.httpHeaders.map((h, i) => (
               <Row key={i} label={h.key} value={h.value} mono />
@@ -733,7 +814,7 @@ export default function ScanResultScreen() {
 
         {/* ── DOM / Content Analysis ── */}
         {(u?.content?.cookies?.length > 0 || u?.content?.globals?.length > 0) && (
-          <CollapsibleCard icon="article" label="DOM / Content Analysis" description="A look at what this website stored on your device, including cookies (small tracking files) and scripts running in the background.">
+          <CollapsibleCard icon="article" label="DOM / Content Analysis" description="A look at what this website stored on your device, including cookies (small tracking files) and scripts running in the background." engine="urlscan">
             {u.content.cookies?.length > 0 && (
               <>
                 <Text style={styles.subLabel}>Cookies ({u.content.cookies.length})</Text>
@@ -762,8 +843,13 @@ export default function ScanResultScreen() {
 
         {/* ── Ad Intensive Detection ── */}
         <AdAnalysisCard adAnalysis={result.adAnalysis} />
+      </ScrollView>
 
-        {/* ── Actions ── */}
+      {/* ── Floating bottom bar ── */}
+      <View style={styles.floatingBar}>
+        {scanDuration != null && (
+          <Text style={styles.floatingBarDuration}>Analyzed in {formatDuration(scanDuration)}</Text>
+        )}
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.actionBtn} onPress={() => router.back()}>
             <MaterialIcons name="replay" size={20} color="#fff" />
@@ -771,13 +857,45 @@ export default function ScanResultScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.actionBtnPrimary]}
-            onPress={() => Linking.openURL(result.url)}
+            onPress={() => setOpenUrlModal(true)}
           >
             <MaterialIcons name="open-in-browser" size={20} color="#000" />
             <Text style={[styles.actionBtnText, { color: '#000' }]}>Open URL</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
+
+      {/* ── Open URL confirmation modal ── */}
+      <Modal transparent animationType="fade" visible={openUrlModal} onRequestClose={() => setOpenUrlModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <MaterialIcons
+              name={result.overallVerdict === 'malicious' ? 'dangerous' : result.overallVerdict === 'suspicious' ? 'warning' : 'open-in-browser'}
+              size={36}
+              color={result.overallVerdict === 'malicious' ? '#FF6B6B' : result.overallVerdict === 'suspicious' ? '#FFD60A' : '#4AFF91'}
+              style={{ marginBottom: 12 }}
+            />
+            <Text style={styles.modalTitle}>Open this URL?</Text>
+            <Text style={styles.modalMessage}>
+              {result.overallVerdict === 'malicious'
+                ? 'This URL was flagged as dangerous. Visiting it may put your device or personal information at risk.'
+                : result.overallVerdict === 'suspicious'
+                ? 'This URL looks suspicious. Proceed with caution.'
+                : 'This URL appears safe to visit.'}
+            </Text>
+            <Text style={styles.modalUrl} numberOfLines={3}>{result.url}</Text>
+            <TouchableOpacity
+              style={[styles.modalBtnPrimary, result.overallVerdict === 'malicious' && styles.modalBtnDanger]}
+              onPress={() => { setOpenUrlModal(false); Linking.openURL(result.url); }}
+            >
+              <Text style={styles.modalBtnPrimaryText}>Yes, open URL</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalBtnSecondary} onPress={() => setOpenUrlModal(false)}>
+              <Text style={styles.modalBtnSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ImageBackground>
   );
 }
@@ -785,7 +903,7 @@ export default function ScanResultScreen() {
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#0a0a0a' },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 56, gap: 12 },
+  scrollContent: { padding: 16, paddingBottom: 130, gap: 12 },
 
   hero: { borderRadius: 20, borderWidth: 1.5, padding: 24, alignItems: 'center', gap: 8 },
   heroVerdict: { fontSize: 28, fontWeight: '800', letterSpacing: 0.5 },
@@ -799,6 +917,21 @@ const styles = StyleSheet.create({
     padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 10,
   },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
+  cardTitleRowWithBadge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sourceBadge: {
+    backgroundColor: 'rgba(255,214,10,0.15)', borderRadius: 50, borderWidth: 1,
+    borderColor: 'rgba(255,214,10,0.4)', paddingHorizontal: 8, paddingVertical: 2,
+  },
+  sourceBadgeUnavailable: {
+    backgroundColor: 'rgba(255,107,107,0.12)', borderColor: 'rgba(255,107,107,0.35)',
+  },
+  sourceBadgeText: { color: '#FFD60A', fontSize: 10, fontWeight: '700' },
+  partialWarning: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 8,
+    backgroundColor: 'rgba(255,214,10,0.08)', borderRadius: 8,
+    padding: 10, borderWidth: 1, borderColor: 'rgba(255,214,10,0.2)',
+  },
+  partialWarningText: { color: 'rgba(255,214,10,0.8)', fontSize: 11, lineHeight: 16, flex: 1 },
   cardTitleText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
   cardDesc: { fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 18 },
 
@@ -829,7 +962,7 @@ const styles = StyleSheet.create({
   scannerName: { color: '#fff', fontSize: 14, fontWeight: '600' },
   scannerDetail: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
 
-  screenshot: { width: '100%', height: 190, borderRadius: 10, marginTop: 4 },
+  screenshot: { width: '100%', aspectRatio: 16 / 9, borderRadius: 10, marginTop: 4 },
   screenshotHint: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   screenshotHintText: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
 
@@ -921,7 +1054,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   modalTitle: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 8 },
-  modalMessage: { color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
+  modalMessage: { color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 10 },
   modalBtnPrimary: {
     backgroundColor: '#FFD60A', borderRadius: 50,
     paddingVertical: 13, paddingHorizontal: 24,
@@ -984,5 +1117,35 @@ const styles = StyleSheet.create({
   },
   adWarningText: {
     color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 20,
+  },
+
+  // ── Engine badges ──
+  engineBadge: {
+    paddingHorizontal: 6, paddingVertical: 2,
+    borderRadius: 4, borderWidth: 1,
+  },
+  engineBadgeText: {
+    fontSize: 9, fontWeight: '800', letterSpacing: 0.5,
+  },
+
+  // ── Floating bottom bar ──
+  floatingBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: 'rgba(10,10,10,0.97)',
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 28,
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)',
+    gap: 8,
+  },
+  floatingBarDuration: {
+    color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'center', fontWeight: '500',
+  },
+
+  // ── Open URL modal extras ──
+  modalUrl: {
+    color: 'rgba(255,255,255,0.55)', fontSize: 11, fontFamily: 'monospace',
+    textAlign: 'center', marginBottom: 20, lineHeight: 17,
+  },
+  modalBtnDanger: {
+    backgroundColor: '#FF6B6B',
   },
 });

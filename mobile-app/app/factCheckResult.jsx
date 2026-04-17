@@ -30,6 +30,20 @@ const CardTitle = ({ icon, label }) => (
   </View>
 );
 
+const AI_SOURCE = {
+  gemini: { label: 'AI (Gemini)', color: '#CE93D8', bg: 'rgba(206,147,216,0.15)' },
+  groq:   { label: 'AI (Groq)',   color: '#F97316', bg: 'rgba(249,115,22,0.15)' },
+};
+const AiBadge = ({ source }) => {
+  const cfg = AI_SOURCE[source];
+  if (!cfg) return null;
+  return (
+    <View style={[styles.aiBadge, { backgroundColor: cfg.bg, borderColor: `${cfg.color}60` }]}>
+      <Text style={[styles.aiBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
+    </View>
+  );
+};
+
 // ── Confidence meter bar ──
 const ConfidenceMeter = ({ score }) => {
   const color = score >= 70 ? '#4AFF91' : score >= 40 ? '#FFD60A' : '#FF6B6B';
@@ -81,6 +95,7 @@ export default function FactCheckResultScreen() {
           {result.summary ? (
             <Text style={styles.heroSummary}>{result.summary}</Text>
           ) : null}
+          {result._source && <AiBadge source={result._source} />}
         </View>
 
         {/* ── Claims Analysis ── */}
@@ -219,6 +234,16 @@ const styles = StyleSheet.create({
   // ── Flags & indicators ──
   flagRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   flagText: { color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 19, flex: 1 },
+
+  // ── Source badge ──
+  sourceBadge: {
+    backgroundColor: 'rgba(255,214,10,0.15)', borderRadius: 50, borderWidth: 1,
+    borderColor: 'rgba(255,214,10,0.4)', paddingHorizontal: 10, paddingVertical: 3,
+  },
+  sourceBadgeText: { color: '#FFD60A', fontSize: 10, fontWeight: '700' },
+
+  aiBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, borderWidth: 1 },
+  aiBadgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.3 },
 
   // ── Disclaimer ──
   disclaimerCard: {
