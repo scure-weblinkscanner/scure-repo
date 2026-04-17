@@ -1,12 +1,13 @@
-import express from 'express'
-import { getAllTickets, getTicketById, getTicketsByUser, createTicket, respondToTicket } from '../controllers/tickets.controller.js'
+import express from 'express';
+import { getAllTickets, getTicketById, getTicketsByUser, createTicket, respondToTicket } from '../controllers/tickets.controller.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 
-const router = express.Router()
+const router = express.Router();
 
-router.get('/', getAllTickets)
-router.get('/user/:uaId', getTicketsByUser)
-router.get('/:tkId', getTicketById)
-router.post('/', createTicket)
-router.patch('/:tkId/respond', respondToTicket)
+router.get('/', requireAdmin, getAllTickets);
+router.get('/user/:uaId', requireAuth, getTicketsByUser);
+router.get('/:tkId', requireAuth, getTicketById);
+router.post('/', requireAuth, createTicket);
+router.patch('/:tkId/respond', requireAdmin, respondToTicket);
 
-export default router
+export default router;

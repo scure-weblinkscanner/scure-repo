@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { getUserAccountById } from '../services/userAccount.service';
 
 const AuthContext = createContext({
@@ -25,7 +26,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadAuth = async () => {
       try {
-        const storedToken = await AsyncStorage.getItem('token');
+        const storedToken = await SecureStore.getItemAsync('token');
         const storedAccount = await AsyncStorage.getItem('account');
         if (storedToken) setToken(storedToken);
         if (storedAccount) setAccount(JSON.parse(storedAccount));
@@ -60,14 +61,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (tokenValue, accountValue) => {
-    await AsyncStorage.setItem('token', tokenValue);
+    await SecureStore.setItemAsync('token', tokenValue);
     await AsyncStorage.setItem('account', JSON.stringify(accountValue));
     setToken(tokenValue);
     setAccount(accountValue);
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem('token');
+    await SecureStore.deleteItemAsync('token');
     await AsyncStorage.removeItem('account');
     setToken(null);
     setAccount(null);

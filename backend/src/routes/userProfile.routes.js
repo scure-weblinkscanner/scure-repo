@@ -1,13 +1,17 @@
-import express from 'express'
-import * as userProfileController from '../controllers/userProfile.controller.js'
+import express from 'express';
+import * as userProfileController from '../controllers/userProfile.controller.js';
+import { requireAdmin } from '../middleware/auth.js';
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/', userProfileController.createUserProfile)
-router.get('/', userProfileController.getAllUserProfiles)
-router.get('/search', userProfileController.searchUserProfiles)
-router.get('/:userProfileId', userProfileController.getUserProfileById)
-router.put('/:userProfileId', userProfileController.updateUserProfile)
-router.delete('/:userProfileId', userProfileController.deleteUserProfile)
+// Public — needed for profile type lookup during signup
+router.get('/', userProfileController.getAllUserProfiles);
+router.get('/:userProfileId', userProfileController.getUserProfileById);
 
-export default router
+// Admin only
+router.get('/search', requireAdmin, userProfileController.searchUserProfiles);
+router.post('/', requireAdmin, userProfileController.createUserProfile);
+router.put('/:userProfileId', requireAdmin, userProfileController.updateUserProfile);
+router.delete('/:userProfileId', requireAdmin, userProfileController.deleteUserProfile);
+
+export default router;

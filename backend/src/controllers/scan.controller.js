@@ -1,7 +1,6 @@
 import { analyzeURL, factCheckURL } from '../services/scan.service.js';
-import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans, getScanActivity, getAllScansAdmin } from '../services/scanHistory.service.js'
-import { getSubscriptionByUser } from '../database/subscriptionPlan.db.js'
-import jwt from 'jsonwebtoken';
+import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans, getScanActivity, getAllScansAdmin } from '../services/scanHistory.service.js';
+import { getSubscriptionByUser } from '../database/subscriptionPlan.db.js';
 
 const PREMIUM_PROFILE_ID = 3;
 
@@ -13,13 +12,10 @@ export const analyzeScan = async (req, res) => {
       return res.status(400).json({ error: 'URL is required' });
     }
 
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.uaId;
+    const userId = req.user.uaId;
 
-    const subscription = await getSubscriptionByUser(userId)
-    const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active'
+    const subscription = await getSubscriptionByUser(userId);
+    const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active';
 
     const result = await analyzeURL(url, isPremium, isPremium && !!adDetection, !!skipBlocklist);
 
@@ -45,12 +41,7 @@ export const factCheckScan = async (req, res) => {
       return res.status(400).json({ error: 'URL is required' });
     }
 
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // uaUserProfileId is already in the JWT payload — no DB call needed
-    if (decoded.uaUserProfileId !== PREMIUM_PROFILE_ID) {
+    if (req.user.uaUserProfileId !== PREMIUM_PROFILE_ID) {
       return res.status(403).json({ error: 'This feature is available for Premium users only.' });
     }
 
@@ -63,9 +54,7 @@ export const factCheckScan = async (req, res) => {
 
 export const getScanHistory = async (req, res) => {
   try {
-    const decoded = jwt.verify(req.headers.authorization?.split(' ')[1], process.env.JWT_SECRET);
-    const userId = decoded.uaId;
-    const history = await getScanHistoryByUserId(userId);
+    const history = await getScanHistoryByUserId(req.user.uaId);
     res.status(200).json({ history });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -74,10 +63,8 @@ export const getScanHistory = async (req, res) => {
 
 export const publishScan = async (req, res) => {
   try {
-    const decoded = jwt.verify(req.headers.authorization?.split(' ')[1], process.env.JWT_SECRET);
-    const userId = decoded.uaId;
     const { shId } = req.params;
-    const result = await publishScanHistory(shId, userId);
+    const result = await publishScanHistory(shId, req.user.uaId);
     res.status(200).json({ result });
   } catch (error) {
     res.status(500).json({ message: error.message });

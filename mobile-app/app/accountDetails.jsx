@@ -33,6 +33,7 @@ export default function AccountDetailsScreen() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const saveAnim = useRef(new Animated.Value(0.2)).current;
@@ -87,14 +88,7 @@ export default function AccountDetailsScreen() {
       }
     }
 
-    Alert.alert(
-      'Save Changes',
-      'Are you sure you want to update your account details?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Save', style: 'default', onPress: () => confirmSave() },
-      ]
-    );
+    setShowSaveModal(true);
   };
 
   const confirmSave = async () => {
@@ -329,6 +323,33 @@ export default function AccountDetailsScreen() {
         </View>
       </KeyboardAvoidingView>
    
+      {/* Save Changes Confirmation Modal */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={showSaveModal}
+        onRequestClose={() => setShowSaveModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <MaterialIcons name="save" size={48} color="#FFD60A" style={{ marginBottom: 12 }} />
+            <Text style={styles.modalTitle}>Save Changes?</Text>
+            <Text style={styles.modalMessage}>
+              Are you sure you want to update your account details?
+            </Text>
+            <TouchableOpacity
+              style={styles.modalSaveBtn}
+              onPress={() => { setShowSaveModal(false); confirmSave(); }}
+            >
+              <Text style={styles.modalSaveBtnText}>Save Changes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShowSaveModal(false)}>
+              <Text style={styles.modalCancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Delete Account Confirmation Modal */}
       <Modal
         transparent
@@ -460,6 +481,12 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 18, fontWeight: '700', color: '#fff', marginBottom: 8, textAlign: 'center' },
   modalMessage: { fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginBottom: 24, lineHeight: 20 },
+  modalSaveBtn: {
+    backgroundColor: '#FFD60A', borderRadius: 12,
+    paddingVertical: 12, paddingHorizontal: 24,
+    width: '100%', alignItems: 'center', marginBottom: 10,
+  },
+  modalSaveBtnText: { color: '#000', fontWeight: '700', fontSize: 15 },
   modalDeleteBtn: {
     backgroundColor: '#ff6b6b', borderRadius: 12,
     paddingVertical: 12, paddingHorizontal: 24,

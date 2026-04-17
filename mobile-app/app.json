@@ -62,7 +62,8 @@
           "icon": "./assets/images/android-icon-monochrome.png",
           "color": "#0E0E95"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
