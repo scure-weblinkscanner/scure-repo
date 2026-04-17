@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground }
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useScan } from '../context/ScanContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ── Verdict config for fact-check verdicts ──
 const verdictConfig = {
@@ -57,9 +58,16 @@ const ConfidenceMeter = ({ score }) => {
   );
 };
 
+const formatDuration = (secs) => {
+  if (!secs) return null;
+  const m = Math.floor(secs / 60); const s = secs % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+};
+
 export default function FactCheckResultScreen() {
   const router = useRouter();
-  const { factCheckResult: result } = useScan();
+  const insets = useSafeAreaInsets();
+  const { factCheckResult: result, factCheckDuration } = useScan();
 
   if (!result) {
     return (
@@ -155,8 +163,13 @@ export default function FactCheckResultScreen() {
             This analysis is AI-generated and may not be fully accurate. Always verify claims with trusted sources before drawing conclusions.
           </Text>
         </View>
+      </ScrollView>
 
-        {/* ── Actions ── */}
+      {/* ── Floating bottom bar ── */}
+      <View style={[styles.floatingBar, { paddingBottom: insets.bottom + 16 }]}>
+        {factCheckDuration != null && (
+          <Text style={styles.floatingBarDuration}>Fact-checked in {formatDuration(factCheckDuration)}</Text>
+        )}
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.actionBtn} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={20} color="#fff" />
@@ -170,7 +183,7 @@ export default function FactCheckResultScreen() {
             <Text style={[styles.actionBtnText, { color: '#000' }]}>New Scan</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </ImageBackground>
   );
 }
@@ -178,7 +191,7 @@ export default function FactCheckResultScreen() {
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#0a0a0a' },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 56, gap: 12 },
+  scrollContent: { padding: 16, paddingBottom: 130, gap: 12 },
 
   // ── Hero ──
   hero: {
@@ -255,8 +268,20 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.3)', fontSize: 11, lineHeight: 16, flex: 1,
   },
 
+  // ── Floating bar ──
+  floatingBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: 'rgba(10,10,10,0.97)',
+    paddingHorizontal: 16, paddingTop: 12,
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)',
+    gap: 8,
+  },
+  floatingBarDuration: {
+    color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'center', fontWeight: '500',
+  },
+
   // ── Actions ──
-  actionsRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  actionsRow: { flexDirection: 'row', gap: 12 },
   actionBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 14, borderRadius: 50,

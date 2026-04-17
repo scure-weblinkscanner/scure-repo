@@ -14,6 +14,7 @@ export const ScanProvider = ({ children }) => {
   const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
   const [factCheckResult, setFactCheckResult] = useState(null);
   const [scanDuration, setScanDuration] = useState(null);
+  const [factCheckDuration, setFactCheckDuration] = useState(null);
 
   return (
     <ScanContext.Provider value={{
@@ -21,6 +22,7 @@ export const ScanProvider = ({ children }) => {
       selectedHistoryItem, setSelectedHistoryItem,
       factCheckResult, setFactCheckResult,
       scanDuration, setScanDuration,
+      factCheckDuration, setFactCheckDuration,
     }}>
       {children}
     </ScanContext.Provider>

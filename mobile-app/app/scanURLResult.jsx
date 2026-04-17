@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -196,6 +196,20 @@ const AdAnalysisCard = ({ adAnalysis }) => {
   }, [adAnalysis]);
 
   if (!adAnalysis) return null;
+
+  if (adAnalysis.failed) {
+    return (
+      <View style={[styles.card, { borderColor: 'rgba(255,255,255,0.1)' }]}>
+        <View style={styles.cardTitleRow}>
+          <MaterialIcons name="ad-units" size={15} color="rgba(255,255,255,0.35)" />
+          <Text style={styles.cardTitleText}>Ad Detection</Text>
+        </View>
+        <Text style={styles.adCleanText}>
+          Ad detection ran but couldn't complete for this page. This can happen on sites that block automated browsers.
+        </Text>
+      </View>
+    );
+  }
 
   if (!adAnalysis.isAdIntensive) {
     return (
@@ -427,13 +441,33 @@ const EmbeddedLinksCard = ({ links }) => {
 // ── NEW: Fact-Check Card (Premium only) ──
 const FactCheckCard = ({ url }) => {
   const { account, token } = useAuth();
-  const { setFactCheckResult } = useScan();
+  const { setFactCheckResult, setFactCheckDuration } = useScan();
   const router = useRouter();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
 
   const [loading, setLoading] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const startRef = useRef(null);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (loading) {
+      startRef.current = Date.now();
+      setElapsed(0);
+      intervalRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - startRef.current) / 1000));
+      }, 1000);
+    } else {
+      clearInterval(intervalRef.current);
+      if (startRef.current) {
+        setFactCheckDuration(Math.floor((Date.now() - startRef.current) / 1000));
+        startRef.current = null;
+      }
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [loading]);
 
   const handleFactCheck = async () => {
     try {
@@ -556,7 +590,7 @@ const FactCheckCard = ({ url }) => {
         {loading ? (
           <>
             <ActivityIndicator size="small" color="#000" />
-            <Text style={styles.factCheckBtnText}>Analysing content…</Text>
+            <Text style={styles.factCheckBtnText}>Fact-checking · {elapsed}s</Text>
           </>
         ) : (
           <>
