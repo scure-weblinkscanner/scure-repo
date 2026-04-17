@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// v1beta is required for gemini-2.5-flash on this API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, {
   apiVersion: 'v1'
 });
@@ -81,34 +82,42 @@ Respond with plain text only, no JSON, no markdown.
 
 // ── Misinformation / fact-check analysis ──
 export const analyzeForMisinformation = async (url, textContent) => {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   const truncated = textContent?.slice(0, 15000) || '';
+  const today = new Date().toDateString(); // e.g. "Fri Apr 17 2026"
 
   const prompt = `
-You are a professional fact-checker and misinformation analyst. Analyze the following webpage content for misinformation, false claims, misleading statements, or propaganda.
+You are a balanced, professional fact-checker. Your job is to assess whether the content of a webpage contains clear misinformation, not to be overly critical of legitimate news.
 
-URL: ${url}
+Today's date: ${today}
+URL being analysed: ${url}
+
+Important guidelines:
+- Today is ${today}. Any dates on or before today are NOT future dates. Do not flag current-year news as impossible or anachronistic.
+- Consider the source domain. Established news organisations (e.g. straitstimes.com, bbc.com, reuters.com, cnn.com, nytimes.com) have editorial standards and should be given appropriate credibility unless the content itself contains clear, specific factual errors.
+- News homepages show many headlines without full article context. Do not mark a headline as "false" just because you cannot independently verify it — use "unverified" instead.
+- Only mark something "misleading" or "false" if there is a clear, specific factual error or deliberate manipulation — not simply because you are uncertain.
+- A verdict of "trustworthy" is correct for reputable sources with no clear errors found.
+- Keep confidenceScore realistic — avoid extremes (0 or 100) unless the evidence is overwhelming.
 
 Page Content:
 ${truncated || 'Content could not be extracted — base your analysis on the URL and domain alone.'}
 
-Analyze the content and respond in JSON format only, no markdown:
+Respond in JSON format only, no markdown:
 {
   "verdict": "trustworthy" | "questionable" | "misleading",
   "confidenceScore": 0-100,
-  "summary": "2-3 sentence overall assessment of the content's reliability",
+  "summary": "2-3 sentence balanced assessment of the content reliability",
   "claims": [
     {
-      "claim": "a specific claim found in the content (max 5 claims)",
+      "claim": "a specific claim found in the content (max 5 most notable)",
       "verdict": "true" | "false" | "unverified" | "misleading",
-      "explanation": "brief explanation of why"
+      "explanation": "brief, fair explanation"
     }
   ],
-  "redFlags": ["list of misinformation indicators or credibility concerns found"],
-  "positiveIndicators": ["list of credibility signals or trustworthy signs found"]
+  "redFlags": ["only include genuine credibility concerns, not speculative ones"],
+  "positiveIndicators": ["credibility signals or trustworthy signs found"]
 }
-
-Assess: factual accuracy, presence of cited sources, emotional manipulation language, missing context, logical fallacies, and whether claims are verifiable. Keep the claims array to a maximum of 5 most important claims.
 `;
 
   const maxRetries = 3;
