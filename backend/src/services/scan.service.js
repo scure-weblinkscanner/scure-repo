@@ -3,9 +3,37 @@ import { analyzeScripts, generateSuggestion, analyzeForMisinformation } from '..
 import { scanWithURLScan } from '../utils/urlScan.js';
 import { scanWithVirusTotal } from '../utils/virusTotal.js';
 import { scanWithSafeBrowsing } from '../utils/safeBrowsing.js';
+import { checkBlocklist } from './blocklist.service.js';
+import { detectAds } from '../utils/adDetection.js';
 
-export const analyzeURL = async (url) => {
-  const [scripts, embeddedLinks, urlscanResult, virustotal, safebrowsing] = await Promise.all([
+export const analyzeURL = async (url, isPremium = false, adDetection = false, skipBlocklist = false) => {
+  // ── Fast local blocklist check (premium users only) ──
+  if (isPremium && !skipBlocklist) {
+    const blocklistHit = await checkBlocklist(url);
+    if (blocklistHit) {
+      return {
+        url,
+        overallVerdict: 'malicious',
+        riskScore: 100,
+        scoreLabel: 'High risk',
+        flaggedBy: [`${blocklistHit.blSource} Blocklist`],
+        suggestion: 'This URL is on our blocklist and is known to be malicious. Do not visit it.',
+        blocklist: {
+          source: blocklistHit.blSource,
+          threatType: blocklistHit.blThreatType,
+          addedAt: blocklistHit.blAddedAt,
+        },
+        scriptAnalysis: { verdict: 'malicious', riskScore: 100, findings: [] },
+        urlscan: { verdict: 'malicious', score: 0, categories: [], screenshot: null, uuid: null },
+        virustotal: { verdict: 'malicious', malicious: 0, suspicious: 0, harmless: 0 },
+        safebrowsing: { verdict: 'malicious', threats: [] },
+        embeddedLinks: [],
+      };
+    }
+  }
+
+  // ── Full external API scan ────────────────────────────────────
+  const [scripts, embeddedLinks, urlscanResult, virustotal, safebrowsing, adAnalysis] = await Promise.all([
     extractScriptsFromURL(url),
     extractLinksFromURL(url),
     scanWithURLScan(url).catch((err) => {
@@ -14,6 +42,12 @@ export const analyzeURL = async (url) => {
     }),
     scanWithVirusTotal(url),
     scanWithSafeBrowsing(url),
+    (isPremium && adDetection)
+      ? Promise.race([
+          detectAds(url),
+          new Promise((resolve) => setTimeout(() => resolve(null), 20000)),
+        ]).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
   const urlscan = urlscanResult;
@@ -30,9 +64,7 @@ export const analyzeURL = async (url) => {
     })
   );
 
-  const anyEmbeddedMalicious = embeddedLinkResults.some(
-    (r) => r.verdict === 'malicious'
-  );
+  const anyEmbeddedMalicious = embeddedLinkResults.some((r) => r.verdict === 'malicious');
 
   const flaggedBy = [];
   if (scriptAnalysis.verdict === 'malicious') flaggedBy.push('AI Script Analysis');
@@ -75,11 +107,11 @@ export const analyzeURL = async (url) => {
     virustotal,
     safebrowsing,
     embeddedLinks: embeddedLinkResults,
+    adAnalysis,
   };
 };
 
 export const factCheckURL = async (url) => {
-  // Extract visible page text for Gemini to analyse
   const textContent = await extractTextContentFromURL(url).catch((err) => {
     console.warn('Text extraction skipped:', err.message);
     return '';

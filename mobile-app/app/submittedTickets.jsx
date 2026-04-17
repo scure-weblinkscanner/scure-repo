@@ -13,6 +13,7 @@ import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { getTicketsByUser } from '../services/tickets.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const STATUS_CONFIG = {
   open:        { label: 'Open',        color: '#FFD60A', icon: 'radio-button-unchecked' },
@@ -98,6 +99,7 @@ function TicketCard({ ticket }) {
 }
 
 export default function SubmittedTicketsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token, account } = useAuth();
 
@@ -191,7 +193,7 @@ export default function SubmittedTicketsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, {paddingBottom: insets.bottom + 10}]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -225,7 +227,7 @@ const styles = StyleSheet.create({
   },
   navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
 
-  content: { paddingHorizontal: 20, paddingBottom: 40 },
+  content: { paddingHorizontal: 20},
 
   headerRow: { alignItems: 'center', paddingVertical: 28, gap: 6 },
   headerIcon: {

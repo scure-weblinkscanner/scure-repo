@@ -15,6 +15,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { getSubscriptionByUser, cancelSubscription } from '../services/subscriptionPlan.service';
 import { getUserAccountById } from '../services/userAccount.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const UPGRADE_URL = 'https://scure.up.railway.app/upgrade';
 
@@ -37,6 +38,7 @@ const PREMIUM_FEATURES = [
 ];
 
 export default function SubscriptionScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token, account, login } = useAuth();
 
@@ -48,6 +50,7 @@ export default function SubscriptionScreen() {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   const isPremium = account?.uaUserProfileId === 3;
+  const formatStatus = (status) => status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '';
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -118,7 +121,7 @@ export default function SubscriptionScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, {paddingBottom: insets.bottom + 90}]}
         showsVerticalScrollIndicator={false}
       >
         {loading ? (
@@ -203,7 +206,7 @@ export default function SubscriptionScreen() {
                   </View>
                   <View style={styles.metaRow}>
                     <Text style={styles.metaLabel}>Status</Text>
-                    <Text style={styles.metaValue}>{subscription.spStatus}</Text>
+                    <Text style={[styles.metaValue, {color: subscription.spStatus === 'active' ? '#4AFF91' : '#ff6b6b'}]}>{formatStatus(subscription.spStatus)}</Text>
                   </View>
                 </>
               )}
@@ -242,7 +245,7 @@ export default function SubscriptionScreen() {
 
       {/* Bottom Bar */}
       {!loading && !error && (
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 15}]}>
           {isPremium ? (
             <TouchableOpacity
               style={styles.cancelBtn}
@@ -308,7 +311,7 @@ const styles = StyleSheet.create({
   },
   navTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
 
-  content: { paddingHorizontal: 20, paddingBottom: 120 },
+  content: { paddingHorizontal: 20},
 
   infoText: { color: '#fff', fontSize: 14, textAlign: 'center', paddingVertical: 40 },
 
@@ -346,7 +349,7 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#222', marginVertical: 14 },
 
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  metaLabel: { fontSize: 13, color: '#555' },
+  metaLabel: { fontSize: 13, color: '#fff' },
   metaValue: { fontSize: 13, color: '#fff', fontWeight: '600' },
 
   featureRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
@@ -355,7 +358,7 @@ const styles = StyleSheet.create({
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: '#0A0A0A', paddingHorizontal: 20,
-    paddingTop: 12, paddingBottom: 36,
+    paddingTop: 12,
     borderTopWidth: 1, borderTopColor: '#1E1E1E',
   },
   upgradeBtn: {

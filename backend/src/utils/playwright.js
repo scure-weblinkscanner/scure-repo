@@ -1,7 +1,12 @@
 import { chromium } from 'playwright';
 
+const LAUNCH_ARGS = {
+  headless: true,
+  args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox'],
+};
+
 export const extractScriptsFromURL = async (url) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(LAUNCH_ARGS);
   const page = await browser.newPage();
 
   try {
@@ -28,7 +33,7 @@ export const extractScriptsFromURL = async (url) => {
 };
 
 export const extractLinksFromURL = async (url) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(LAUNCH_ARGS);
   const page = await browser.newPage();
 
   try {

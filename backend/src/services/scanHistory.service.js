@@ -1,7 +1,8 @@
 import * as scanHistoryDb from '../database/scanHistory.db.js'
+import { addMaliciousUrlToBlocklist } from './blocklist.service.js'
 
 export const createScanHistory = async (userId, scanMethod, scanData) => {
-  return await scanHistoryDb.createScanHistory({
+  const result = await scanHistoryDb.createScanHistory({
     shUserId: userId,
     shScanMethod: scanMethod,
     shUrl: scanData.url,
@@ -16,6 +17,19 @@ export const createScanHistory = async (userId, scanMethod, scanData) => {
     shScriptAnalysis: scanData.scriptAnalysis,
     shEmbeddedLinks: scanData.embeddedLinks,
   })
+
+  // Auto-sync malicious URLs to blocklist so future scans are instant.
+  // Guard: skip if this scan was itself a blocklist hit (url is already there).
+  if (scanData.overallVerdict === 'malicious' && !scanData.blocklist) {
+    const source = Array.isArray(scanData.flaggedBy) && scanData.flaggedBy.length
+      ? scanData.flaggedBy.join(', ')
+      : 'scan_history'
+    addMaliciousUrlToBlocklist(scanData.url, source, scanData.overallVerdict).catch((err) =>
+      console.error('Failed to sync malicious URL to blocklist:', err.message)
+    )
+  }
+
+  return result
 }
 
 export const getScanHistoryByUserId = async (userId) => {

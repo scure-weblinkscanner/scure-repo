@@ -8,6 +8,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
 import { publishScanHistory } from '../services/scanApi.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const verdictConfig = {
   clean:      { color: '#4AFF91', bg: 'rgba(74,255,145,0.12)',  icon: 'check-circle', label: 'Safe'       },
@@ -130,6 +131,34 @@ const ScannerRow = ({ name, verdict, detail }) => (
   </View>
 );
 
+const VISIBLE_LINKS_COUNT = 5;
+
+const EmbeddedLinksExpander = ({ links }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      {expanded && links.map((link, i) => {
+        const vc = getVc(link.verdict);
+        return (
+          <View key={i} style={styles.embeddedLinkRow}>
+            <MaterialIcons name={vc.icon} size={14} color={vc.color} style={{ flexShrink: 0 }} />
+            <Text style={styles.embeddedLinkUrl} numberOfLines={1}>{link.url}</Text>
+            <View style={[styles.badge, { backgroundColor: vc.bg, borderColor: vc.color }]}>
+              <MaterialIcons name={vc.icon} size={13} color={vc.color} />
+              <Text style={[styles.badgeText, { color: vc.color }]}>{vc.label}</Text>
+            </View>
+          </View>
+        );
+      })}
+      <TouchableOpacity onPress={() => setExpanded((v) => !v)} style={styles.expandBtn}>
+        <Text style={styles.expandBtnText}>
+          {expanded ? 'Show less' : `· · · ${links.length} more`}
+        </Text>
+      </TouchableOpacity>
+    </>
+  );
+};
+
 const EmbeddedLinksCard = ({ links }) => {
   const { account } = useAuth();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
@@ -206,6 +235,8 @@ const EmbeddedLinksCard = ({ links }) => {
   const anySuspicious = links.some((r) => r.verdict === 'suspicious');
   const maliciousCount = links.filter((r) => r.verdict === 'malicious').length;
   const suspiciousCount = links.filter((r) => r.verdict === 'suspicious').length;
+  const visibleLinks = links.slice(0, VISIBLE_LINKS_COUNT);
+  const hiddenLinks = links.slice(VISIBLE_LINKS_COUNT);
 
   return (
     <View style={styles.card}>
@@ -231,7 +262,7 @@ const EmbeddedLinksCard = ({ links }) => {
         </View>
       )}
 
-      {links.map((link, i) => {
+      {visibleLinks.map((link, i) => {
         const vc = getVc(link.verdict);
         return (
           <View key={i} style={styles.embeddedLinkRow}>
@@ -244,11 +275,14 @@ const EmbeddedLinksCard = ({ links }) => {
           </View>
         );
       })}
+
+      {hiddenLinks.length > 0 && <EmbeddedLinksExpander links={hiddenLinks} />}
     </View>
   );
 };
 
 export default function PublicScanResultScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
   const { selectedHistoryItem: item } = useScan();
@@ -491,7 +525,7 @@ export default function PublicScanResultScreen() {
       </ImageBackground>
 
       {/* Publish button — fixed at bottom, excluded from scroll */}
-      <View style={styles.publishBar}>
+      <View style={[styles.publishBar, {paddingBottom: insets.bottom + 15}]}>
         <TouchableOpacity
           style={[styles.publishBtn, isPublished && styles.publishBtnDone]}
           onPress={handlePublish}

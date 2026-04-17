@@ -11,10 +11,15 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../context/AuthContext';
 import { useScan } from '../context/ScanContext';
 import { analyzeUrl } from '../services/scanApi.service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNotifications } from '../hooks/useNotifications';
+import { useAdDetection } from '../hooks/useAdDetection';
+import BlocklistModal from '../components/BlocklistModal';
 
 const OCR_MAX_WIDTH = 1500;
 
 export default function ScanQRScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
   const { setScanResult } = useScan();
@@ -28,14 +33,21 @@ export default function ScanQRScreen() {
   const [error, setError] = useState('');
   const scanAnim = useRef(new Animated.Value(0.2)).current;
   const loadingAnim = useRef(new Animated.Value(0)).current;
+  const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
+  const { adDetectionEnabled } = useAdDetection();
+  const isFocused = useRef(true);
+  const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const pendingUrl = useRef(null);
 
     useFocusEffect(
     useCallback(() => {
+        isFocused.current = true;
         setDetectedUrl(null);
         setScanning(false);
         setCapturing(false);
         setError('');
         scanAnim.setValue(0.2);
+        return () => { isFocused.current = false; };
     }, [])
     );
 
@@ -98,15 +110,29 @@ export default function ScanQRScreen() {
   const handleScan = async () => {
     if (!detectedUrl || scanning) return;
     setError('');
+    await runScan(detectedUrl);
+  };
+
+  const runScan = async (url, skipBlocklist = false) => {
     setScanning(true);
     startLoadingBar();
-
     try {
-      const result = await analyzeUrl(detectedUrl, token, 'cameraQr');
+      const result = await analyzeUrl(url, token, 'cameraQr', skipBlocklist, adDetectionEnabled);
       setScanResult(result);
-      router.push({ pathname: '/scanURLResult' });
+      if (result.blocklist && !skipBlocklist) {
+        pendingUrl.current = url;
+        setShowBlocklistModal(true);
+      } else if (isFocused.current) {
+        router.push({ pathname: '/scanURLResult' });
+      } else if (notificationsEnabled) {
+        sendScanCompleteNotification(result);
+      } else {
+        router.push({ pathname: '/scanURLResult' });
+      }
     } catch (err) {
-      setError('Scan failed: ' + err.message);
+      if (isFocused.current) {
+        setError('Scan failed: ' + err.message);
+      }
     } finally {
       setScanning(false);
       stopLoadingBar();
@@ -140,6 +166,11 @@ export default function ScanQRScreen() {
 
   return (
     <View style={styles.wrapper}>
+      <BlocklistModal
+        visible={showBlocklistModal}
+        onExit={() => { setShowBlocklistModal(false); setDetectedUrl(null); }}
+        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+      />
       {/* Camera */}
       <View style={styles.topNav}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
@@ -200,7 +231,7 @@ export default function ScanQRScreen() {
       ) : null}
 
       {/* Bottom controls */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 15}]}>
         {!detectedUrl ? (
           <TouchableOpacity
             style={styles.captureBtn}
@@ -366,7 +397,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 48,
     paddingHorizontal: 24,
     paddingTop: 20,
     backgroundColor: 'rgba(0,0,0,0.5)',

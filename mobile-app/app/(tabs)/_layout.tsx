@@ -26,7 +26,7 @@ export default function TabLayout() {
             shadowOffset: { height: 0, width: 0 },
             shadowRadius: 0,
             position: 'absolute',
-            bottom: 0,
+            bottom: 5,
             left: 0,
             right: 0,
           }

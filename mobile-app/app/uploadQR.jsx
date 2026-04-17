@@ -19,7 +19,7 @@ import BarcodeScanning from '@react-native-ml-kit/barcode-scanning';
 import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const normalizeUrl = (url) => {
   const u = url.trim().toLowerCase();
@@ -28,6 +28,7 @@ const normalizeUrl = (url) => {
 };
 
 export default function UploadQRScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
   const { setScanResult } = useScan();
@@ -232,7 +233,7 @@ export default function UploadQRScreen() {
           </Animated.View>
         </ScrollView>
 
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 16}]}>
           {scanning ? (
             <View style={styles.loadingBarContainer}>
               <Text style={styles.loadingBarLabel}>Analyzing…</Text>
@@ -459,7 +460,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#0A0A0A', 
     paddingHorizontal: 20,
     paddingTop: 12, 
-    paddingBottom: 36,
     borderTopWidth: 1, 
     borderTopColor: '#1E1E1E',
   },

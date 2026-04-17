@@ -6,14 +6,14 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
  * @param {string} token - JWT from useAuth()
  * @returns {Promise<ScanResult>}
  */
-export const analyzeUrl = async (url, token, scanMethod = 'cameraUrl') => {
+export const analyzeUrl = async (url, token, scanMethod = 'cameraUrl', skipBlocklist = false, adDetection = false) => {
   const response = await fetch(`${BASE_URL}/scanURL/analyze`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ url, scanMethod }),
+    body: JSON.stringify({ url, scanMethod, skipBlocklist, adDetection }),
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

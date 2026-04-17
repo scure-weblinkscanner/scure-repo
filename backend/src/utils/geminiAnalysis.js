@@ -43,13 +43,12 @@ Analyze these scripts and respond in JSON format only, no markdown:
 }
 `;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text().replace(/```json|```/g, '').trim();
-
   try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().replace(/```json|```/g, '').trim();
     return JSON.parse(text);
   } catch {
-    return { verdict: 'unknown', reason: 'AI analysis failed to parse.', riskScore: 50, indicators: [] };
+    return { verdict: 'unknown', reason: 'AI analysis unavailable.', riskScore: 0, indicators: [] };
   }
 };
 

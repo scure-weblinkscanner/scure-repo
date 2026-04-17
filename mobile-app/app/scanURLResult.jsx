@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -29,7 +29,7 @@ const getVC = (verdict) => verdictConfig[verdict?.toLowerCase()] ?? verdictConfi
 
 const Card = ({ children }) => <View style={styles.card}>{children}</View>;
 
-const CollapsibleCard = ({ icon, label, children, badge }) => {
+const CollapsibleCard = ({ icon, label, children, badge, description }) => {
   const [open, setOpen] = useState(false);
   return (
     <View style={styles.card}>
@@ -49,6 +49,7 @@ const CollapsibleCard = ({ icon, label, children, badge }) => {
           color="rgba(255,255,255,0.35)"
         />
       </TouchableOpacity>
+      {description ? <Text style={styles.cardDesc}>{description}</Text> : null}
       {open && <View style={styles.collapsibleContent}>{children}</View>}
     </View>
   );
@@ -134,6 +135,115 @@ const ScannerRow = ({ name, verdict, detail }) => (
 );
 
 const PREMIUM_PROFILE_ID = 3;
+
+const getSlideLabels = (adAnalysis) => [
+  'Initial Load',
+  'After Scroll',
+  adAnalysis?.popupCount >= 1 ? 'Popup Opened' : 'After Interaction',
+];
+
+const AdAnalysisCard = ({ adAnalysis }) => {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const intervalRef = useRef(null);
+  const slideLabels = getSlideLabels(adAnalysis);
+
+  useEffect(() => {
+    if (adAnalysis?.isAdIntensive && adAnalysis.screenshots?.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIdx((i) => (i + 1) % adAnalysis.screenshots.length);
+      }, 1200);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [adAnalysis]);
+
+  if (!adAnalysis) return null;
+
+  if (!adAnalysis.isAdIntensive) {
+    return (
+      <View style={[styles.card, styles.adCleanCard]}>
+        <View style={styles.cardTitleRow}>
+          <MaterialIcons name="check-circle" size={15} color="#4AFF91" />
+          <Text style={[styles.cardTitleText, { color: '#4AFF91' }]}>Ad Check Complete</Text>
+        </View>
+        <Text style={styles.adCleanText}>
+          No excessive ads were found on this page. It looks clean and distraction-free to browse.
+        </Text>
+      </View>
+    );
+  }
+
+  const { screenshots, adNetworks } = adAnalysis;
+
+  return (
+    <View style={[styles.card, styles.adWarningCard]}>
+      <View style={styles.cardTitleRow}>
+        <MaterialIcons name="ad-units" size={15} color="#FFA500" />
+        <Text style={[styles.cardTitleText, { color: '#FFA500' }]}>Ad Intensive Page</Text>
+      </View>
+
+      {screenshots?.length > 0 && (
+        <View style={styles.adSlideshow}>
+          <Image
+            source={{ uri: `data:image/jpeg;base64,${screenshots[currentIdx]}` }}
+            style={styles.adScreenshot}
+            resizeMode="cover"
+          />
+          <View style={styles.adSlideCaption}>
+            <Text style={styles.adSlideLabelText}>{slideLabels[currentIdx]}</Text>
+          </View>
+          <View style={styles.adSlideDots}>
+            {screenshots.map((_, i) => (
+              <View
+                key={i}
+                style={[styles.adDot, i === currentIdx && styles.adDotActive]}
+              />
+            ))}
+          </View>
+        </View>
+      )}
+
+      {adNetworks?.length > 0 && (
+        <View>
+          <Text style={styles.adNetworksLabel}>Ad Networks Detected</Text>
+          <View style={styles.adNetworksRow}>
+            {adNetworks.map((n, i) => (
+              <View key={i} style={styles.adNetworkChip}>
+                <Text style={styles.adNetworkChipText}>{n}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      <Text style={styles.adWarningText}>
+        This page loads ads from multiple sources and injects new content as you scroll and interact. It may slow down your device, use extra mobile data, and disrupt your experience.
+      </Text>
+    </View>
+  );
+};
+
+const EmbeddedLinksExpander = ({ links }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      {expanded && links.map((link, i) => {
+        const vc = getVC(link.verdict);
+        return (
+          <View key={i} style={styles.embeddedLinkRow}>
+            <MaterialIcons name={vc.icon} size={14} color={vc.color} style={{ flexShrink: 0 }} />
+            <Text style={styles.embeddedLinkUrl} numberOfLines={1}>{link.url}</Text>
+            <Badge verdict={link.verdict} />
+          </View>
+        );
+      })}
+      <TouchableOpacity onPress={() => setExpanded((v) => !v)} style={styles.expandBtn}>
+        <Text style={styles.expandBtnText}>
+          {expanded ? 'Show less' : `· · · ${links.length} more`}
+        </Text>
+      </TouchableOpacity>
+    </>
+  );
+};
 
 // Placeholder links shown in the blurred preview for free users
 const PLACEHOLDER_LINKS = [
@@ -228,9 +338,16 @@ const EmbeddedLinksCard = ({ links }) => {
   const maliciousCount = links.filter((r) => r.verdict === 'malicious').length;
   const suspiciousCount = links.filter((r) => r.verdict === 'suspicious').length;
 
+  const VISIBLE_COUNT = 5;
+  const visibleLinks = links.slice(0, VISIBLE_COUNT);
+  const hiddenLinks = links.slice(VISIBLE_COUNT);
+
   return (
     <Card>
       <CardTitle icon="link" label={`Embedded Links (${links.length})`} />
+      <Text style={styles.cardDesc}>
+        Links found inside this page were scanned for threats. Dangerous links hiding on a page are a common sign the whole site may be unsafe.
+      </Text>
 
       {anyMalicious && (
         <View style={styles.linkWarningBanner}>
@@ -250,7 +367,7 @@ const EmbeddedLinksCard = ({ links }) => {
         </View>
       )}
 
-      {links.map((link, i) => {
+      {visibleLinks.map((link, i) => {
         const vc = getVC(link.verdict);
         return (
           <View key={i} style={styles.embeddedLinkRow}>
@@ -260,6 +377,10 @@ const EmbeddedLinksCard = ({ links }) => {
           </View>
         );
       })}
+
+      {hiddenLinks.length > 0 && (
+        <EmbeddedLinksExpander links={hiddenLinks} />
+      )}
     </Card>
   );
 };
@@ -466,6 +587,7 @@ export default function ScanResultScreen() {
         {u?.screenshot ? (
           <Card>
             <CardTitle icon="image" label="Page Screenshot" />
+            <Text style={styles.cardDesc}>A snapshot of what this webpage looks like. If it looks unexpected or suspicious, that's a red flag.</Text>
             <TouchableOpacity onPress={() => Linking.openURL(u.screenshot)} activeOpacity={0.85}>
               <Image source={{ uri: u.screenshot }} style={styles.screenshot} resizeMode="cover" />
               <View style={styles.screenshotHint}>
@@ -479,6 +601,7 @@ export default function ScanResultScreen() {
         {/* ── Security Risk Assessment ── */}
         <Card>
           <CardTitle icon="security" label="Security Risk Assessment" />
+          <Text style={styles.cardDesc}>This link was checked against three independent security engines. Even one flag is worth taking seriously.</Text>
           <ScannerRow name="URLScan.io" verdict={u?.verdict}
             detail={u?.score != null ? `Score: ${u.score}` : null} />
           <ScannerRow name="VirusTotal" verdict={result.virustotal?.verdict}
@@ -495,6 +618,7 @@ export default function ScanResultScreen() {
         {result.scriptAnalysis && (
           <Card>
             <CardTitle icon="smart-toy" label="AI Script Analysis" />
+            <Text style={styles.cardDesc}>Our AI reviewed the code running on this page to check if anything is happening in the background without your knowledge.</Text>
             <Row label="Verdict"    value={result.scriptAnalysis.verdict} valueColor={getVC(result.scriptAnalysis.verdict).color} />
             <Row label="Risk Score" value={result.scriptAnalysis.riskScore} />
             <Row label="Reason"     value={result.scriptAnalysis.reason} />
@@ -505,6 +629,7 @@ export default function ScanResultScreen() {
         {u?.page && (
           <Card>
             <CardTitle icon="web" label="Website Content" />
+            <Text style={styles.cardDesc}>Basic details about what this page actually loaded, including where it ended up if it redirected you along the way.</Text>
             <Row label="Title"       value={u.page.title} />
             <Row label="Final URL"   value={u.page.url} mono />
             <Row label="Domain"      value={u.page.domain} mono />
@@ -527,6 +652,7 @@ export default function ScanResultScreen() {
         {u?.network && (
           <Card>
             <CardTitle icon="hub" label="Network Information" />
+            <Text style={styles.cardDesc}>Shows where this website's server is physically located. Servers in high-risk countries or behind anonymous networks can be a warning sign.</Text>
             <Row label="IP"       value={u.network.ip}      mono />
             <Row label="ASN"      value={u.network.asn} />
             <Row label="ASN Name" value={u.network.asnName} />
@@ -543,6 +669,7 @@ export default function ScanResultScreen() {
         {u?.task && (
           <Card>
             <CardTitle icon="dns" label="Domain / DNS Details" />
+            <Text style={styles.cardDesc}>Technical details about the website's address. Newly registered or recently changed domains are sometimes used for scams.</Text>
             <Row label="Apex Domain" value={u.page?.apexDomain} mono />
             <Row label="Scan Time"   value={u.task.time} />
             <Row label="Method"      value={u.task.method} />
@@ -555,6 +682,7 @@ export default function ScanResultScreen() {
         {u?.ssl && (
           <Card>
             <CardTitle icon="lock" label="SSL / TLS Certificate" />
+            <Text style={styles.cardDesc}>A valid certificate means your connection to the site is encrypted. An expired, missing, or untrusted certificate is a warning sign.</Text>
             <Row label="Issuer"      value={u.ssl.issuer} />
             <Row label="Valid From"  value={u.ssl.validFrom} />
             <Row label="Valid Days"  value={u.ssl.validDays} />
@@ -568,6 +696,7 @@ export default function ScanResultScreen() {
             icon="memory"
             label="Technologies Detected"
             badge={`${u.technologies.length}`}
+            description="The tools and software this website uses to run. Some technologies can track your activity or affect your privacy."
           >
             {u.technologies.map((tech, i) => (
               <View key={i} style={styles.techRow}>
@@ -594,6 +723,7 @@ export default function ScanResultScreen() {
             icon="code"
             label="HTTP Headers"
             badge={`${u.httpHeaders.length}`}
+            description="Behind-the-scenes instructions sent by the website's server. Missing security headers can leave users more exposed to attacks."
           >
             {u.httpHeaders.map((h, i) => (
               <Row key={i} label={h.key} value={h.value} mono />
@@ -603,7 +733,7 @@ export default function ScanResultScreen() {
 
         {/* ── DOM / Content Analysis ── */}
         {(u?.content?.cookies?.length > 0 || u?.content?.globals?.length > 0) && (
-          <CollapsibleCard icon="article" label="DOM / Content Analysis">
+          <CollapsibleCard icon="article" label="DOM / Content Analysis" description="A look at what this website stored on your device, including cookies (small tracking files) and scripts running in the background.">
             {u.content.cookies?.length > 0 && (
               <>
                 <Text style={styles.subLabel}>Cookies ({u.content.cookies.length})</Text>
@@ -629,6 +759,9 @@ export default function ScanResultScreen() {
             )}
           </CollapsibleCard>
         )}
+
+        {/* ── Ad Intensive Detection ── */}
+        <AdAnalysisCard adAnalysis={result.adAnalysis} />
 
         {/* ── Actions ── */}
         <View style={styles.actionsRow}>
@@ -667,6 +800,7 @@ const styles = StyleSheet.create({
   },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
   cardTitleText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
+  cardDesc: { fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 18 },
 
   collapsibleHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   collapsibleBadge: {
@@ -796,4 +930,59 @@ const styles = StyleSheet.create({
   modalBtnPrimaryText: { color: '#000', fontWeight: '700', fontSize: 15 },
   modalBtnSecondary: { paddingVertical: 10 },
   modalBtnSecondaryText: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
+
+  // ── Ad Analysis Card ──
+  adWarningCard: {
+    borderColor: 'rgba(255,165,0,0.4)',
+    backgroundColor: 'rgba(255,165,0,0.05)',
+  },
+  adCleanCard: {
+    borderColor: 'rgba(74,255,145,0.3)',
+    backgroundColor: 'rgba(74,255,145,0.04)',
+  },
+  adCleanText: {
+    color: 'rgba(255,255,255,0.6)', fontSize: 13, lineHeight: 20,
+  },
+  adSlideshow: {
+    borderRadius: 10, overflow: 'hidden', backgroundColor: '#111',
+  },
+  adScreenshot: {
+    width: '100%', aspectRatio: 12 / 7, backgroundColor: '#111',
+  },
+  adSlideCaption: {
+    backgroundColor: 'rgba(0,0,0,0.6)', paddingVertical: 5, paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  adSlideLabelText: {
+    color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '600',
+  },
+  adSlideDots: {
+    flexDirection: 'row', justifyContent: 'center', gap: 6,
+    paddingVertical: 8,
+  },
+  adDot: {
+    width: 6, height: 6, borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  adDotActive: {
+    backgroundColor: '#FFA500',
+  },
+  adNetworksLabel: {
+    color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '700',
+    letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6,
+  },
+  adNetworksRow: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 6,
+  },
+  adNetworkChip: {
+    backgroundColor: 'rgba(255,165,0,0.1)', borderRadius: 50,
+    paddingVertical: 4, paddingHorizontal: 10,
+    borderWidth: 1, borderColor: 'rgba(255,165,0,0.3)',
+  },
+  adNetworkChipText: {
+    color: '#FFA500', fontSize: 11, fontWeight: '600',
+  },
+  adWarningText: {
+    color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 20,
+  },
 });
