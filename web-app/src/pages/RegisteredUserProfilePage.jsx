@@ -102,6 +102,7 @@ const RegisteredUserProfilePage = () => {
 
   // Auth
   const storedUser = JSON.parse(sessionStorage.getItem('user') ?? 'null')
+  const token = sessionStorage.getItem('token')
 
   // Tab
   const [activeTab, setActiveTab] = useState('profile')
@@ -144,7 +145,7 @@ const RegisteredUserProfilePage = () => {
     setLoadingProfile(true)
     setErrorProfile(null)
     try {
-      const data = await userAccountService.getUserAccountById(storedUser.uaId)
+      const data = await userAccountService.getUserAccountById(storedUser.uaId, token)
       setAccount(data)
       setEditUsername(data.uaUsername)
       setEditEmail(data.uaEmail)
@@ -159,7 +160,7 @@ const RegisteredUserProfilePage = () => {
     setLoadingSubscription(true)
     setErrorSubscription(null)
     try {
-      const data = await subscriptionPlanService.getSubscriptionByUser(storedUser.uaId)
+      const data = await subscriptionPlanService.getSubscriptionByUser(storedUser.uaId, token)
       setSubscription(data)
     } catch (err) {
       setErrorSubscription(err.message)
@@ -173,7 +174,7 @@ const RegisteredUserProfilePage = () => {
     try {
       const updates = { uaUsername: editUsername, uaEmail: editEmail }
       if (editPassword.trim()) updates.uaPasswordHash = editPassword
-      await userAccountService.updateUserAccount(storedUser.uaId, updates)
+      await userAccountService.updateUserAccount(storedUser.uaId, updates, token)
       // Sync sessionStorage
       const updatedUser = { ...storedUser, uaUsername: editUsername, uaEmail: editEmail }
       sessionStorage.setItem('user', JSON.stringify(updatedUser))
@@ -188,7 +189,7 @@ const RegisteredUserProfilePage = () => {
 
   const handleDeleteAccount = async () => {
     try {
-      await userAccountService.deleteUserAccount(storedUser.uaId)
+      await userAccountService.deleteUserAccount(storedUser.uaId, token)
       sessionStorage.removeItem('token')
       sessionStorage.removeItem('user')
       navigate('/')
@@ -200,7 +201,7 @@ const RegisteredUserProfilePage = () => {
 
   const handleCancelSubscription = async () => {
     try {
-      await subscriptionPlanService.cancelSubscription(subscription.spId, storedUser.uaId)
+      await subscriptionPlanService.cancelSubscription(subscription.spId, storedUser.uaId, token)
       setShowCancelModal(false)
       loadSubscription()
       loadProfile()

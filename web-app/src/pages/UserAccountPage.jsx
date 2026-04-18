@@ -93,6 +93,7 @@ const UserAccountPage = () => {
   const [toast, setToast] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
+  const token = sessionStorage.getItem('token')
 
   const [newUsername, setNewUsername] = useState('')
   const [newEmail, setNewEmail] = useState('')
@@ -112,7 +113,7 @@ const UserAccountPage = () => {
 
   const fetchAccounts = async () => {
     try {
-      const data = await userAccountService.getAllUserAccounts()
+      const data = await userAccountService.getAllUserAccounts(token)
       setAccounts(data)
     } catch (err) {
       showToast(err.message, 'error')
@@ -122,7 +123,7 @@ const UserAccountPage = () => {
   const handleSearch = async () => {
     try {
       if (!searchQuery.trim()) { fetchAccounts(); return }
-      const data = await userAccountService.searchUserAccounts(searchQuery)
+      const data = await userAccountService.searchUserAccounts(searchQuery, token)
       setAccounts(data)
     } catch (err) {
       showToast(err.message, 'error')
@@ -145,7 +146,7 @@ const UserAccountPage = () => {
     try {
       const updates = { uaUsername: editUsername, uaEmail: editEmail }
       if (editPassword.trim()) updates.uaPasswordHash = editPassword
-      await userAccountService.updateUserAccount(updatingAccount.uaId, updates)
+      await userAccountService.updateUserAccount(updatingAccount.uaId, updates, token)
       setUpdatingAccount(null)
       fetchAccounts()
       showToast('Account updated successfully')
@@ -156,7 +157,7 @@ const UserAccountPage = () => {
 
   const handleDelete = async (uaId) => {
     try {
-      await userAccountService.deleteUserAccount(uaId)
+      await userAccountService.deleteUserAccount(uaId, token)
       setDeletingAccount(null)
       fetchAccounts()
       showToast('Account deleted successfully')

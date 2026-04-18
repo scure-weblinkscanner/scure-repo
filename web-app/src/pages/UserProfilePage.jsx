@@ -96,9 +96,9 @@ const UserProfilePage = () => {
 
   const [newProfileName, setNewProfileName] = useState('')
   const [editProfileName, setEditProfileName] = useState('')
+  const token = sessionStorage.getItem('token')
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token')
     if (!token) { navigate('/login'); return }
     fetchProfiles()
   }, [])
@@ -117,7 +117,7 @@ const UserProfilePage = () => {
   const handleSearch = async () => {
     try {
       if (!searchQuery.trim()) { fetchProfiles(); return }
-      const data = await userProfileService.searchUserProfiles(searchQuery)
+      const data = await userProfileService.searchUserProfiles(searchQuery, token)
       setProfiles(data)
     } catch (err) {
       showToast(err.message, 'error')
@@ -126,7 +126,7 @@ const UserProfilePage = () => {
 
   const handleCreate = async () => {
     try {
-      await userProfileService.createUserProfile({ upName: newProfileName })
+      await userProfileService.createUserProfile({ upName: newProfileName }, token)
       setShowCreateModal(false)
       setNewProfileName('')
       fetchProfiles()
@@ -138,7 +138,7 @@ const UserProfilePage = () => {
 
   const handleUpdate = async () => {
     try {
-      await userProfileService.updateUserProfile(updatingProfile.upId, { upName: editProfileName })
+      await userProfileService.updateUserProfile(updatingProfile.upId, { upName: editProfileName }, token)
       setUpdatingProfile(null)
       fetchProfiles()
       showToast('Profile updated successfully')
@@ -149,7 +149,7 @@ const UserProfilePage = () => {
 
   const handleDelete = async (upId) => {
     try {
-      await userProfileService.deleteUserProfile(upId)
+      await userProfileService.deleteUserProfile(upId, token)
       setDeletingProfile(null)
       fetchProfiles()
       showToast('Profile deleted successfully')

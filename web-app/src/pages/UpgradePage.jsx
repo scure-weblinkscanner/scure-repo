@@ -118,7 +118,8 @@ export default function UpgradePage() {
 
   // Check if user is logged in
   const storedUser = JSON.parse(sessionStorage.getItem('user') ?? 'null')
-  const isLoggedIn = !!sessionStorage.getItem('token') && !!storedUser
+  const token = sessionStorage.getItem('token')
+  const isLoggedIn = !!token && !!storedUser
 
   const [selectedMethod, setSelectedMethod] = useState(null)
   const [showModal, setShowModal] = useState(false)
@@ -190,9 +191,11 @@ export default function UpgradePage() {
         resolvedUaId = data.uaId
       }
 
+      const upgradeHeaders = { 'Content-Type': 'application/json' }
+      if (token) upgradeHeaders['Authorization'] = `Bearer ${token}`
       const res = await fetch(`${BASE_URL}/api/subscriptionPlan/upgrade`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: upgradeHeaders,
         body: JSON.stringify({ uaId: resolvedUaId }),
       })
 

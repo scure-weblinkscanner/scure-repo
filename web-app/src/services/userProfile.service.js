@@ -1,9 +1,12 @@
 const BASE_URL = `${import.meta.env.VITE_API_URL}/api/userProfile`
 
-export const createUserProfile = async (data) => {
+export const createUserProfile = async (data, token) => {
   const res = await fetch(`${BASE_URL}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
     body: JSON.stringify(data)
   })
   if (!res.ok) throw new Error('Failed to create user profile')
@@ -22,25 +25,31 @@ export const getUserProfileById = async (userProfileId) => {
   return await res.json()
 }
 
-export const searchUserProfiles = async (query) => {
-  const res = await fetch(`${BASE_URL}/search?q=${query}`)
+export const searchUserProfiles = async (query, token) => {
+  const res = await fetch(`${BASE_URL}/search?q=${query}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
   if (!res.ok) throw new Error('Failed to search user profiles')
   return await res.json()
 }
 
-export const updateUserProfile = async (userProfileId, data) => {
+export const updateUserProfile = async (userProfileId, data, token) => {
   const res = await fetch(`${BASE_URL}/${userProfileId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
     body: JSON.stringify(data)
   })
   if (!res.ok) throw new Error('Failed to update user profile')
   return await res.json()
 }
 
-export const deleteUserProfile = async (userProfileId) => {
+export const deleteUserProfile = async (userProfileId, token) => {
   const res = await fetch(`${BASE_URL}/${userProfileId}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
   })
   if (!res.ok) throw new Error('Failed to delete user profile')
   return await res.json()
