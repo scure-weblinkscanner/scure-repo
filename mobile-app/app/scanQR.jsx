@@ -33,7 +33,6 @@ export default function ScanQRScreen() {
   const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState('');
   const scanAnim = useRef(new Animated.Value(0.2)).current;
-  const loadingAnim = useRef(new Animated.Value(0)).current;
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const { adDetectionEnabled } = useAdDetection();
   const elapsedTime = useElapsedTime(scanning);

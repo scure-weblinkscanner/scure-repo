@@ -2,10 +2,15 @@ import * as userAccountService from '../services/userAccount.service.js';
 
 export const createUserAccount = async (req, res) => {
   try {
-    const result = await userAccountService.createUserAccount(req.body);
-    res.status(201).json(result);
+    const { uaUsername, uaEmail, uaPasswordHash } = req.body;
+    if (!uaUsername || !uaEmail || !uaPasswordHash) {
+      return res.status(400).json({ error: 'Username, email and password are required' });
+    }
+    const result = await userAccountService.createUserAccount({ uaUsername, uaEmail, uaPasswordHash });
+    res.status(201).json(result); // ✅ send the response
   } catch (error) {
-    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong.' }); // ✅ handle errors
   }
 };
 
@@ -20,14 +25,19 @@ export const getAllUserAccounts = async (req, res) => {
 
 export const getUserAccountById = async (req, res) => {
   try {
-    if (String(req.params.uaId) !== String(req.user.uaId)) {
+    const isAdmin = req.user.uaUserProfileId === 1;
+    const isSelf = String(req.params.uaId) === String(req.user.uaId);
+
+    if (!isAdmin && !isSelf) {
       return res.status(403).json({ error: 'Access denied' });
     }
+
     const result = await userAccountService.getUserAccountById(req.params.uaId);
     if (!result) return res.status(404).json({ error: 'User account not found' });
     res.status(200).json(result);
   } catch (error) {
-    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
@@ -42,25 +52,35 @@ export const searchUserAccounts = async (req, res) => {
 
 export const updateUserAccount = async (req, res) => {
   try {
-    if (String(req.params.uaId) !== String(req.user.uaId)) {
+    const isAdmin = req.user.uaUserProfileId === 1;
+    const isSelf = String(req.params.uaId) === String(req.user.uaId);
+
+    if (!isAdmin && !isSelf) {
       return res.status(403).json({ error: 'Access denied' });
     }
+
     const result = await userAccountService.updateUserAccount(req.params.uaId, req.body);
     res.status(200).json(result);
   } catch (error) {
-    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
 export const deleteUserAccount = async (req, res) => {
   try {
-    if (String(req.params.uaId) !== String(req.user.uaId)) {
+    const isAdmin = req.user.uaUserProfileId === 1;
+    const isSelf = String(req.params.uaId) === String(req.user.uaId);
+
+    if (!isAdmin && !isSelf) {
       return res.status(403).json({ error: 'Access denied' });
     }
+
     await userAccountService.deleteUserAccount(req.params.uaId);
     res.status(200).json({ message: 'User account deleted successfully' });
   } catch (error) {
-    console.error(error); res.status(500).json({ error: 'Something went wrong.' });
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 
@@ -73,7 +93,7 @@ export const loginUserAccount = async (req, res) => {
     const result = await userAccountService.loginUserAccount(uaEmail, uaPassword);
     res.status(200).json(result);
   } catch (error) {
-    res.status(401).json({ error: error.message });
+    res.status(401).json({ error: 'Invalid email or password' });
   }
 };
 

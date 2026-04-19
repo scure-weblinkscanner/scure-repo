@@ -94,23 +94,24 @@ Respond with plain text only, no JSON, no markdown.
 
 // ── Misinformation / fact-check analysis ──
 export const analyzeForMisinformation = async (url, textContent) => {
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
   const truncated = textContent?.slice(0, 15000) || '';
-  const today = new Date().toDateString(); // e.g. "Fri Apr 17 2026"
+  const today = new Date().toDateString();
 
   const prompt = `
-You are a balanced, professional fact-checker. Your job is to assess whether the content of a webpage contains clear misinformation, not to be overly critical of legitimate news.
+You are a balanced, professional fact-checker assessing the credibility and reliability of a webpage.
 
 Today's date: ${today}
-URL being analysed: ${url}
+URL: ${url}
 
-Important guidelines:
-- Today is ${today}. Any dates on or before today are NOT future dates. Do not flag current-year news as impossible or anachronistic.
-- Consider the source domain. Established news organisations (e.g. straitstimes.com, bbc.com, reuters.com, cnn.com, nytimes.com) have editorial standards and should be given appropriate credibility unless the content itself contains clear, specific factual errors.
-- News homepages show many headlines without full article context. Do not mark a headline as "false" just because you cannot independently verify it — use "unverified" instead.
-- Only mark something "misleading" or "false" if there is a clear, specific factual error or deliberate manipulation — not simply because you are uncertain.
-- A verdict of "trustworthy" is correct for reputable sources with no clear errors found.
-- Keep confidenceScore realistic — avoid extremes (0 or 100) unless the evidence is overwhelming.
+CRITICAL RULES — follow these before analysing anything:
+1. Today is ${today}. Do NOT treat any date on or before today as a future or impossible date.
+2. If the page is a NEWS HOMEPAGE or NEWS FEED (many short headlines, navigation menus, no single full article body), do NOT attempt to fact-check individual headlines. Headlines are teasers without full context and cannot be fairly verified in isolation. Instead, assess the overall source credibility, writing style, and visible editorial standards.
+3. For well-known, established news organisations (straitstimes.com, bbc.com, reuters.com, cnn.com, nytimes.com, theguardian.com, channelnewsasia.com, ap.org, bloomberg.com, wsj.com, ft.com), the default verdict should be "trustworthy" unless the content itself contains clear, obvious factual errors or manipulative language.
+4. Use "unverified" sparingly — only for specific extraordinary claims that genuinely require independent evidence. Do NOT use it as a default for every headline on a news homepage.
+5. Only use "false" or "misleading" for claims where you have clear, certain knowledge they contradict established facts.
+6. The "claims" array should only include substantive claims from a full article body. If the page is a homepage or feed with only headlines, return an empty claims array [] rather than listing unverifiable headlines.
+7. Keep confidenceScore between 20–80 unless evidence is truly overwhelming in either direction.
 
 Page Content:
 ${truncated || 'Content could not be extracted — base your analysis on the URL and domain alone.'}
@@ -119,16 +120,16 @@ Respond in JSON format only, no markdown:
 {
   "verdict": "trustworthy" | "questionable" | "misleading",
   "confidenceScore": 0-100,
-  "summary": "2-3 sentence balanced assessment of the content reliability",
+  "summary": "2-3 sentence balanced assessment of the source and content reliability",
   "claims": [
     {
-      "claim": "a specific claim found in the content (max 5 most notable)",
+      "claim": "only include claims from full article body text, not homepage headlines",
       "verdict": "true" | "false" | "unverified" | "misleading",
-      "explanation": "brief, fair explanation"
+      "explanation": "brief, fair explanation citing specific reasons"
     }
   ],
-  "redFlags": ["only include genuine credibility concerns, not speculative ones"],
-  "positiveIndicators": ["credibility signals or trustworthy signs found"]
+  "redFlags": ["only genuine, specific credibility concerns — not speculative"],
+  "positiveIndicators": ["credibility signals found, e.g. named authors, cited sources, editorial standards"]
 }
 `;
 

@@ -76,7 +76,7 @@ export const loginAdminUserAccount = async (uaEmail, uaPassword) => {
     throw new Error('Invalid email or password');
   }
 
-  if (account.uaUserProfileId != 1) {
+  if (account.uaUserProfileId !== 1) {
     throw new Error('Access denied. Admins only.');
   }
 

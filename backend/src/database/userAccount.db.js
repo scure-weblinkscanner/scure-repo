@@ -42,7 +42,7 @@ export const deleteUserAccount = async (uaId) => {
 export const getAllUserAccounts = async () => {
   const { data: result, error } = await supabase
     .from('userAccount')
-    .select('*')
+    .select('uaId, uaUserProfileId, uaUsername, uaEmail, uaCreatedAt, uaUpdatedAt')
 
   if (error) throw error
   return result

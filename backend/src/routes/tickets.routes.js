@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/', requireAdmin, getAllTickets);
 router.get('/user/:uaId', requireAuth, getTicketsByUser);
-router.get('/:tkId', requireAuth, getTicketById);
+router.get('/:tkId', requireAdmin, getTicketById);
 router.post('/', requireAuth, createTicket);
 router.patch('/:tkId/respond', requireAdmin, respondToTicket);
 

@@ -13,7 +13,7 @@ export const createUserProfile = async (data) => {
 export const getAllUserProfiles = async () => {
   const { data: result, error } = await supabase
     .from('userProfile')
-    .select('*')
+    .select('upId, upName, upDescription, upCreatedAt, upUpdatedAt')
     .order('upId', { ascending: true })
 
   if (error) throw error

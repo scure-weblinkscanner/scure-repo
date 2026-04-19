@@ -9,7 +9,7 @@ const router = express.Router();
 router.post('/', authLimiter, userAccountController.createUserAccount);
 router.post('/login', authLimiter, userAccountController.loginUserAccount);
 router.post('/login/admin', authLimiter, userAccountController.loginAdminUserAccount);
-router.get('/check-email', userAccountController.checkEmailExists);
+router.get('/check-email', authLimiter, userAccountController.checkEmailExists);
 
 // Admin only
 router.get('/', requireAdmin, userAccountController.getAllUserAccounts);

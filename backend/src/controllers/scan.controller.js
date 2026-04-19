@@ -32,7 +32,7 @@ export const analyzeScan = async (req, res) => {
   }
 };
 
-// ── NEW: Fact-check controller (Premium only) ──
+// (Premium only)
 export const factCheckScan = async (req, res) => {
   try {
     const { url } = req.body;
@@ -41,7 +41,9 @@ export const factCheckScan = async (req, res) => {
       return res.status(400).json({ error: 'URL is required' });
     }
 
-    if (req.user.uaUserProfileId !== PREMIUM_PROFILE_ID) {
+    const subscription = await getSubscriptionByUser(req.user.uaId);
+    const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active';
+    if (!isPremium) {
       return res.status(403).json({ error: 'This feature is available for Premium users only.' });
     }
 

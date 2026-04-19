@@ -53,8 +53,8 @@ export const respondToTicket = async (req, res) => {
       return res.status(400).json({ message: 'Response is required' });
     }
     const validStatuses = ['open', 'in_progress', 'resolved'];
-    if (tkStatus && !validStatuses.includes(tkStatus)) {
-      return res.status(400).json({ message: 'Invalid status' });
+    if (!tkStatus || !validStatuses.includes(tkStatus)) {
+      return res.status(400).json({ message: 'A valid status is required' });
     }
     const ticket = await ticketsService.respondToTicket(tkId, tkAdminResponse, tkStatus ?? 'resolved');
     res.status(200).json({ ticket });
