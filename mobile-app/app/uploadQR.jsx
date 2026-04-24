@@ -21,6 +21,7 @@ import { useAuth } from '../context/AuthContext';
 import { analyzeUrl } from '../services/scanApi.service';
 import { useScan } from '../context/ScanContext';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import BlocklistModal from '../components/BlocklistModal';
 
 const normalizeUrl = (url) => {
   const u = url.trim().toLowerCase();
@@ -39,6 +40,8 @@ export default function UploadQRScreen() {
   const [scanning, setScanning] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const pendingUrl = useRef(null);
 
   const scanAnim = useRef(new Animated.Value(0.2)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -115,14 +118,22 @@ export default function UploadQRScreen() {
   const handleScan = async () => {
     if (!detectedUrl || scanning) return;
     setError('');
+    await runScan(normalizeUrl(detectedUrl));
+  };
+
+  const runScan = async (url, skipBlocklist = false) => {
     setScanning(true);
     const _start = Date.now();
     try {
-      const normalized = normalizeUrl(detectedUrl);
-      const result = await analyzeUrl(normalized, token, 'uploadQr');
+      const result = await analyzeUrl(url, token, 'uploadQr', skipBlocklist);
       setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
-      router.push({ pathname: '/scanURLResult' });
+      if (result.blocklist && !skipBlocklist) {
+        pendingUrl.current = url;
+        setShowBlocklistModal(true);
+      } else {
+        router.push({ pathname: '/scanURLResult' });
+      }
     } catch (err) {
       setError('Scan failed: ' + err.message);
     } finally {
@@ -139,6 +150,11 @@ export default function UploadQRScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+      <BlocklistModal
+        visible={showBlocklistModal}
+        onExit={() => { setShowBlocklistModal(false); handleReset(); }}
+        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+      />
       <SafeAreaView style={{ flex: 1, backgroundColor:"#0E0E95"}} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.wrapper}
