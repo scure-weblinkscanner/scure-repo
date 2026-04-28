@@ -438,7 +438,7 @@ const EmbeddedLinksCard = ({ links }) => {
   );
 };
 
-// ── NEW: Fact-Check Card (Premium only) ──
+// Fact-Check Card (Premium only)
 const FactCheckCard = ({ url }) => {
   const { account, token } = useAuth();
   const { setFactCheckResult, setFactCheckDuration } = useScan();
