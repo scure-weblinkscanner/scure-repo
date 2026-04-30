@@ -31,15 +31,24 @@ export const useAdDetection = () => {
   }, [token]);
 
   const toggleAdDetection = async () => {
+    const previous = adDetectionEnabled;
     const next = !adDetectionEnabled;
     setAdDetectionEnabled(next);
     await AsyncStorage.setItem(STORAGE_KEY, String(next));
-    if (token) {
-      fetch(`${BASE_URL}/settings`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ sAdDetectionEnabled: next }),
-      }).catch(() => {});
+    try {
+      if (token) {
+        const res = await fetch(`${BASE_URL}/settings`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ sAdDetectionEnabled: next }),
+        });
+        if (!res.ok) throw new Error('Save failed');
+      }
+      return next;
+    } catch {
+      setAdDetectionEnabled(previous);
+      await AsyncStorage.setItem(STORAGE_KEY, String(previous));
+      return 'error';
     }
   };
 

@@ -46,18 +46,17 @@ export const deleteUserAccount = async (uaId, token) => {
   return await res.json()
 }
 
-export const registerUserAccount = async (username, email, password) => {
+export const registerUserAccount = async (username, email, password, userProfileId) => {
+  const body = { uaUsername: username, uaEmail: email, uaPasswordHash: password }
+  if (userProfileId) body.uaUserProfileId = userProfileId
   const res = await fetch(`${BASE_URL}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      uaUsername: username,
-      uaEmail: email,
-      uaPasswordHash: password
-    })
+    body: JSON.stringify(body)
   })
-  if (!res.ok) throw new Error('Failed to register account')
-  return await res.json()
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || data.message || 'Failed to register account')
+  return data
 }
 
 export const loginUserAccount = async (uaEmail, uaPassword, loginAs = 'user') => {

@@ -98,10 +98,12 @@ const UserAccountPage = () => {
   const [newUsername, setNewUsername] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [newProfileId, setNewProfileId] = useState(2)
 
   const [editUsername, setEditUsername] = useState('')
   const [editEmail, setEditEmail] = useState('')
   const [editPassword, setEditPassword] = useState('')
+  const [editProfileId, setEditProfileId] = useState(2)
 
   useEffect(() => {
     const token = sessionStorage.getItem('token')
@@ -132,9 +134,9 @@ const UserAccountPage = () => {
 
   const handleCreate = async () => {
     try {
-      await userAccountService.registerUserAccount(newUsername, newEmail, newPassword)
+      await userAccountService.registerUserAccount(newUsername, newEmail, newPassword, newProfileId)
       setShowCreateModal(false)
-      setNewUsername(''); setNewEmail(''); setNewPassword('')
+      setNewUsername(''); setNewEmail(''); setNewPassword(''); setNewProfileId(2)
       fetchAccounts()
       showToast('Account created successfully')
     } catch (err) {
@@ -144,7 +146,7 @@ const UserAccountPage = () => {
 
   const handleUpdate = async () => {
     try {
-      const updates = { uaUsername: editUsername, uaEmail: editEmail }
+      const updates = { uaUsername: editUsername, uaEmail: editEmail, uaUserProfileId: editProfileId }
       if (editPassword.trim()) updates.uaPasswordHash = editPassword
       await userAccountService.updateUserAccount(updatingAccount.uaId, updates, token)
       setUpdatingAccount(null)
@@ -171,6 +173,7 @@ const UserAccountPage = () => {
     setEditUsername(account.uaUsername)
     setEditEmail(account.uaEmail)
     setEditPassword('')
+    setEditProfileId(account.uaUserProfileId ?? 2)
     setUpdatingAccount(account)
   }
 
@@ -253,6 +256,14 @@ const UserAccountPage = () => {
               <label style={labelStyle}>New Password <span style={{ color: 'rgba(255,255,255,0.25)', textTransform: 'none', letterSpacing: 0 }}>(leave blank to keep current)</span></label>
               <input style={inputStyle} type="password" value={editPassword} onChange={e => setEditPassword(e.target.value)} placeholder="••••••••" />
             </div>
+            <div>
+              <label style={labelStyle}>Access Level</label>
+              <select style={{ ...inputStyle, cursor: 'pointer' }} value={editProfileId} onChange={e => setEditProfileId(Number(e.target.value))}>
+                <option value={1}>Admin</option>
+                <option value={2}>Free</option>
+                <option value={3}>Premium</option>
+              </select>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={handleUpdate} style={{
@@ -286,6 +297,14 @@ const UserAccountPage = () => {
             <div>
               <label style={labelStyle}>Password</label>
               <input style={inputStyle} type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" />
+            </div>
+            <div>
+              <label style={labelStyle}>Access Level</label>
+              <select style={{ ...inputStyle, cursor: 'pointer' }} value={newProfileId} onChange={e => setNewProfileId(Number(e.target.value))}>
+                <option value={1}>Admin</option>
+                <option value={2}>Free</option>
+                <option value={3}>Premium</option>
+              </select>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>

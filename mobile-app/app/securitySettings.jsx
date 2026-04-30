@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Switch, ScrollView, ImageBackground } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -11,6 +12,24 @@ export default function SecuritySettingsScreen() {
   const { account } = useAuth();
   const { adDetectionEnabled, toggleAdDetection } = useAdDetection();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
+  const [adToggleMsg, setAdToggleMsg] = useState('');
+  const [adToggleMsgType, setAdToggleMsgType] = useState('success');
+
+  const handleAdToggle = async () => {
+    if (!isPremium) return;
+    const result = await toggleAdDetection();
+    if (result === 'error') {
+      setAdToggleMsgType('error');
+      setAdToggleMsg('Failed to save preference. Please try again.');
+    } else {
+      setAdToggleMsgType('success');
+      setAdToggleMsg(result
+        ? 'Ad Intensive Detection is now enabled.'
+        : 'Ad Intensive Detection is now disabled.'
+      );
+    }
+    setTimeout(() => setAdToggleMsg(''), 3000);
+  };
 
   return (
     <ImageBackground
@@ -53,12 +72,22 @@ export default function SecuritySettingsScreen() {
             </View>
             <Switch
               value={isPremium ? adDetectionEnabled : false}
-              onValueChange={isPremium ? toggleAdDetection : undefined}
+              onValueChange={handleAdToggle}
               disabled={!isPremium}
               trackColor={{ false: '#333', true: '#0E0E95' }}
               thumbColor={isPremium ? '#fff' : '#555'}
             />
           </View>
+          {adToggleMsg ? (
+            <View style={styles.toastRow}>
+              <MaterialIcons
+                name={adToggleMsgType === 'error' ? 'error-outline' : 'check-circle'}
+                size={14}
+                color={adToggleMsgType === 'error' ? '#ff6b6b' : '#4AFF91'}
+              />
+              <Text style={[styles.toastText, adToggleMsgType === 'error' && { color: '#ff6b6b' }]}>{adToggleMsg}</Text>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
     </ImageBackground>
@@ -117,5 +146,13 @@ const styles = StyleSheet.create({
   },
   lockedNote: {
     fontSize: 11, color: 'rgba(255,214,10,0.6)', marginTop: 4,
+  },
+  toastRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 10, paddingTop: 10,
+    borderTopWidth: 1, borderTopColor: '#2a2a2a',
+  },
+  toastText: {
+    fontSize: 12, color: '#4AFF91',
   },
 });

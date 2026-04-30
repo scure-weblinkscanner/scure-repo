@@ -31,6 +31,11 @@ export const updateUserAccount = async (uaId, updates) => {
 }
 
 export const deleteUserAccount = async (uaId) => {
+  await supabase.from('settings').delete().eq('sUaId', uaId);
+  await supabase.from('scanHistory').delete().eq('shUserId', uaId);
+  await supabase.from('tickets').delete().eq('tkUserId', uaId);
+  await supabase.from('subscriptionPlan').delete().eq('spUaId', uaId);
+
   const { error } = await supabase
     .from('userAccount')
     .delete()

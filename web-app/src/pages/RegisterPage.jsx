@@ -5,15 +5,30 @@ import PublicNavbar from '../components/PublicNavbar'
 import backgroundWebsite from '../assets/background-website.jpg'
 import { Link } from 'react-router-dom'
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+
 const RegisterPage = () => {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
+  const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleRegister = async () => {
+    const errs = {}
+    if (!username.trim()) errs.username = 'Username is required.'
+    else if (!usernameRegex.test(username.trim())) errs.username = 'Username must be 3–20 characters and contain only letters, numbers, or underscores.'
+    if (!email.trim()) errs.email = 'Email is required.'
+    else if (!emailRegex.test(email.trim())) errs.email = 'Please enter a valid email address.'
+    if (!password) errs.password = 'Password is required.'
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs)
+      return
+    }
+    setFieldErrors({})
     setError(null)
     setLoading(true)
     try {
@@ -107,11 +122,14 @@ const RegisterPage = () => {
               type="text"
               placeholder="yourname"
               value={username}
-              onChange={e => setUsername(e.target.value)}
-              style={inputStyle}
-              onFocus={e => e.target.style.borderColor = 'rgba(14,14,149,0.7)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+              onChange={e => { setUsername(e.target.value); setFieldErrors(prev => ({ ...prev, username: undefined })) }}
+              style={{ ...inputStyle, borderColor: fieldErrors.username ? 'rgba(255,107,107,0.6)' : 'rgba(255,255,255,0.1)' }}
+              onFocus={e => e.target.style.borderColor = fieldErrors.username ? 'rgba(255,107,107,0.8)' : 'rgba(14,14,149,0.7)'}
+              onBlur={e => e.target.style.borderColor = fieldErrors.username ? 'rgba(255,107,107,0.6)' : 'rgba(255,255,255,0.1)'}
             />
+            {fieldErrors.username && (
+              <p style={{ margin: '6px 0 0', fontSize: 12, color: '#FF6B6B' }}>{fieldErrors.username}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -121,11 +139,14 @@ const RegisterPage = () => {
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={inputStyle}
-              onFocus={e => e.target.style.borderColor = 'rgba(14,14,149,0.7)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+              onChange={e => { setEmail(e.target.value); setFieldErrors(prev => ({ ...prev, email: undefined })) }}
+              style={{ ...inputStyle, borderColor: fieldErrors.email ? 'rgba(255,107,107,0.6)' : 'rgba(255,255,255,0.1)' }}
+              onFocus={e => e.target.style.borderColor = fieldErrors.email ? 'rgba(255,107,107,0.8)' : 'rgba(14,14,149,0.7)'}
+              onBlur={e => e.target.style.borderColor = fieldErrors.email ? 'rgba(255,107,107,0.6)' : 'rgba(255,255,255,0.1)'}
             />
+            {fieldErrors.email && (
+              <p style={{ margin: '6px 0 0', fontSize: 12, color: '#FF6B6B' }}>{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -135,12 +156,15 @@ const RegisterPage = () => {
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={e => { setPassword(e.target.value); setFieldErrors(prev => ({ ...prev, password: undefined })) }}
               onKeyDown={e => e.key === 'Enter' && handleRegister()}
-              style={inputStyle}
-              onFocus={e => e.target.style.borderColor = 'rgba(14,14,149,0.7)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+              style={{ ...inputStyle, borderColor: fieldErrors.password ? 'rgba(255,107,107,0.6)' : 'rgba(255,255,255,0.1)' }}
+              onFocus={e => e.target.style.borderColor = fieldErrors.password ? 'rgba(255,107,107,0.8)' : 'rgba(14,14,149,0.7)'}
+              onBlur={e => e.target.style.borderColor = fieldErrors.password ? 'rgba(255,107,107,0.6)' : 'rgba(255,255,255,0.1)'}
             />
+            {fieldErrors.password && (
+              <p style={{ margin: '6px 0 0', fontSize: 12, color: '#FF6B6B' }}>{fieldErrors.password}</p>
+            )}
           </div>
 
           {/* Error */}

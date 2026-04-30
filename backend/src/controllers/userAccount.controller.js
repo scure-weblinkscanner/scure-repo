@@ -2,15 +2,17 @@ import * as userAccountService from '../services/userAccount.service.js';
 
 export const createUserAccount = async (req, res) => {
   try {
-    const { uaUsername, uaEmail, uaPasswordHash } = req.body;
+    const { uaUsername, uaEmail, uaPasswordHash, uaUserProfileId } = req.body;
     if (!uaUsername || !uaEmail || !uaPasswordHash) {
       return res.status(400).json({ error: 'Username, email and password are required' });
     }
-    const result = await userAccountService.createUserAccount({ uaUsername, uaEmail, uaPasswordHash });
-    res.status(201).json(result); // ✅ send the response
+    const data = { uaUsername, uaEmail, uaPasswordHash };
+    if (uaUserProfileId) data.uaUserProfileId = uaUserProfileId;
+    const result = await userAccountService.createUserAccount(data);
+    res.status(201).json(result);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Something went wrong.' }); // ✅ handle errors
+    res.status(500).json({ error: 'Something went wrong.' });
   }
 };
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Switch, ScrollView, ImageBackground } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -6,6 +7,25 @@ import { useNotifications } from '../hooks/useNotifications';
 export default function NotificationsScreen() {
   const router = useRouter();
   const { notificationsEnabled, toggleNotifications } = useNotifications();
+  const [notifMsg, setNotifMsg] = useState('');
+  const [notifMsgType, setNotifMsgType] = useState('success');
+
+  const handleToggle = async () => {
+    const result = await toggleNotifications();
+    if (result === true) {
+      setNotifMsgType('success');
+      setNotifMsg('Security notifications are now enabled.');
+      setTimeout(() => setNotifMsg(''), 3000);
+    } else if (result === false) {
+      setNotifMsgType('success');
+      setNotifMsg('Security notifications are now disabled.');
+      setTimeout(() => setNotifMsg(''), 3000);
+    } else if (result === 'error') {
+      setNotifMsgType('error');
+      setNotifMsg('Failed to save preference. Please try again.');
+      setTimeout(() => setNotifMsg(''), 3000);
+    }
+  };
 
   return (
     <ImageBackground
@@ -38,11 +58,21 @@ export default function NotificationsScreen() {
             </View>
             <Switch
               value={notificationsEnabled}
-              onValueChange={toggleNotifications}
+              onValueChange={handleToggle}
               trackColor={{ false: '#333', true: '#0E0E95' }}
               thumbColor="#fff"
             />
           </View>
+          {notifMsg ? (
+            <View style={styles.toastRow}>
+              <MaterialIcons
+                name={notifMsgType === 'error' ? 'error-outline' : 'check-circle'}
+                size={14}
+                color={notifMsgType === 'error' ? '#ff6b6b' : '#4AFF91'}
+              />
+              <Text style={[styles.toastText, notifMsgType === 'error' && { color: '#ff6b6b' }]}>{notifMsg}</Text>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
     </ImageBackground>
@@ -86,5 +116,13 @@ const styles = StyleSheet.create({
   },
   rowDesc: {
     fontSize: 12, color: '#888', lineHeight: 17,
+  },
+  toastRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 10, paddingTop: 10,
+    borderTopWidth: 1, borderTopColor: '#2a2a2a',
+  },
+  toastText: {
+    fontSize: 12, color: '#4AFF91',
   },
 });

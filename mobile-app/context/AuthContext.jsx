@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { AppState } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { getUserAccountById } from '../services/userAccount.service';
@@ -73,10 +73,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await SecureStore.deleteItemAsync('token');
-    await AsyncStorage.removeItem('account');
-    setToken(null);
-    setAccount(null);
+    try {
+      await SecureStore.deleteItemAsync('token');
+      await AsyncStorage.removeItem('account');
+    } catch (error) {
+      console.error('Logout storage error:', error);
+      Alert.alert(
+        'Logout Issue',
+        'Logout encountered an issue, but your session has been cleared.'
+      );
+    } finally {
+      setToken(null);
+      setAccount(null);
+    }
   };
 
   return (

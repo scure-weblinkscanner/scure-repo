@@ -33,8 +33,8 @@ const normalizeUrl = (url) => {
 
 const isValidUrl = (url) => {
   try {
-    new URL(normalizeUrl(url));
-    return true;
+    const parsed = new URL(normalizeUrl(url));
+    return parsed.hostname.includes('.') && parsed.hostname.length > 3;
   } catch {
     return false;
   }
@@ -110,7 +110,7 @@ export default function PasteURLScreen() {
   const handleScan = async () => {
     if (!url.trim() || scanning) return;
     if (!isValidUrl(url.trim())) {
-      setError('Please enter a valid URL (e.g. https://example.com)');
+      setError('The URL you entered is invalid. Please enter a valid weblink.');
       return;
     }
     setError('');
@@ -209,6 +209,10 @@ export default function PasteURLScreen() {
                   </TouchableOpacity>
                 ) : null}
               </View>
+
+              {url.trim() && !url.trim().toLowerCase().startsWith('http') && (
+                <Text style={styles.scanHint}>Will scan: https://{url.trim()}</Text>
+              )}
 
               <View style={styles.divider} />
 
@@ -385,10 +389,16 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 10,
   },
-  pasteText: { 
-    color: '#888', 
-    fontSize: 14, 
-    fontWeight: '500' 
+  pasteText: {
+    color: '#888',
+    fontSize: 14,
+    fontWeight: '500'
+  },
+  scanHint: {
+    fontSize: 11,
+    color: '#555',
+    marginTop: 6,
+    marginBottom: 2,
   },
   errorRow: {
     flexDirection: 'row', 

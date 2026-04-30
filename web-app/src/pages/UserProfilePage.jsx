@@ -95,7 +95,9 @@ const UserProfilePage = () => {
   const navigate = useNavigate()
 
   const [newProfileName, setNewProfileName] = useState('')
+  const [newProfileDescription, setNewProfileDescription] = useState('')
   const [editProfileName, setEditProfileName] = useState('')
+  const [editProfileDescription, setEditProfileDescription] = useState('')
   const token = sessionStorage.getItem('token')
 
   useEffect(() => {
@@ -125,10 +127,15 @@ const UserProfilePage = () => {
   }
 
   const handleCreate = async () => {
+    if (!newProfileName.trim()) {
+      showToast('Profile name is required.', 'error')
+      return
+    }
     try {
-      await userProfileService.createUserProfile({ upName: newProfileName }, token)
+      await userProfileService.createUserProfile({ upName: newProfileName.trim(), upDescription: newProfileDescription.trim() }, token)
       setShowCreateModal(false)
       setNewProfileName('')
+      setNewProfileDescription('')
       fetchProfiles()
       showToast('Profile created successfully')
     } catch (err) {
@@ -137,8 +144,12 @@ const UserProfilePage = () => {
   }
 
   const handleUpdate = async () => {
+    if (!editProfileName.trim()) {
+      showToast('Profile name is required.', 'error')
+      return
+    }
     try {
-      await userProfileService.updateUserProfile(updatingProfile.upId, { upName: editProfileName }, token)
+      await userProfileService.updateUserProfile(updatingProfile.upId, { upName: editProfileName.trim(), upDescription: editProfileDescription.trim() }, token)
       setUpdatingProfile(null)
       fetchProfiles()
       showToast('Profile updated successfully')
@@ -161,6 +172,7 @@ const UserProfilePage = () => {
   const openUpdate = (profile) => {
     setViewingProfile(null)
     setEditProfileName(profile.upName)
+    setEditProfileDescription(profile.upDescription ?? '')
     setUpdatingProfile(profile)
   }
 
@@ -231,9 +243,15 @@ const UserProfilePage = () => {
       {/* Update Modal */}
       {updatingProfile && (
         <Modal title="Update Profile" onClose={() => setUpdatingProfile(null)}>
-          <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Profile Name</label>
-            <input style={inputStyle} value={editProfileName} onChange={e => setEditProfileName(e.target.value)} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+            <div>
+              <label style={labelStyle}>Profile Name</label>
+              <input style={inputStyle} value={editProfileName} onChange={e => setEditProfileName(e.target.value)} />
+            </div>
+            <div>
+              <label style={labelStyle}>Description</label>
+              <input style={inputStyle} value={editProfileDescription} onChange={e => setEditProfileDescription(e.target.value)} placeholder="e.g. Full access to all premium features" />
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={handleUpdate} style={{
@@ -255,14 +273,15 @@ const UserProfilePage = () => {
       {/* Create Modal */}
       {showCreateModal && (
         <Modal title="Create User Profile" onClose={() => setShowCreateModal(false)}>
-          <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Profile Name</label>
-            <input
-              style={inputStyle}
-              value={newProfileName}
-              onChange={e => setNewProfileName(e.target.value)}
-              placeholder="e.g. Premium"
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+            <div>
+              <label style={labelStyle}>Profile Name</label>
+              <input style={inputStyle} value={newProfileName} onChange={e => setNewProfileName(e.target.value)} placeholder="e.g. Premium" />
+            </div>
+            <div>
+              <label style={labelStyle}>Description</label>
+              <input style={inputStyle} value={newProfileDescription} onChange={e => setNewProfileDescription(e.target.value)} placeholder="e.g. Full access to all premium features" />
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={handleCreate} style={{

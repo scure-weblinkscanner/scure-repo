@@ -74,21 +74,29 @@ export const useNotifications = () => {
   }, [token]);
 
   const toggleNotifications = async () => {
-    if (!notificationsEnabled) {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') return false;
+    const previous = notificationsEnabled;
+    try {
+      if (!notificationsEnabled) {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== 'granted') return null;
+      }
+      const next = !notificationsEnabled;
+      setNotificationsEnabled(next);
+      await AsyncStorage.setItem(STORAGE_KEY, String(next));
+      if (token) {
+        const res = await fetch(`${BASE_URL}/settings`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ sNotificationsEnabled: next }),
+        });
+        if (!res.ok) throw new Error('Save failed');
+      }
+      return next;
+    } catch {
+      setNotificationsEnabled(previous);
+      await AsyncStorage.setItem(STORAGE_KEY, String(previous));
+      return 'error';
     }
-    const next = !notificationsEnabled;
-    setNotificationsEnabled(next);
-    await AsyncStorage.setItem(STORAGE_KEY, String(next));
-    if (token) {
-      fetch(`${BASE_URL}/settings`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ sNotificationsEnabled: next }),
-      }).catch(() => {});
-    }
-    return true;
   };
 
   const sendScanCompleteNotification = async (result) => {

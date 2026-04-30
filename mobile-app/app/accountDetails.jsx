@@ -73,8 +73,9 @@ export default function AccountDetailsScreen() {
       setError('Username cannot be empty.');
       return;
     }
-    if (!email.trim() || !email.includes('@')) {
-      setError('Please enter a valid email.');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      setError('Please enter a valid email address.');
       return;
     }
     if (password || confirmPassword) {
