@@ -13,9 +13,6 @@ export const getSubscriptionByUser = async (req, res) => {
 };
 
 export const cancelSubscription = async (req, res) => {
-  if (String(subscription.spId) !== String(req.params.spId)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
   try {
     const result = await subscriptionPlanService.cancelSubscription(req.params.spId, req.user.uaId);
     res.status(200).json(result);
