@@ -9,7 +9,8 @@ export const loginUserAccount = async (uaEmail, uaPassword) => {
     body: JSON.stringify({ uaEmail, uaPassword }),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error('Invalid email or password.');
+  if (response.status === 401) throw new Error('Invalid email or password.');
+  if (!response.ok) throw new Error('Server is currently unavailable. Please try again later.');
   return data;
 };
 
