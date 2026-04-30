@@ -55,7 +55,10 @@ export const useNotifications = () => {
   useEffect(() => {
     if (token) {
       fetch(`${BASE_URL}/settings`, { headers: { Authorization: `Bearer ${token}` } })
-        .then((r) => r.json())
+        .then((r) => {
+          if (!r.ok) throw new Error('Settings fetch failed');
+          return r.json();
+        })
         .then((data) => {
           const val = data.sNotificationsEnabled ?? false;
           setNotificationsEnabled(val);
