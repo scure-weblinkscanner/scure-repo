@@ -12,5 +12,8 @@ export const apiFetch = async (path, options = {}) => {
     onUnauthorized?.();
     throw new Error('Session expired. Please log in again.');
   }
+  if (response.status >= 500) {
+    throw new Error('Server is currently unavailable. Please try again later.');
+  }
   return response;
 };

@@ -135,7 +135,7 @@ export default function UploadQRScreen() {
         router.push({ pathname: '/scanURLResult' });
       }
     } catch (err) {
-      const isServerError = err.message?.includes('500') || err.message?.includes('Server error');
+      const isServerError = err.message?.includes('500') || err.message?.includes('Server error') || err.message?.includes('unavailable');
       setError(isServerError
         ? 'An error occurred while processing this URL. Please try again.'
         : 'Scan failed: ' + err.message

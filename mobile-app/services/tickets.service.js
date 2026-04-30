@@ -24,6 +24,6 @@ export const submitTicket = async (token, subject, description) => {
     body: JSON.stringify({ tkSubject: subject, tkDescription: description }),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || 'Failed to submit ticket');
+  if (!response.ok) throw new Error('Failed to submit ticket. Please try again.');
   return data;
 };
