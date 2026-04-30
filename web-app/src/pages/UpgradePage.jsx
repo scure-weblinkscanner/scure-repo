@@ -116,9 +116,13 @@ const maskCard = (num) => {
 export default function UpgradePage() {
   const navigate = useNavigate()
 
-  // Check if user is logged in
-  const storedUser = JSON.parse(sessionStorage.getItem('user') ?? 'null')
-  const token = sessionStorage.getItem('token')
+  // Check if user is logged in — supports both web session and mobile app handoff via URL params
+  const urlParams = new URLSearchParams(window.location.search)
+  const urlToken = urlParams.get('token')
+  const urlEmail = urlParams.get('email')
+
+  const storedUser = JSON.parse(sessionStorage.getItem('user') ?? 'null') || (urlEmail ? { uaEmail: urlEmail } : null)
+  const token = sessionStorage.getItem('token') || urlToken
   const isLoggedIn = !!token && !!storedUser
 
   const [selectedMethod, setSelectedMethod] = useState(null)
@@ -130,6 +134,7 @@ export default function UpgradePage() {
   const [emailError, setEmailError] = useState(null)
   const [checkingEmail, setCheckingEmail] = useState(false)
   const [upgrading, setUpgrading] = useState(false)
+  const [upgradeError, setUpgradeError] = useState(null)
 
   const handleFormChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -178,6 +183,7 @@ export default function UpgradePage() {
   // ── Step 2 Confirm: upgrade subscription ─────────────────────────────────
   const handleUpgrade = async () => {
     setUpgrading(true)
+    setUpgradeError(null)
     try {
       const uaId = isLoggedIn ? storedUser.uaId : null
 
@@ -212,8 +218,8 @@ export default function UpgradePage() {
       }
 
       setModalStep(3)
-    } catch (err) {
-      setEmailError(err.message)
+    } catch {
+      setUpgradeError('Unable to complete the upgrade. Please try again.')
     } finally {
       setUpgrading(false)
     }
@@ -506,8 +512,8 @@ export default function UpgradePage() {
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Billed monthly · cancel anytime</div>
                 </div>
 
-                {emailError && (
-                  <div style={{ marginBottom: 16, fontSize: 13, color: '#FF6B6B' }}>{emailError}</div>
+                {upgradeError && (
+                  <div style={{ marginBottom: 16, fontSize: 13, color: '#FF6B6B' }}>{upgradeError}</div>
                 )}
 
                 <div style={{ display: 'flex', gap: 10 }}>

@@ -46,6 +46,7 @@ export default function SubscriptionScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  const [cancelSuccess, setCancelSuccess] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
@@ -86,21 +87,28 @@ export default function SubscriptionScreen() {
   const handleConfirmCancel = async () => {
     setShowCancelModal(false);
     setCancelling(true);
+    setCancelSuccess(false);
+    setError(null);
     try {
       await cancelSubscription(subscription.spId, account.uaId, token);
       const updatedAccount = await getUserAccountById(account.uaId, token);
       await login(token, updatedAccount);
       const updatedSub = await getSubscriptionByUser(account.uaId, token);
       setSubscription(updatedSub);
-    } catch (err) {
-      setError(err.message);
+      setCancelSuccess(true);
+    } catch {
+      setError('Unable to cancel subscription. Please try again.');
     } finally {
       setCancelling(false);
     }
   };
 
   const handleUpgrade = () => {
-    Linking.openURL(UPGRADE_URL);
+    const params = [];
+    if (token) params.push(`token=${encodeURIComponent(token)}`);
+    if (account?.uaEmail) params.push(`email=${encodeURIComponent(account.uaEmail)}`);
+    const url = params.length ? `${UPGRADE_URL}?${params.join('&')}` : UPGRADE_URL;
+    Linking.openURL(url);
   };
 
   return (
@@ -158,6 +166,11 @@ export default function SubscriptionScreen() {
           <View style={styles.errorRow}>
             <MaterialIcons name="error-outline" size={15} color="#ff6b6b" />
             <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : cancelSuccess ? (
+          <View style={styles.successRow}>
+            <MaterialIcons name="check-circle" size={15} color="#4AFF91" />
+            <Text style={styles.successText}>Your subscription has been successfully cancelled.</Text>
           </View>
         ) : (
           <>
@@ -320,6 +333,11 @@ const styles = StyleSheet.create({
     marginTop: 20, paddingHorizontal: 4,
   },
   errorText: { color: '#ff6b6b', fontSize: 13 },
+  successRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 20, paddingHorizontal: 4,
+  },
+  successText: { color: '#4AFF91', fontSize: 13 },
 
   headerRow: {
     alignItems: 'center',
