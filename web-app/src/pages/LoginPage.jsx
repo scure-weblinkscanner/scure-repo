@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PublicNavbar from '../components/PublicNavbar'
 import { loginUserAccount } from '../services/userAccount.service'
@@ -9,8 +9,16 @@ const LoginPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
+  const [sessionExpiredBanner, setSessionExpiredBanner] = useState(false)
   const [loginAs, setLoginAs] = useState('user')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (sessionStorage.getItem('sessionExpired')) {
+      setSessionExpiredBanner(true)
+      sessionStorage.removeItem('sessionExpired')
+    }
+  }, [])
 
 const handleLogin = async () => {
   try {
@@ -209,6 +217,19 @@ const handleLogin = async () => {
               onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
             />
           </div>
+
+          {/* Session expiry banner */}
+          {sessionExpiredBanner && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: 'rgba(255,214,10,0.1)',
+              border: '1px solid rgba(255,214,10,0.3)',
+              borderRadius: 10, padding: '10px 14px',
+              marginBottom: 16,
+            }}>
+              <span style={{ color: '#FFD60A', fontSize: 13 }}>⚠ Your session has expired. Please log in again.</span>
+            </div>
+          )}
 
           {/* Error */}
           {error && (

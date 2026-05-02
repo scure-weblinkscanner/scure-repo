@@ -125,7 +125,9 @@ export default function SubmittedTicketsScreen() {
         const data = await getTicketsByUser(account.uaId, token);
         setTickets(data);
       } catch (err) {
-        setError(err.message);
+        const msg = err.message || '';
+        const isServiceDown = msg.includes('unavailable') || msg.includes('Server error') || msg.toLowerCase().includes('application not found');
+        setError(isServiceDown ? 'Service is currently unavailable. Please try again.' : msg);
       } finally {
         setLoading(false);
       }

@@ -486,6 +486,7 @@ const FactCheckCard = ({ url }) => {
       const raw = await response.text();
 
       if (!response.ok) {
+        if (response.status >= 500) throw new Error('unavailable');
         try {
           const data = JSON.parse(raw);
           throw new Error(data.error || `Server error (${response.status})`);
@@ -504,7 +505,11 @@ const FactCheckCard = ({ url }) => {
       setFactCheckResult(result);
       router.push('/factCheckResult');
     } catch (err) {
-      setError(err.message);
+      const isServerError = err.message?.includes('Server error') || err.message?.includes('unavailable') || err.message?.toLowerCase().includes('application not found');
+      setError(isServerError
+        ? 'Fact check is currently unavailable. Please try again.'
+        : err.message
+      );
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -8,11 +9,26 @@ import UserProfilePage from './pages/UserProfilePage'
 import TicketsPage from './pages/TicketsPage'
 import UpgradePage from './pages/UpgradePage'
 import RegisteredUserProfilePage from './pages/RegisteredUserProfilePage'
+import { setOnUnauthorized } from './services/api'
 import './App.css'
+
+const AuthSetup = () => {
+  const navigate = useNavigate()
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      sessionStorage.setItem('sessionExpired', '1')
+      sessionStorage.removeItem('token')
+      sessionStorage.removeItem('user')
+      navigate('/login')
+    })
+  }, [navigate])
+  return null
+}
 
 const App = () => {
   return (
     <BrowserRouter>
+      <AuthSetup />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />

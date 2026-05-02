@@ -51,6 +51,9 @@ export const deleteUserProfile = async (req, res) => {
     await userProfileService.deleteUserProfile(req.params.userProfileId)
     res.status(200).json({ message: 'User profile deleted successfully' })
   } catch (error) {
+    if (error.code === '23503') {
+      return res.status(409).json({ error: 'This profile is currently assigned to users and cannot be deleted.' })
+    }
     console.error(error); res.status(500).json({ error: 'Something went wrong.' })
   }
 }

@@ -110,7 +110,9 @@ export default function AccountDetailsScreen() {
       });
       setSuccess(true);
     } catch (err) {
-      setError(err.message || 'Failed to update account.');
+      const msg = err.message || '';
+      const isServiceDown = msg.includes('unavailable') || msg.includes('Server error') || msg.toLowerCase().includes('application not found');
+      setError(isServiceDown ? 'Service is currently unavailable. Please try again.' : msg || 'Failed to update account.');
     } finally {
       setSaving(false);
     }
@@ -124,7 +126,9 @@ export default function AccountDetailsScreen() {
       await logout();
       router.replace('/');
     } catch (err) {
-      setError(err.message || 'Failed to delete account.');
+      const msg = err.message || '';
+      const isServiceDown = msg.includes('unavailable') || msg.includes('Server error') || msg.toLowerCase().includes('application not found');
+      setError(isServiceDown ? 'Service is currently unavailable. Please try again.' : msg || 'Failed to delete account.');
       setDeleting(false);
     }
   };

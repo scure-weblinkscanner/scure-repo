@@ -237,6 +237,8 @@ export default function DashboardPage() {
           </h2>
           {loadingActivity ? (
             <div style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,0.3)' }}>Loading...</div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: 40, color: '#FF6B6B', fontSize: 14 }}>{error}</div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -294,6 +296,8 @@ export default function DashboardPage() {
 
           {loadingScans ? (
             <div style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,0.3)' }}>Loading...</div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: 40, color: '#FF6B6B', fontSize: 14 }}>{error}</div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>

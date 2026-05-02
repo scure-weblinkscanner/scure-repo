@@ -136,7 +136,11 @@ export default function PasteURLScreen() {
       }
     } catch (err) {
       if (isFocused.current) {
-        setError('Scan failed: ' + err.message);
+        const isServerError = err.message?.includes('Server error') || err.message?.includes('unavailable') || err.message?.toLowerCase().includes('application not found');
+        setError(isServerError
+          ? 'An error occurred while processing this URL. Please try again.'
+          : 'Scan failed: ' + err.message
+        );
       }
     } finally {
       setScanning(false);

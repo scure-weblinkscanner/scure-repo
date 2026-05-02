@@ -7,13 +7,26 @@ export const setOnUnauthorized = (cb) => {
 };
 
 export const apiFetch = async (path, options = {}) => {
-  const response = await fetch(`${BASE_URL}${path}`, options);
+  let response;
+  try {
+    response = await fetch(`${BASE_URL}${path}`, options);
+  } catch {
+    throw new Error('Server is currently unavailable. Please try again later.');
+  }
   if (response.status === 401) {
     onUnauthorized?.();
     throw new Error('Session expired. Please log in again.');
   }
   if (response.status >= 500) {
     throw new Error('Server is currently unavailable. Please try again later.');
+  }
+  // Catch proxy/infrastructure errors (e.g. Railway "application not found") that
+  // return non-JSON bodies with a non-2xx status
+  if (!response.ok) {
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new Error('Server is currently unavailable. Please try again later.');
+    }
   }
   return response;
 };

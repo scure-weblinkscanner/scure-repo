@@ -11,6 +11,9 @@ export const createUserAccount = async (req, res) => {
     const result = await userAccountService.createUserAccount(data);
     res.status(201).json(result);
   } catch (error) {
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Email already exists.' });
+    }
     console.error(error);
     res.status(500).json({ error: 'Something went wrong.' });
   }
