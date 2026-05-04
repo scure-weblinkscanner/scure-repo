@@ -84,6 +84,57 @@ const Toast = ({ message, type, onClose }) => {
   )
 }
 
+const Select = ({ value, onChange, options }) => {
+  const [open, setOpen] = useState(false)
+  const selected = options.find(o => o.value === value)
+  return (
+    <div style={{ position: 'relative' }} onBlur={() => setOpen(false)} tabIndex={0}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          ...inputStyle, cursor: 'pointer',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}
+      >
+        <span>{selected?.label}</span>
+        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>{open ? '▲' : '▼'}</span>
+      </div>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 100,
+          background: '#0d0d1a',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 12, overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        }}>
+          {options.map(o => (
+            <div
+              key={o.value}
+              onMouseDown={() => { onChange(o.value); setOpen(false) }}
+              style={{
+                padding: '11px 14px', fontSize: 14, cursor: 'pointer',
+                color: value === o.value ? '#fff' : 'rgba(255,255,255,0.6)',
+                background: value === o.value ? 'rgba(14,14,149,0.4)' : 'transparent',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+              onMouseLeave={e => e.currentTarget.style.background = value === o.value ? 'rgba(14,14,149,0.4)' : 'transparent'}
+            >
+              {o.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+const PROFILE_OPTIONS = [
+  { value: 1, label: 'Admin' },
+  { value: 2, label: 'Free' },
+  { value: 3, label: 'Premium' },
+]
+
 const UserAccountPage = () => {
   const [accounts, setAccounts] = useState([])
   const [viewingAccount, setViewingAccount] = useState(null)
@@ -258,11 +309,7 @@ const UserAccountPage = () => {
             </div>
             <div>
               <label style={labelStyle}>Access Level</label>
-              <select style={{ ...inputStyle, cursor: 'pointer' }} value={editProfileId} onChange={e => setEditProfileId(Number(e.target.value))}>
-                <option value={1}>Admin</option>
-                <option value={2}>Free</option>
-                <option value={3}>Premium</option>
-              </select>
+              <Select value={editProfileId} onChange={setEditProfileId} options={PROFILE_OPTIONS} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -300,11 +347,7 @@ const UserAccountPage = () => {
             </div>
             <div>
               <label style={labelStyle}>Access Level</label>
-              <select style={{ ...inputStyle, cursor: 'pointer' }} value={newProfileId} onChange={e => setNewProfileId(Number(e.target.value))}>
-                <option value={1}>Admin</option>
-                <option value={2}>Free</option>
-                <option value={3}>Premium</option>
-              </select>
+              <Select value={newProfileId} onChange={setNewProfileId} options={PROFILE_OPTIONS} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
