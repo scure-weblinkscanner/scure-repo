@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: 'rgba(18,18,18,0.96)',
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingTop: 20, paddingHorizontal: 20, paddingBottom: 40,
+    paddingTop: 20, paddingHorizontal: 20, paddingBottom: 70,
     maxHeight: screenHeight * 0.55,
     borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)',
   },

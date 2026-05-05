@@ -16,6 +16,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useScan } from '../context/ScanContext';
 import { useAuth } from '../context/AuthContext';
 import BASE_URL from '../constants/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 const verdictConfig = {
@@ -604,6 +605,7 @@ const FactCheckCard = ({ url }) => {
 };
 
 export default function ScanResultScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { scanResult: result, scanDuration } = useScan();
   const [openUrlModal, setOpenUrlModal] = useState(false);
@@ -881,7 +883,7 @@ export default function ScanResultScreen() {
       </ScrollView>
 
       {/* ── Floating bottom bar ── */}
-      <View style={styles.floatingBar}>
+      <View style={[styles.floatingBar, {paddingBottom: insets.bottom + 15}]}>
         {scanDuration != null && (
           <Text style={styles.floatingBarDuration}>Analyzed in {formatDuration(scanDuration)}</Text>
         )}

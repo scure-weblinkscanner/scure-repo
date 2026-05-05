@@ -335,10 +335,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
     padding: 24,
-    paddingBottom: 120, // clears the bottom bar
+    paddingBottom: 220, // clears the bottom bar
     },
   resultCard: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(74,255,145,0.3)',
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   },
   resultLabel: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.7)',
     fontWeight: '700',
     letterSpacing: 1.5,
   },
@@ -433,6 +433,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     width: '100%',
+    paddingBottom: '70'
   },
   retakeBtn: {
     flex: 1,
