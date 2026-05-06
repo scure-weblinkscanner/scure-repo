@@ -76,6 +76,9 @@ export const updateUserAccount = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Email is already used by another account.' });
+    }
     res.status(500).json({ error: 'Something went wrong.' });
   }
 };
