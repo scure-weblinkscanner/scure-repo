@@ -64,6 +64,14 @@ export const updateUserAccount = async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    const { uaUsername, uaEmail } = req.body;
+    if (uaUsername !== undefined && !uaUsername.trim()) {
+      return res.status(400).json({ error: 'Username cannot be empty' });
+    }
+    if (uaEmail !== undefined && !uaEmail.trim()) {
+      return res.status(400).json({ error: 'Email cannot be empty' });
+    }
+
     const result = await userAccountService.updateUserAccount(req.params.uaId, req.body);
     res.status(200).json(result);
   } catch (error) {

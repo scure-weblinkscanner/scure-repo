@@ -196,6 +196,8 @@ const UserAccountPage = () => {
   }
 
   const handleUpdate = async () => {
+    if (!editUsername.trim()) { showToast('Username cannot be empty', 'error'); return }
+    if (!editEmail.trim()) { showToast('Email cannot be empty', 'error'); return }
     try {
       const updates = { uaUsername: editUsername, uaEmail: editEmail, uaUserProfileId: editProfileId }
       if (editPassword.trim()) updates.uaPasswordHash = editPassword
