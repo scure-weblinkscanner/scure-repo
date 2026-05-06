@@ -35,8 +35,9 @@ export const updateUserAccount = async (uaId, data, token) => {
     },
     body: JSON.stringify(data)
   })
-  if (!res.ok) throw new Error('Failed to update user account')
-  return await res.json()
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || json.message || 'Failed to update user account')
+  return json
 }
 
 export const deleteUserAccount = async (uaId, token) => {

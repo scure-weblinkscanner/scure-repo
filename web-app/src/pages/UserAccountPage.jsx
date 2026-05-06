@@ -155,6 +155,7 @@ const UserAccountPage = () => {
   const [editEmail, setEditEmail] = useState('')
   const [editPassword, setEditPassword] = useState('')
   const [editProfileId, setEditProfileId] = useState(2)
+  const [editErrors, setEditErrors] = useState({})
 
   useEffect(() => {
     const token = sessionStorage.getItem('token')
@@ -196,8 +197,12 @@ const UserAccountPage = () => {
   }
 
   const handleUpdate = async () => {
-    if (!editUsername.trim()) { showToast('Username cannot be empty', 'error'); return }
-    if (!editEmail.trim()) { showToast('Email cannot be empty', 'error'); return }
+    const errors = {}
+    if (!editUsername.trim()) errors.username = 'Username cannot be empty'
+    if (!editEmail.trim()) errors.email = 'Email cannot be empty'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail.trim())) errors.email = 'Invalid email format'
+    if (Object.keys(errors).length) { setEditErrors(errors); return }
+    setEditErrors({})
     try {
       const updates = { uaUsername: editUsername, uaEmail: editEmail, uaUserProfileId: editProfileId }
       if (editPassword.trim()) updates.uaPasswordHash = editPassword
@@ -227,6 +232,7 @@ const UserAccountPage = () => {
     setEditEmail(account.uaEmail)
     setEditPassword('')
     setEditProfileId(account.uaUserProfileId ?? 2)
+    setEditErrors({})
     setUpdatingAccount(account)
   }
 
@@ -299,11 +305,22 @@ const UserAccountPage = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
             <div>
               <label style={labelStyle}>Username</label>
-              <input style={inputStyle} value={editUsername} onChange={e => setEditUsername(e.target.value)} />
+              <input
+                style={{ ...inputStyle, ...(editErrors.username ? { borderColor: '#FF6B6B' } : {}) }}
+                value={editUsername}
+                onChange={e => { setEditUsername(e.target.value); setEditErrors(p => ({ ...p, username: '' })) }}
+              />
+              {editErrors.username && <span style={{ color: '#FF6B6B', fontSize: 11, marginTop: 4, display: 'block' }}>{editErrors.username}</span>}
             </div>
             <div>
               <label style={labelStyle}>Email</label>
-              <input style={inputStyle} type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} />
+              <input
+                style={{ ...inputStyle, ...(editErrors.email ? { borderColor: '#FF6B6B' } : {}) }}
+                type="email"
+                value={editEmail}
+                onChange={e => { setEditEmail(e.target.value); setEditErrors(p => ({ ...p, email: '' })) }}
+              />
+              {editErrors.email && <span style={{ color: '#FF6B6B', fontSize: 11, marginTop: 4, display: 'block' }}>{editErrors.email}</span>}
             </div>
             <div>
               <label style={labelStyle}>New Password <span style={{ color: 'rgba(255,255,255,0.25)', textTransform: 'none', letterSpacing: 0 }}>(leave blank to keep current)</span></label>
