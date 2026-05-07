@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
 import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
+import { ABeeZee_400Regular } from '@expo-google-fonts/abeezee';
 
 const PREMIUM_PROFILE_ID = 3;
 
@@ -51,7 +52,7 @@ export default function ScanScreen() {
   const router = useRouter();
   const { account } = useAuth();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [fontsLoaded] = useFonts({ BodoniModa_400Regular });
+  const [fontsLoaded] = useFonts({ BodoniModa_400Regular, ABeeZee_400Regular });
 
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
 
@@ -197,12 +198,13 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 42,
-    fontWeight: 'bold',
+    fontFamily: 'BodoniModa_400Regular',
     letterSpacing: 2,
     color: '#fff',
   },
   logoSub: {
     fontSize: 24,
+    fontFamily: 'ABeeZee_400Regular',
     color: 'rgba(255,255,255,0.6)',
     marginTop: 6,
   },
