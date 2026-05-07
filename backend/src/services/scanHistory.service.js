@@ -51,3 +51,7 @@ export const getScanActivity = async (period) => {
 export const getAllScansAdmin = async () => {
   return await scanHistoryDb.getAllScansAdmin()
 }
+
+export const getDailyScanCount = async (userId, scanMethod) => {
+  return await scanHistoryDb.getDailyScanCount(userId, scanMethod)
+}

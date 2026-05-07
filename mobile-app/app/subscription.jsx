@@ -32,6 +32,7 @@ const PREMIUM_FEATURES = [
   'Ad Intensive Mode',
   'Multi-Engine Scanning (VirusTotal, URLScan.io, Google Safe Browsing, Gemini AI)',
   'AI Script Analysis',
+  'Fact-Checking Website Content',
   'Camera URL Detection',
   'QR Code Scanner',
   'Full Scan History',

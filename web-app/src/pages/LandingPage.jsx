@@ -50,6 +50,7 @@ const plans = [
       { label: 'View Public Scans', included: false },
       { label: 'Unlimited Scans', included: false },
       { label: 'Ad Intensive Mode Feature', included: false },
+      { label: 'Fact-Check Website Content', included: false },
     ],
   },
   {
@@ -66,6 +67,7 @@ const plans = [
       { label: 'View Public Scans', included: true },
       { label: 'Unlimited Scans', included: true },
       { label: 'Ad Intensive Mode Feature', included: true },
+      { label: 'Fact-Check Website Content', included: true },
     ],
   },
 ]

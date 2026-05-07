@@ -1,8 +1,15 @@
 import { analyzeURL, factCheckURL } from '../services/scan.service.js';
-import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans, getScanActivity, getAllScansAdmin } from '../services/scanHistory.service.js';
+import { createScanHistory, getScanHistoryByUserId, publishScanHistory, getPublicScans, getScanActivity, getAllScansAdmin, getDailyScanCount } from '../services/scanHistory.service.js';
 import { getSubscriptionByUser } from '../database/subscriptionPlan.db.js';
 
 const PREMIUM_PROFILE_ID = 3;
+
+const DAILY_SCAN_LIMITS = {
+  cameraUrl: 2,
+  pasteUrl: 5,
+  cameraQr: 5,
+  uploadQr: 5,
+};
 
 export const analyzeScan = async (req, res) => {
   try {
@@ -16,6 +23,22 @@ export const analyzeScan = async (req, res) => {
 
     const subscription = await getSubscriptionByUser(userId);
     const isPremium = subscription?.spPlanId === 3 && subscription?.spStatus === 'active';
+
+    const isAdmin = req.user.uaUserProfileId === 1;
+
+    if (!isAdmin && !isPremium) {
+      const effectiveMethod = scanMethod ?? 'cameraUrl';
+      const limit = DAILY_SCAN_LIMITS[effectiveMethod];
+
+      if (limit !== undefined) {
+        const count = await getDailyScanCount(userId, effectiveMethod);
+        if (count >= limit) {
+          return res.status(429).json({
+            message: `You've reached your daily limit of ${limit} ${effectiveMethod} scan${limit === 1 ? '' : 's'}. Upgrade to Premium for unlimited scanning.`,
+          });
+        }
+      }
+    }
 
     const result = await analyzeURL(url, isPremium, isPremium && !!adDetection, !!skipBlocklist);
 

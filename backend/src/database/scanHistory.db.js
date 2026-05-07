@@ -19,6 +19,21 @@ export const getScanHistoryByUserId = async (userId) => {
   return data
 }
 
+export const getDailyScanCount = async (userId, scanMethod) => {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  const { count, error } = await supabase
+    .from('scanHistory')
+    .select('*', { count: 'exact', head: true })
+    .eq('shUserId', userId)
+    .eq('shScanMethod', scanMethod)
+    .gte('shCreatedAt', startOfToday.toISOString());
+
+  if (error) throw error;
+  return count;
+};
+
 export const publishScanHistory = async (shId, userId) => {
   const { data, error } = await supabase
     .from('scanHistory')

@@ -10,9 +10,7 @@ const normalizeUrl = (rawUrl) => {
     parsed.protocol = parsed.protocol.toLowerCase()
     // Remove trailing slash only when there is no path beyond '/'
     const normalized = parsed.toString()
-    return normalized.endsWith('/') && parsed.pathname === '/'
-      ? normalized.slice(0, -1)
-      : normalized
+    return normalized.endsWith('/') ? normalized.slice(0, -1) : normalized
   } catch {
     return rawUrl
   }

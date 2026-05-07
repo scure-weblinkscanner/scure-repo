@@ -7,29 +7,51 @@ import { checkBlocklist } from './blocklist.service.js';
 import { detectAds } from '../utils/adDetection.js';
 
 export const analyzeURL = async (url, isPremium = false, adDetection = false, skipBlocklist = false) => {
-  // ── Fast local blocklist check (premium users only) ──
-  if (isPremium && !skipBlocklist) {
-    const blocklistHit = await checkBlocklist(url);
-    if (blocklistHit) {
-      return {
-        url,
-        overallVerdict: 'malicious',
-        riskScore: 100,
-        scoreLabel: 'High risk',
-        flaggedBy: [`${blocklistHit.blSource} Blocklist`],
-        suggestion: 'This URL is on our blocklist and is known to be malicious. Do not visit it.',
-        blocklist: {
-          source: blocklistHit.blSource,
-          threatType: blocklistHit.blThreatType,
-          addedAt: blocklistHit.blAddedAt,
-        },
-        scriptAnalysis: { verdict: 'malicious', riskScore: 100, findings: [] },
-        urlscan: { verdict: 'malicious', score: 0, categories: [], screenshot: null, uuid: null },
-        virustotal: { verdict: 'malicious', malicious: 0, suspicious: 0, harmless: 0 },
-        safebrowsing: { verdict: 'malicious', threats: [] },
-        embeddedLinks: [],
-      };
-    }
+  // ── Blocklist checks ──
+  const blocklistHit = await checkBlocklist(url);
+
+  // Banned URLs (CSA Singapore): block for all users, cannot be bypassed
+  if (blocklistHit?.blThreatType?.toLowerCase() === 'banned') {
+    return {
+      url,
+      overallVerdict: 'malicious',
+      riskScore: 100,
+      scoreLabel: 'High risk',
+      flaggedBy: ['Banned URL'],
+      suggestion: 'This URL has been banned by the Cyber Security Agency of Singapore.',
+      blocklist: {
+        source: blocklistHit.blSource,
+        threatType: blocklistHit.blThreatType,
+        addedAt: blocklistHit.blAddedAt,
+      },
+      scriptAnalysis: { verdict: 'malicious', riskScore: 100, findings: [] },
+      urlscan: { verdict: 'malicious', score: 0, categories: [], screenshot: null, uuid: null },
+      virustotal: { verdict: 'malicious', malicious: 0, suspicious: 0, harmless: 0 },
+      safebrowsing: { verdict: 'malicious', threats: [] },
+      embeddedLinks: [],
+    };
+  }
+
+  // Regular malicious blocklist: fast-path for premium users only, bypassable
+  if (isPremium && !skipBlocklist && blocklistHit) {
+    return {
+      url,
+      overallVerdict: 'malicious',
+      riskScore: 100,
+      scoreLabel: 'High risk',
+      flaggedBy: [`${blocklistHit.blSource} Blocklist`],
+      suggestion: 'This URL is on our blocklist and is known to be malicious. Do not visit it.',
+      blocklist: {
+        source: blocklistHit.blSource,
+        threatType: blocklistHit.blThreatType,
+        addedAt: blocklistHit.blAddedAt,
+      },
+      scriptAnalysis: { verdict: 'malicious', riskScore: 100, findings: [] },
+      urlscan: { verdict: 'malicious', score: 0, categories: [], screenshot: null, uuid: null },
+      virustotal: { verdict: 'malicious', malicious: 0, suspicious: 0, harmless: 0 },
+      safebrowsing: { verdict: 'malicious', threats: [] },
+      embeddedLinks: [],
+    };
   }
 
   // ── Full external API scan ────────────────────────────────────

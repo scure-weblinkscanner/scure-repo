@@ -41,6 +41,7 @@ export default function UploadQRScreen() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const [isBannedBlocklist, setIsBannedBlocklist] = useState(false);
   const pendingUrl = useRef(null);
 
   const scanAnim = useRef(new Animated.Value(0.2)).current;
@@ -128,7 +129,11 @@ export default function UploadQRScreen() {
       const result = await analyzeUrl(url, token, 'uploadQr', skipBlocklist);
       setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
-      if (result.blocklist && !skipBlocklist) {
+      if (result.blocklist?.threatType === 'banned') {
+        setIsBannedBlocklist(true);
+        setShowBlocklistModal(true);
+      } else if (result.blocklist && !skipBlocklist) {
+        setIsBannedBlocklist(false);
         pendingUrl.current = url;
         setShowBlocklistModal(true);
       } else {
@@ -156,8 +161,9 @@ export default function UploadQRScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <BlocklistModal
         visible={showBlocklistModal}
-        onExit={() => { setShowBlocklistModal(false); handleReset(); }}
-        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+        banned={isBannedBlocklist}
+        onExit={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); handleReset(); }}
+        onContinue={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); runScan(pendingUrl.current, true); }}
       />
       <SafeAreaView style={{ flex: 1, backgroundColor:"#0E0E95"}} edges={['top']}>
       <KeyboardAvoidingView

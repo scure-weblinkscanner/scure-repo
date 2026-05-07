@@ -1,25 +1,30 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-export default function BlocklistModal({ visible, onContinue, onExit }) {
+export default function BlocklistModal({ visible, onContinue, onExit, banned = false }) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.card}>
           <View style={styles.iconRow}>
-            <MaterialIcons name="shield" size={32} color="#FF6B6B" />
+            <MaterialIcons name={banned ? 'block' : 'shield'} size={32} color="#FF6B6B" />
           </View>
-          <Text style={styles.title}>Malicious Link Detected</Text>
-          <Text style={styles.body}>
-            This is a malicious link automatically flagged by our blocklist for faster loading.
-            You may continue scanning to get a full detailed report which takes a few moments, or exit to scan another link.
+          <Text style={styles.title}>
+            {banned ? 'Banned Link' : 'Malicious Link Detected'}
           </Text>
-          <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
-            <MaterialIcons name="search" size={18} color="#fff" />
-            <Text style={styles.continueBtnText}>Continue Scanning</Text>
-          </TouchableOpacity>
+          <Text style={styles.body}>
+            {banned
+              ? 'This is a banned link by the Cyber Security Agency of Singapore. URL scanning analysis reports are not allowed for this type of link.'
+              : 'This is a malicious link automatically flagged by our blocklist for faster loading. You may continue scanning to get a full detailed report which takes a few moments, or exit to scan another link.'}
+          </Text>
+          {!banned && (
+            <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
+              <MaterialIcons name="search" size={18} color="#fff" />
+              <Text style={styles.continueBtnText}>Continue Scanning</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.exitBtn} onPress={onExit}>
-            <Text style={styles.exitBtnText}>Exit</Text>
+            <Text style={styles.exitBtnText}>{banned ? 'Okay, scan another.' : 'Exit'}</Text>
           </TouchableOpacity>
         </View>
       </View>

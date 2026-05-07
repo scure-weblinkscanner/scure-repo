@@ -50,6 +50,7 @@ export default function PasteURLScreen() {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState('');
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const [isBannedBlocklist, setIsBannedBlocklist] = useState(false);
   const pendingUrl = useRef(null);
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
   const { adDetectionEnabled } = useAdDetection();
@@ -124,7 +125,11 @@ export default function PasteURLScreen() {
       const result = await analyzeUrl(normalizedUrl, token, 'pasteUrl', skipBlocklist, adDetectionEnabled);
       setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
-      if (result.blocklist && !skipBlocklist) {
+      if (result.blocklist?.threatType === 'banned') {
+        setIsBannedBlocklist(true);
+        setShowBlocklistModal(true);
+      } else if (result.blocklist && !skipBlocklist) {
+        setIsBannedBlocklist(false);
         pendingUrl.current = normalizedUrl;
         setShowBlocklistModal(true);
       } else if (isFocused.current) {
@@ -154,8 +159,9 @@ export default function PasteURLScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <BlocklistModal
         visible={showBlocklistModal}
-        onExit={() => { setShowBlocklistModal(false); setUrl(''); }}
-        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+        banned={isBannedBlocklist}
+        onExit={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); setUrl(''); }}
+        onContinue={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); runScan(pendingUrl.current, true); }}
       />
       <SafeAreaView style={{ flex: 1, backgroundColor:"#0E0E95"}} edges={['top']}>
       <KeyboardAvoidingView

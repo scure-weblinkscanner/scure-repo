@@ -38,6 +38,7 @@ export default function ScanQRScreen() {
   const elapsedTime = useElapsedTime(scanning);
   const isFocused = useRef(true);
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const [isBannedBlocklist, setIsBannedBlocklist] = useState(false);
   const pendingUrl = useRef(null);
 
     useFocusEffect(
@@ -122,7 +123,11 @@ export default function ScanQRScreen() {
       const result = await analyzeUrl(url, token, 'cameraQr', skipBlocklist, adDetectionEnabled);
       setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
-      if (result.blocklist && !skipBlocklist) {
+      if (result.blocklist?.threatType === 'banned') {
+        setIsBannedBlocklist(true);
+        setShowBlocklistModal(true);
+      } else if (result.blocklist && !skipBlocklist) {
+        setIsBannedBlocklist(false);
         pendingUrl.current = url;
         setShowBlocklistModal(true);
       } else if (isFocused.current) {
@@ -175,8 +180,9 @@ export default function ScanQRScreen() {
     <View style={styles.wrapper}>
       <BlocklistModal
         visible={showBlocklistModal}
-        onExit={() => { setShowBlocklistModal(false); setDetectedUrl(null); }}
-        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+        banned={isBannedBlocklist}
+        onExit={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); setDetectedUrl(null); }}
+        onContinue={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); runScan(pendingUrl.current, true); }}
       />
       {/* Camera */}
       <View style={styles.topNav}>

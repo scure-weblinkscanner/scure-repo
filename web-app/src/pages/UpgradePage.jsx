@@ -11,6 +11,7 @@ const premiumFeatures = [
   { icon: '🔬', label: 'Ad Intensive Mode', description: 'Dynamic ad and tracker detection using headless browser simulation.' },
   { icon: '🔍', label: 'Multi-Engine Scanning', description: 'VirusTotal, URLScan.io, Google Safe Browsing, and Gemini AI simultaneously.' },
   { icon: '🤖', label: 'AI Script Analysis', description: 'Gemini AI inspects embedded scripts for hidden malicious behavior.' },
+  { icon: '📰', label: 'Fact-Check Website Content', description: 'AI-powered misinformation analysis of webpage text.' },
   { icon: '📷', label: 'Camera URL Detection', description: 'Scan URLs in real time using on-device OCR.' },
   { icon: '🔲', label: 'QR Code Scanner', description: 'Scan or upload QR codes to reveal hidden URLs.' },
   { icon: '📜', label: 'Full Scan History', description: 'Every scan saved with full details, verdicts, and risk scores.' },

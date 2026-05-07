@@ -88,6 +88,7 @@ export default function ScanURLScreen() {
   const [selectedUrl, setSelectedUrl] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [showBlocklistModal, setShowBlocklistModal] = useState(false);
+  const [isBannedBlocklist, setIsBannedBlocklist] = useState(false);
   const pendingUrl = useRef(null);
   const { setScanResult, setScanDuration } = useScan();
   const { notificationsEnabled, sendScanCompleteNotification } = useNotifications();
@@ -204,7 +205,11 @@ export default function ScanURLScreen() {
       const result = await analyzeUrl(url, token, 'cameraUrl', skipBlocklist, adDetectionEnabled);
       setScanDuration(Math.floor((Date.now() - _start) / 1000));
       setScanResult(result);
-      if (result.blocklist && !skipBlocklist) {
+      if (result.blocklist?.threatType === 'banned') {
+        setIsBannedBlocklist(true);
+        setShowBlocklistModal(true);
+      } else if (result.blocklist && !skipBlocklist) {
+        setIsBannedBlocklist(false);
         pendingUrl.current = url;
         setShowBlocklistModal(true);
       } else if (isFocused.current) {
@@ -234,8 +239,9 @@ export default function ScanURLScreen() {
       <View style={styles.wrapper}>
         <BlocklistModal
           visible={showBlocklistModal}
-          onExit={() => { setShowBlocklistModal(false); retake(); }}
-          onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+          banned={isBannedBlocklist}
+          onExit={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); retake(); }}
+          onContinue={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); runScan(pendingUrl.current, true); }}
         />
         <View style={styles.topNav}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
@@ -275,8 +281,9 @@ export default function ScanURLScreen() {
     <View style={styles.wrapper}>
       <BlocklistModal
         visible={showBlocklistModal}
-        onExit={() => { setShowBlocklistModal(false); retake(); }}
-        onContinue={() => { setShowBlocklistModal(false); runScan(pendingUrl.current, true); }}
+        banned={isBannedBlocklist}
+        onExit={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); retake(); }}
+        onContinue={() => { setShowBlocklistModal(false); setIsBannedBlocklist(false); runScan(pendingUrl.current, true); }}
       />
       <Image
         source={{ uri: capturedImageUri }}
