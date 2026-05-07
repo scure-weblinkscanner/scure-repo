@@ -228,16 +228,6 @@ export default function ScanQRScreen() {
         </View>
       )}
 
-      {/* Loading bar */}
-      {scanning && (
-        <View style={styles.loadingBarContainer}>
-          <Text style={styles.loadingBarLabel}>Analyzing · {elapsedTime}</Text>
-          <View style={styles.loadingBarTrack}>
-            <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
-          </View>
-        </View>
-      )}
-
       {/* Error */}
       {error ? (
         <View style={styles.errorBanner}>
@@ -248,6 +238,14 @@ export default function ScanQRScreen() {
 
       {/* Bottom controls */}
       <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 15}]}>
+        {scanning && (
+          <View style={styles.loadingBarContainer}>
+            <Text style={styles.loadingBarLabel}>Analyzing · {elapsedTime}</Text>
+            <View style={styles.loadingBarTrack}>
+              <Animated.View style={[styles.loadingBarFill, { opacity: scanAnim }]} />
+            </View>
+          </View>
+        )}
         {!detectedUrl ? (
           <TouchableOpacity
             style={styles.captureBtn}
@@ -341,10 +339,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
     padding: 24,
-    paddingBottom: 120, // clears the bottom bar
+    paddingBottom: 220, // clears the bottom bar
     },
   resultCard: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(74,255,145,0.3)',
@@ -364,7 +362,7 @@ const styles = StyleSheet.create({
   },
   resultLabel: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.7)',
     fontWeight: '700',
     letterSpacing: 1.5,
   },
@@ -376,13 +374,10 @@ const styles = StyleSheet.create({
   },
 
     loadingBarContainer: {
-      position: 'absolute',
-      bottom: 90,
-      left: 0,
-      right: 0,
+      width: '100%',
       alignItems: 'center',
       gap: 8,
-      paddingHorizontal: 24,
+      paddingBottom: 12,
     },
     loadingBarLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '500' },
     loadingBarTrack: {

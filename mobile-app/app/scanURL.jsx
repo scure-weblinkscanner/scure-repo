@@ -23,6 +23,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { useAdDetection } from '../hooks/useAdDetection';
 import { useElapsedTime } from '../hooks/useElapsedTime';
 import BlocklistModal from '../components/BlocklistModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -73,6 +74,7 @@ const preprocessForOcr = async (filePath) => {
 };
 
 export default function ScanURLScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
   const device = useCameraDevice('back');
@@ -302,7 +304,7 @@ export default function ScanURLScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}>
         {loading ? (
           <View style={styles.sheetCenter}>
             <ActivityIndicator size="large" color="#fff" />
@@ -428,7 +430,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: 'rgba(18,18,18,0.96)',
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingTop: 20, paddingHorizontal: 20, paddingBottom: 40,
+    paddingTop: 20, paddingHorizontal: 20,
     maxHeight: screenHeight * 0.55,
     borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)',
   },
