@@ -308,9 +308,15 @@ const PLACEHOLDER_LINKS = [
 ];
 
 const EmbeddedLinksCard = ({ links }) => {
-  const { account } = useAuth();
+  const { account, token } = useAuth();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
   const [showModal, setShowModal] = useState(false);
+  const handleUpgrade = () => {
+    const params = [];
+    if (token) params.push(`token=${encodeURIComponent(token)}`);
+    if (account?.uaEmail) params.push(`email=${encodeURIComponent(account.uaEmail)}`);
+    Linking.openURL(params.length ? `https://scure.up.railway.app/upgrade?${params.join('&')}` : 'https://scure.up.railway.app/upgrade');
+  };
 
   // ── FREE USER: blurred placeholder card with upgrade overlay ──
   if (!isPremium) {
@@ -364,10 +370,7 @@ const EmbeddedLinksCard = ({ links }) => {
               </Text>
               <TouchableOpacity
                 style={styles.modalBtnPrimary}
-                onPress={() => {
-                  setShowModal(false);
-                  Linking.openURL('https://scure.up.railway.app/upgrade');
-                }}
+                onPress={() => { setShowModal(false); handleUpgrade(); }}
               >
                 <Text style={styles.modalBtnPrimaryText}>Yes, upgrade now</Text>
               </TouchableOpacity>
@@ -445,6 +448,12 @@ const FactCheckCard = ({ url }) => {
   const { setFactCheckResult, setFactCheckDuration } = useScan();
   const router = useRouter();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
+  const handleUpgrade = () => {
+    const params = [];
+    if (token) params.push(`token=${encodeURIComponent(token)}`);
+    if (account?.uaEmail) params.push(`email=${encodeURIComponent(account.uaEmail)}`);
+    Linking.openURL(params.length ? `https://scure.up.railway.app/upgrade?${params.join('&')}` : 'https://scure.up.railway.app/upgrade');
+  };
 
   const [loading, setLoading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -563,7 +572,7 @@ const FactCheckCard = ({ url }) => {
               </Text>
               <TouchableOpacity
                 style={styles.modalBtnPrimary}
-                onPress={() => { setShowModal(false); Linking.openURL('https://scure.up.railway.app/upgrade'); }}
+                onPress={() => { setShowModal(false); handleUpgrade(); }}
               >
                 <Text style={styles.modalBtnPrimaryText}>Yes, upgrade now</Text>
               </TouchableOpacity>

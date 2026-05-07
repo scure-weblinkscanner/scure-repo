@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
 import { useFonts, BodoniModa_400Regular } from '@expo-google-fonts/bodoni-moda';
-import { ABeeZee_400Regular } from '@expo-google-fonts/abeezee';
+import { Raleway_300Light } from '@expo-google-fonts/raleway';
 
 const PREMIUM_PROFILE_ID = 3;
 
@@ -50,9 +50,9 @@ const scanOptions = [
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { account } = useAuth();
+  const { account, token } = useAuth();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [fontsLoaded] = useFonts({ BodoniModa_400Regular, ABeeZee_400Regular });
+  const [fontsLoaded] = useFonts({ BodoniModa_400Regular, Raleway_300Light });
 
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
 
@@ -66,7 +66,10 @@ export default function ScanScreen() {
 
   const handleUpgradeRedirect = () => {
     setShowUpgradeModal(false);
-    Linking.openURL('https://scure.up.railway.app/upgrade');
+    const params = [];
+    if (token) params.push(`token=${encodeURIComponent(token)}`);
+    if (account?.uaEmail) params.push(`email=${encodeURIComponent(account.uaEmail)}`);
+    Linking.openURL(params.length ? `https://scure.up.railway.app/upgrade?${params.join('&')}` : 'https://scure.up.railway.app/upgrade');
   };
 
   if (!fontsLoaded) return <View style={styles.wrapper} />;
@@ -204,7 +207,7 @@ const styles = StyleSheet.create({
   },
   logoSub: {
     fontSize: 24,
-    fontFamily: 'ABeeZee_400Regular',
+    fontFamily: 'Raleway_300Light',
     color: 'rgba(255,255,255,0.6)',
     marginTop: 6,
   },

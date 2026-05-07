@@ -193,9 +193,15 @@ const EmbeddedLinksExpander = ({ links }) => {
 };
 
 const EmbeddedLinksCard = ({ links }) => {
-  const { account } = useAuth();
+  const { account, token } = useAuth();
   const isPremium = account?.uaUserProfileId === PREMIUM_PROFILE_ID;
   const [showModal, setShowModal] = useState(false);
+  const handleUpgrade = () => {
+    const params = [];
+    if (token) params.push(`token=${encodeURIComponent(token)}`);
+    if (account?.uaEmail) params.push(`email=${encodeURIComponent(account.uaEmail)}`);
+    Linking.openURL(params.length ? `https://scure.up.railway.app/upgrade?${params.join('&')}` : 'https://scure.up.railway.app/upgrade');
+  };
 
   if (!isPremium) {
     return (
@@ -248,7 +254,7 @@ const EmbeddedLinksCard = ({ links }) => {
               </Text>
               <TouchableOpacity
                 style={styles.modalBtnPrimary}
-                onPress={() => { setShowModal(false); Linking.openURL('https://scure.up.railway.app/upgrade'); }}
+                onPress={() => { setShowModal(false); handleUpgrade(); }}
               >
                 <Text style={styles.modalBtnPrimaryText}>Yes, upgrade now</Text>
               </TouchableOpacity>
