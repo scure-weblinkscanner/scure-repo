@@ -954,7 +954,7 @@ export default function ScanResultScreen() {
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#0a0a0a' },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 130, gap: 12 },
+  scrollContent: { padding: 16, paddingBottom: 150, gap: 12 },
 
   hero: { borderRadius: 20, borderWidth: 1.5, padding: 24, alignItems: 'center', gap: 8 },
   heroVerdict: { fontSize: 28, fontWeight: '800', letterSpacing: 0.5 },

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import * as Clipboard from 'expo-clipboard';
 import { useElapsedTime } from '../hooks/useElapsedTime';
 import {
   View,
@@ -8,7 +9,6 @@ import {
   StyleSheet,
   Animated,
   Easing,
-  Clipboard,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -91,7 +91,7 @@ export default function PasteURLScreen() {
 
   const handlePaste = async () => {
     try {
-      const text = await Clipboard.getString();
+      const text = await Clipboard.getStringAsync();
       if (text?.trim()) {
         setUrl(text.trim());
         setError('');
