@@ -66,7 +66,7 @@ Flagged as malicious by: ${flaggedBy.length > 0 ? flaggedBy.join(', ') : 'None'}
 
 No need for greetings. Give a short, clear, friendly safety suggestion (2-3 sentences max) for this user.
 Do not use technical jargon. Be direct about whether they should visit the URL or not.
-Do not use first-person language (no "I would", "I advise", "I recommend", etc.) — write as a professional security tool, not as a person.
+Do not use first-person language (no "I would", "I advise", "I recommend", etc.) -- write as a professional security tool, not as a person.
 Respond with plain text only, no JSON, no markdown.
 `;
 
@@ -104,17 +104,16 @@ You are a balanced, professional fact-checker assessing the credibility and reli
 Today's date: ${today}
 URL: ${url}
 
-CRITICAL RULES — follow these before analysing anything:
+CRITICAL RULES:
 1. Today is ${today}. Do NOT treat any date on or before today as a future or impossible date.
-2. If the page is a NEWS HOMEPAGE or NEWS FEED (many short headlines, navigation menus, no single full article body), do NOT attempt to fact-check individual headlines. Headlines are teasers without full context and cannot be fairly verified in isolation. Instead, assess the overall source credibility, writing style, and visible editorial standards.
-3. For well-known, established news organisations (straitstimes.com, bbc.com, reuters.com, cnn.com, nytimes.com, theguardian.com, channelnewsasia.com, ap.org, bloomberg.com, wsj.com, ft.com), the default verdict should be "trustworthy" unless the content itself contains clear, obvious factual errors or manipulative language.
-4. Use "unverified" sparingly — only for specific extraordinary claims that genuinely require independent evidence. Do NOT use it as a default for every headline on a news homepage.
-5. Only use "false" or "misleading" for claims where you have clear, certain knowledge they contradict established facts.
-6. The "claims" array should only include substantive claims from a full article body. If the page is a homepage or feed with only headlines, return an empty claims array [] rather than listing unverifiable headlines.
-7. Keep confidenceScore between 20–80 unless evidence is truly overwhelming in either direction.
+2. For well-known news organisations (straitstimes.com, bbc.com, reuters.com, cnn.com, nytimes.com, theguardian.com, channelnewsasia.com, ap.org, bloomberg.com, wsj.com, ft.com), default to "trustworthy" unless you find clear, specific factual errors in the content.
+3. Always return 3 to 5 claims. Pick the most prominent and assessable statements or headlines from the page content. Never return an empty claims array.
+4. Assess each claim actively -- do not default every claim to "unverified". Use your knowledge to determine "true", "false", or "misleading" where possible. Only use "unverified" for recent specific events you genuinely cannot assess.
+5. Only use "false" or "misleading" when you are certain the claim contradicts established facts.
+6. Keep confidenceScore between 20 and 80 unless evidence is truly overwhelming.
 
 Page Content:
-${truncated || 'Content could not be extracted — base your analysis on the URL and domain alone.'}
+${truncated || 'Content could not be extracted -- base your analysis on the URL and domain alone.'}
 
 Respond in JSON format only, no markdown:
 {
@@ -123,12 +122,12 @@ Respond in JSON format only, no markdown:
   "summary": "2-3 sentence balanced assessment of the source and content reliability",
   "claims": [
     {
-      "claim": "only include claims from full article body text, not homepage headlines",
+      "claim": "exact claim or headline from the page",
       "verdict": "true" | "false" | "unverified" | "misleading",
-      "explanation": "brief, fair explanation citing specific reasons"
+      "explanation": "brief explanation of what you know or why it cannot be verified"
     }
   ],
-  "redFlags": ["only genuine, specific credibility concerns — not speculative"],
+  "redFlags": ["only genuine, specific credibility concerns -- not speculative"],
   "positiveIndicators": ["credibility signals found, e.g. named authors, cited sources, editorial standards"]
 }
 `;
