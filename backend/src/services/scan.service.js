@@ -94,16 +94,18 @@ export const analyzeURL = async (url, isPremium = false, adDetection = false, sk
   if (safebrowsing.verdict === 'malicious') flaggedBy.push('Google Safe Browsing');
   if (urlscan.verdict === 'malicious') flaggedBy.push('URLScan.io');
   if (anyEmbeddedMalicious) flaggedBy.push('Embedded Links');
+  if (blocklistHit) flaggedBy.push(`${blocklistHit.blSource} Blocklist`);
 
   let riskScore = scriptAnalysis.riskScore || 0;
   if (virustotal.malicious > 0) riskScore += 30;
   if (safebrowsing.verdict === 'malicious') riskScore += 30;
   if (urlscan.verdict === 'malicious') riskScore += 20;
   if (anyEmbeddedMalicious) riskScore += 20;
+  if (blocklistHit) riskScore += 40;
   riskScore = Math.min(riskScore, 100);
 
   const safebrowsingMalicious = safebrowsing.verdict === 'malicious';
-  const overallVerdict = safebrowsingMalicious || anyEmbeddedMalicious || riskScore >= 60
+  const overallVerdict = blocklistHit || safebrowsingMalicious || anyEmbeddedMalicious || riskScore >= 60
     ? 'malicious'
     : riskScore >= 25
     ? 'suspicious'
@@ -125,6 +127,13 @@ export const analyzeURL = async (url, isPremium = false, adDetection = false, sk
     flaggedBy,
     suggestion,
     suggestionSource,
+    ...(blocklistHit && {
+      blocklist: {
+        source: blocklistHit.blSource,
+        threatType: blocklistHit.blThreatType,
+        addedAt: blocklistHit.blAddedAt,
+      },
+    }),
     scriptAnalysis,
     urlscan,
     virustotal,

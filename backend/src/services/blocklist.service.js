@@ -16,9 +16,14 @@ const normalizeUrl = (rawUrl) => {
   }
 }
 
+const swapScheme = (url) =>
+  url.startsWith('https://') ? url.replace('https://', 'http://') : url.replace('http://', 'https://')
+
 export const checkBlocklist = async (url) => {
   const normalized = normalizeUrl(url)
-  return await blocklistDb.checkUrlInBlocklist(normalized)
+  const hit = await blocklistDb.checkUrlInBlocklist(normalized)
+  if (hit) return hit
+  return await blocklistDb.checkUrlInBlocklist(swapScheme(normalized))
 }
 
 export const addMaliciousUrlToBlocklist = async (url, source, threatType = null) => {
