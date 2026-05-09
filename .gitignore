@@ -151,3 +151,6 @@ build/
 .DS_Store
 Thumbs.db
 
+
+mobile-app/.env
+local/

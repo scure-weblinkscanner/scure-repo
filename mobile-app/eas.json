@@ -1,0 +1,13 @@
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://scure-repo-production.up.railway.app/api"
+        }
+      }
+    }
+  }
+}

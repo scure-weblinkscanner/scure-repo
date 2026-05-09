@@ -1,25 +1,36 @@
 {
   "expo": {
-    "name": "mobile-app",
+    "name": "Scure",
     "slug": "mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "mobileapp",
+    "icon": "./assets/app-foreground.png",
+    "scheme": "scure",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Scure needs camera access to scan URLs",
+        "NSUserNotificationsUsageDescription": "Scure notifies you when your URL scan finishes."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
+        "foregroundImage": "./assets/app-foreground.png",
+        "backgroundImage": "./assets/icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.deleteth.scure",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
+      ]
     },
     "web": {
       "output": "static",
@@ -38,11 +49,33 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Scure needs camera access to scan URLs"
+        }
+      ],
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#0E0E95"
+        }
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ced75c6c-eb46-4be1-8eca-f531324e109f"
+      }
+    },
+    "owner": "delete-th"
   }
 }
