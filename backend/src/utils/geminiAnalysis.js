@@ -55,14 +55,18 @@ Analyze these scripts and respond in JSON format only, no markdown:
   }
 };
 
-export const generateSuggestion = async (riskScore, flaggedBy, scoreLabel, url) => {
+export const generateSuggestion = async (riskScore, flaggedBy, scoreLabel, url, blocklistContext = null) => {
+  const blocklistNote = blocklistContext
+    ? `\nImportant context: This URL is confirmed malicious in the URLhaus database (source: ${blocklistContext.source}, threat type: ${blocklistContext.threatType}). URLhaus tracks active malware distribution sites that third-party engines like VirusTotal or Google Safe Browsing may not have indexed yet. If the engine scores appear low or clean, briefly explain this discrepancy so the user understands why the URL is still considered dangerous.`
+    : '';
+
   const prompt = `
 You are a cybersecurity assistant giving advice to a regular user about a URL they want to visit.
 
 URL: ${url}
 Risk Score: ${riskScore}/100
 Risk Level: ${scoreLabel}
-Flagged as malicious by: ${flaggedBy.length > 0 ? flaggedBy.join(', ') : 'None'}
+Flagged as malicious by: ${flaggedBy.length > 0 ? flaggedBy.join(', ') : 'None'}${blocklistNote}
 
 No need for greetings. Give a short, clear, friendly safety suggestion (2-3 sentences max) for this user.
 Do not use technical jargon. Be direct about whether they should visit the URL or not.

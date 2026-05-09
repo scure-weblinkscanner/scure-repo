@@ -117,7 +117,7 @@ export const analyzeURL = async (url, isPremium = false, adDetection = false, sk
     ? 'Moderate risk'
     : 'Mostly clean';
 
-  const { text: suggestion, _source: suggestionSource } = await generateSuggestion(riskScore, flaggedBy, scoreLabel, url);
+  const { text: suggestion, _source: suggestionSource } = await generateSuggestion(riskScore, flaggedBy, scoreLabel, url, blocklistHit ?? null);
 
   return {
     url,
