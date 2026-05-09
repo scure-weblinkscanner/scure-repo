@@ -477,7 +477,7 @@ export default function LandingPage() {
             }}>
               {/* Android */}
               <div
-              onClick={() => window.location.href = 'https://www.dropbox.com/scl/fi/8u89fupr96d77kw6ril65/scure-v1.apk?rlkey=957sih1adg3gff2kkr58ijzyo&st=o8k8nre9&dl=1'}
+              onClick={() => window.location.href = 'https://www.dropbox.com/scl/fi/e6hgbc6w972i047s24p90/scure-v2.apk?rlkey=jabzt56l3ayazu96ff97qs9pn&st=9aayc5el&dl=1'}
               style={{
                 background: 'rgba(74,255,145,0.06)',
                 border: '1px solid rgba(74,255,145,0.25)',
