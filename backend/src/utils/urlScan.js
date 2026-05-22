@@ -34,9 +34,9 @@ export const scanWithURLScan = async (url) => {
 
     const uuid = submitRes.data.uuid;
 
-    // Retry up to 5 times with 5 second intervals
-    for (let i = 0; i < 5; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+    // Retry up to 12 times with 10 second intervals (up to ~2 min; urlscan typically takes 30-60s)
+    for (let i = 0; i < 12; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 10000));
       try {
         const resultRes = await axios.get(`https://urlscan.io/api/v1/result/${uuid}/`);
         const d = resultRes.data;
