@@ -173,8 +173,10 @@ export const scanWithURLScan = async (url) => {
           content: { cookies, links, consoleLogs, globals },
           _source: 'urlscan',
         };
-      } catch {
-        // Result not ready yet, keep retrying
+      } catch (pollErr) {
+        const status = pollErr.response?.status;
+        const msg = pollErr.response?.data?.message || pollErr.message;
+        console.warn(`URLScan poll ${i + 1}/5 [${status ?? 'no-status'}]: ${msg}`);
         continue;
       }
     }
