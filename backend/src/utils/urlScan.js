@@ -34,9 +34,9 @@ export const scanWithURLScan = async (url) => {
 
     const uuid = submitRes.data.uuid;
 
-    // Retry up to 12 times with 10 second intervals (up to ~2 min; urlscan typically takes 30-60s)
-    for (let i = 0; i < 12; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+    // Retry up to 5 times with 5 second intervals
+    for (let i = 0; i < 5; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       try {
         const resultRes = await axios.get(`https://urlscan.io/api/v1/result/${uuid}/`);
         const d = resultRes.data;
@@ -178,7 +178,6 @@ export const scanWithURLScan = async (url) => {
         continue;
       }
     }
-
     return { verdict: 'unknown', reason: 'URLScan timed out' };
   } catch (error) {
     console.warn('URLScan failed, trying VirusTotal fallback:', error.response?.data?.message || error.message);
