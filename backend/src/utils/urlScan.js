@@ -38,7 +38,9 @@ export const scanWithURLScan = async (url) => {
     for (let i = 0; i < 5; i++) {
       await new Promise((resolve) => setTimeout(resolve, 5000));
       try {
-        const resultRes = await axios.get(`https://urlscan.io/api/v1/result/${uuid}/`);
+        const resultRes = await axios.get(`https://urlscan.io/api/v1/result/${uuid}/`, {
+          headers: { 'API-Key': process.env.URLSCAN_API_KEY },
+        });
         const d = resultRes.data;
 
         // ── Verdict ──
