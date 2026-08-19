@@ -38,7 +38,9 @@ export const scanWithURLScan = async (url) => {
     for (let i = 0; i < 5; i++) {
       await new Promise((resolve) => setTimeout(resolve, 5000));
       try {
-        const resultRes = await axios.get(`https://urlscan.io/api/v1/result/${uuid}/`);
+        const resultRes = await axios.get(`https://urlscan.io/api/v1/result/${uuid}/`, {
+          headers: { 'API-Key': process.env.URLSCAN_API_KEY },
+        });
         const d = resultRes.data;
 
         // ── Verdict ──
@@ -173,12 +175,13 @@ export const scanWithURLScan = async (url) => {
           content: { cookies, links, consoleLogs, globals },
           _source: 'urlscan',
         };
-      } catch {
-        // Result not ready yet, keep retrying
+      } catch (pollErr) {
+        const status = pollErr.response?.status;
+        const msg = pollErr.response?.data?.message || pollErr.message;
+        console.warn(`URLScan poll ${i + 1}/5 [${status ?? 'no-status'}]: ${msg}`);
         continue;
       }
     }
-
     return { verdict: 'unknown', reason: 'URLScan timed out' };
   } catch (error) {
     console.warn('URLScan failed, trying VirusTotal fallback:', error.response?.data?.message || error.message);
